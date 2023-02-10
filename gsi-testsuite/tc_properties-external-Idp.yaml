@@ -1,0 +1,5 @@
+xAuthHeader: myXauth
+
+clientid: myClientId
+
+redirectUri: https://my.redirect

@@ -1,0 +1,33 @@
+# minimum viable test environment specification
+# default local Tiger Proxy
+gsi:
+  version: 0.1.2
+
+ports:
+  idpsektoral: ${free.port.100}
+
+
+tigerProxy:
+  adminPort: ${free.port.201}
+  proxyPort: ${free.port.200}
+
+lib:
+  activateWorkflowUI: false
+
+additionalYamls:
+  - filename: tc_properties-local.yaml
+    baseKey: gsi
+
+servers:
+  idpsektoral:
+    type: externalJar
+    healthcheckUrl: http://127.0.0.1:${tiger.ports.idpsektoral}
+    externalJarOptions:
+      arguments:
+        - --server.port=${tiger.ports.idpsektoral}
+      workingDir: ../gsi-server/target
+    source:
+      - local://gsi-server-${tiger.gsi.version}.jar
+    startupTimeoutSec: 60
+    active: true
+    

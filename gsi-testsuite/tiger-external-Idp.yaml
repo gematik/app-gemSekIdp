@@ -1,0 +1,17 @@
+gsi:
+
+lib:
+  activateWorkflowUI: false
+
+additionalYamls:
+  - filename: tc_properties-external-Idp.yaml
+    baseKey: gsi
+
+servers:
+  idpsektoral:
+    type: externalUrl
+    startupTimeoutSec: 1
+    source:
+      - http://127.0.0.1:8082
+    active: true
+    

@@ -1,0 +1,22 @@
+gsi:
+  sigKeyConfig:
+    fileName: classpath:cert/ref-es-sig.p12
+    keyId: puk_fed_idp_sig
+    use: sig
+server:
+  port: ${SERVER_PORT:8082}
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8182}
+  endpoints:
+    web:
+      exposure:
+        include: "health"
+    enabled-by-default: false
+  endpoint:
+    health:
+      enabled: true
+    metrics:
+      enabled: true
+    logfile:
+      enabled: true
