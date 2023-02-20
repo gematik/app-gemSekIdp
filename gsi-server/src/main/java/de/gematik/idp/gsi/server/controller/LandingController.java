@@ -19,7 +19,6 @@ package de.gematik.idp.gsi.server.controller;
 import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 
 import de.gematik.idp.gsi.server.ServerUrlService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URISyntaxException;
 import lombok.RequiredArgsConstructor;
@@ -47,14 +46,13 @@ public class LandingController {
       params = "request_uri",
       produces = MediaType.TEXT_HTML_VALUE)
   @ResponseBody
-  public void redirectToLandingPage(final HttpServletRequest req, final HttpServletResponse resp)
-      throws URISyntaxException {
+  public void redirectToLandingPage(final HttpServletResponse resp) throws URISyntaxException {
 
-    final String me = serverUrlService.determineServerUrl(req);
     setNoCacheHeader(resp);
     resp.setStatus(HttpStatus.FOUND.value());
 
-    final URIBuilder redirectUriBuilder = new URIBuilder(me + "/landing.html");
+    final URIBuilder redirectUriBuilder =
+        new URIBuilder(serverUrlService.determineServerUrl() + "/landing.html");
     final String location = redirectUriBuilder.build().toString();
     resp.setHeader(HttpHeaders.LOCATION, location);
   }

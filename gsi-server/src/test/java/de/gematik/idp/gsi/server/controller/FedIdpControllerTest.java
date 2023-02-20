@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.Nonce;
+import de.gematik.idp.gsi.server.GsiServer;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.List;
 import java.util.Map;
@@ -38,11 +39,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = GsiServer.class,
+    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FedIdpControllerTest {
 
@@ -70,7 +73,9 @@ class FedIdpControllerTest {
           "id_token_encryption_enc_values_supported",
           "user_type_supported");
 
-  @LocalServerPort private int localServerPort;
+  @Value("${server.port}")
+  private int serverPort;
+
   private String testHostUrl;
   private HttpResponse<String> responseGood;
   private JsonWebToken jwtInResponseGood;
@@ -78,7 +83,7 @@ class FedIdpControllerTest {
 
   @BeforeAll
   void setup() {
-    testHostUrl = "http://localhost:" + localServerPort;
+    testHostUrl = "http://localhost:" + serverPort;
     responseGood = retrieveEntityStatement();
     assertThat(responseGood.getStatus()).isEqualTo(HttpStatus.OK);
     jwtInResponseGood = new JsonWebToken(responseGood.getBody());

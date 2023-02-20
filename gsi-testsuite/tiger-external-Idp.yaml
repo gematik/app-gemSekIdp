@@ -8,10 +8,10 @@ additionalYamls:
     baseKey: gsi
 
 servers:
-  idpsektoral:
+  gsiserver:
     type: externalUrl
     startupTimeoutSec: 1
     source:
-      - http://127.0.0.1:8082
+      - http://127.0.0.1:8085
     active: true
     

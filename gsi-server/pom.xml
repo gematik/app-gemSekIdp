@@ -6,13 +6,13 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>gemSekIdp-global</artifactId>
-    <version>0.1.2</version>
+    <version>1.0.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
 
   <artifactId>gsi-server</artifactId>
-  <version>0.1.2</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
 
   <name>gsi-server</name>
@@ -102,6 +102,69 @@
             </exclude>
           </excludes>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-docker-resources</id>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
+              <skip>${skip.dockerbuild}</skip>
+              <encoding>UTF-8</encoding>
+              <outputDirectory>${basedir}/target/tmpdocker</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${basedir}/src/main/docker</directory>
+                  <includes>
+                    <include>**/*</include>
+                  </includes>
+                </resource>
+                <resource>
+                  <directory>${basedir}/target</directory>
+                  <includes>
+                    <include>gsi-server*.jar</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>${version.docker-maven-plugin}</version>
+        <configuration>
+          <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
+          <skip>${skip.dockerbuild}</skip>
+          <images>
+            <image>
+              <build>
+                <dockerFile>${basedir}/target/tmpdocker/Dockerfile</dockerFile>
+                <args>
+                  <VERSION>${project.version}</VERSION>
+                  <COMMIT_HASH>${commit_hash}</COMMIT_HASH>
+                </args>
+              </build>
+              <name>${docker.image.name.gsiserver}:${project.version}</name>
+            </image>
+          </images>
+          <verbose>true</verbose>
+        </configuration>
+        <executions>
+          <execution>
+            <id>default</id>
+            <goals>
+              <goal>build</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

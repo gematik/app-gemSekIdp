@@ -92,6 +92,6 @@ class StepsGlueTest {
   void adaptUrlTest() {
     final String url = "https://idp-sektoral-rpu.risedev.at/federation/list";
     Assertions.assertThat(IdpSektoralSteps.replaceHostForTiger(url))
-        .isEqualTo("http://idpsektoral/federation/list");
+        .isEqualTo("http://gsiserver/federation/list");
   }
 }

@@ -17,10 +17,11 @@
 package de.gematik.idp.gsi.server;
 
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.boot.web.servlet.context.ServletWebServerInitializedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -28,10 +29,20 @@ import org.springframework.stereotype.Service;
 public class ServerUrlService {
 
   private final GsiConfiguration gsiConfiguration;
+  private int serverPort;
 
-  public String determineServerUrl(final HttpServletRequest request) {
+  public int getServerPort() {
+    return serverPort;
+  }
+
+  @EventListener
+  public void onApplicationEvent(final ServletWebServerInitializedEvent event) {
+    serverPort = event.getWebServer().getPort();
+  }
+
+  public String determineServerUrl() {
     return getServerUrlFromConfig()
-        .orElse("http://" + request.getServerName() + ":" + request.getServerPort());
+        .orElse("Parameter \"gsi.serverUrl\" not found in configuration.");
   }
 
   private Optional<String> getServerUrlFromConfig() {

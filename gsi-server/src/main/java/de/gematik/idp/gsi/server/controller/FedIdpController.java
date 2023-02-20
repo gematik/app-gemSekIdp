@@ -34,7 +34,6 @@ import de.gematik.idp.gsi.server.data.TokenResponse;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.gsi.server.services.EntityStatementBuilder;
 import de.gematik.idp.gsi.server.services.SektoralIdpAuthenticator;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -92,11 +91,11 @@ public class FedIdpController {
   @GetMapping(
       value = ENTITY_STATEMENT_ENDPOINT,
       produces = "application/entity-statement+jwt;charset=UTF-8")
-  public String getEntityStatement(final HttpServletRequest request) {
+  public String getEntityStatement() {
     return JwtHelper.signJson(
         jwtProcessor,
         objectMapper,
-        entityStatementBuilder.buildEntityStatement(serverUrlService.determineServerUrl(request)),
+        entityStatementBuilder.buildEntityStatement(serverUrlService.determineServerUrl()),
         ENTITY_STATEMENT_TYP);
   }
 
@@ -123,11 +122,10 @@ public class FedIdpController {
       @RequestParam(name = "nonce") @NotEmpty final String fachdienstNonce,
       @RequestParam(name = "scope") @NotEmpty final String scope,
       @RequestParam(name = "acr_values") @NotEmpty final String acrValues,
-      final HttpServletRequest reqMsgNr2,
       final HttpServletResponse respMsgNr3) {
     log.info(
         "App2App-Flow: RX message nr 2 (Authorization Request) at {}",
-        serverUrlService.determineServerUrl(reqMsgNr2));
+        serverUrlService.determineServerUrl());
 
     final Set<String> requestedScopes = getRequestedScopes(scope);
 
@@ -193,12 +191,10 @@ public class FedIdpController {
       produces = "application/json;charset=UTF-8")
   public void getAuthorizationCode(
       @RequestParam(name = "request_uri") @NotEmpty final String requestUri,
-      final HttpServletRequest reqMsgNr6,
       final HttpServletResponse respMsgNr7) {
-
     log.info(
         "App2App-Flow: RX message nr 6 (Authorization Request) at {}",
-        serverUrlService.determineServerUrl(reqMsgNr6));
+        serverUrlService.determineServerUrl());
     final String sessionKey = getSessionKey(URLDecoder.decode(requestUri, StandardCharsets.UTF_8));
     final FedIdpAuthSession session = fedIdpAuthSessions.get(sessionKey);
 
@@ -229,11 +225,10 @@ public class FedIdpController {
       @RequestParam("redirect_uri") @NotEmpty final String redirectUri,
       @RequestParam("client_assertion_type") @NotEmpty final String clientAssertionType,
       @RequestParam("client_assertion") @NotEmpty final String clientAssertion,
-      final HttpServletRequest reqMsgNr10,
       final HttpServletResponse respMsgNr11) {
     log.info(
         "App2App-Flow: RX message nr 10 (Authorization Code) at {}",
-        serverUrlService.determineServerUrl(reqMsgNr10));
+        serverUrlService.determineServerUrl());
     setNoCacheHeader(respMsgNr11);
     respMsgNr11.setStatus(HttpStatus.OK.value());
     return TokenResponse.builder()

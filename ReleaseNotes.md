@@ -1,3 +1,9 @@
+# Release 1.0.0
+
+### gsi-server
+
+- get server addresses from configuration
+
 # Release 0.1.2
 
 ### gsi-server
