@@ -15,7 +15,6 @@
 #
 
 @AuthorizationEndpoint
-@GematikSekIdpOnly
 Feature: Test IdpSektoral's Auth Endpoint
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
@@ -37,8 +36,8 @@ Feature: Test IdpSektoral's Auth Endpoint
 
     Given TGR clear recorded messages
     When Send Post Request to "${authorization_endpoint}" with
-      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope                    | acr_values               |
-      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | profile+telematik+openid | gematik-ehealth-loa-high |
+      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
+      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR current response with attribute "$.header.Content-Type" matches "application/json;charset=UTF-8"
@@ -55,8 +54,8 @@ Feature: Test IdpSektoral's Auth Endpoint
 
     Given TGR clear recorded messages
     When Send Post Request to "${authorization_endpoint}" with
-      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope                    | acr_values               |
-      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | profile+telematik+openid | gematik-ehealth-loa-high |
+      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
+      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
     And TGR find request to path ".*"
     Then TGR current response at "$.body" matches as JSON:
         """
@@ -67,8 +66,9 @@ Feature: Test IdpSektoral's Auth Endpoint
         """
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_003
-    @OpenBug(GSI-17)
-  Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlerhaft befüllte Paramete
+    @Approval
+    @OpenBug
+  Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlerhaft befüllte Parameter
 
   ```
   Wir senden invalide PAR an den sektoralen IDP
@@ -80,29 +80,30 @@ Feature: Test IdpSektoral's Auth Endpoint
       | client_id   | state       | redirect_uri   | code_challenge                              | code_challenge_method   | response_type   | nonce                | scope   | acr_values   |
       | <client_id> | yyystateyyy | <redirect_uri> | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | <code_challenge_method> | <response_type> | vy7rM801AQw1or22GhrZ | <scope> | <acr_values> |
     And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "400"
+    Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
     And TGR current response at "$.body" matches as JSON:
         """
           {
             "error":                        '.*',
-            "____error_description":        '.*'
+            "____error_description":        '.*',
+            "____error_uri":                '.*'
           }
         """
     And TGR current response at "$.body.error" matches "<error>"
 
-
     Examples:
-      | client_id    | redirect_uri            | code_challenge_method | response_type | scope                    | acr_values               | error           |
-      | notUrl       | gsi.redirectUri         | S256                  | code          | profile+telematik+openid | gematik-ehealth-loa-high | invalid_request |
-      | gsi.clientid | gsi.redirectUri         | plain                 | code          | profile+telematik+openid | gematik-ehealth-loa-high | invalid_request |
-      | gsi.clientid | gsi.redirectUri         | S256                  | token         | profile+telematik+openid | gematik-ehealth-loa-high | invalid_request |
-      | gsi.clientid | gsi.redirectUri         | S256                  | code          | invalidScope             | gematik-ehealth-loa-high | invalid_scope   |
-      | gsi.clientid | gsi.redirectUri         | S256                  | code          | profile+telematik+openid | invalidAcr               | invalid_request |
-      | gsi.clientid | https://invalidRedirect | S256                  | code          | profile+telematik+openid | gematik-ehealth-loa-high | invalid_request |
+      | client_id    | redirect_uri            | code_challenge_method | response_type | scope        | acr_values               | error           | responseCode |
+      | notUrl       | gsi.redirectUri         | S256                  | code          | gsi.scope    | gematik-ehealth-loa-high | invalid_request | 400          |
+      | gsi.clientid | gsi.redirectUri         | plain                 | code          | gsi.scope    | gematik-ehealth-loa-high | invalid_request | 400          |
+      | gsi.clientid | gsi.redirectUri         | S256                  | token         | gsi.scope    | gematik-ehealth-loa-high | invalid_request | 400          |
+      | gsi.clientid | gsi.redirectUri         | S256                  | code          | invalidScope | gematik-ehealth-loa-high | invalid_scope   | 400          |
+      | gsi.clientid | gsi.redirectUri         | S256                  | code          | gsi.scope    | invalidAcr               | invalid_request | 400          |
+      | gsi.clientid | https://invalidRedirect | S256                  | code          | gsi.scope    | gematik-ehealth-loa-high | invalid_request | 400          |
 
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_004
-  @OpenBug(GSI-17)
+  @Approval
+  @OpenBug
   Scenario: IdpSektoral Auth Endpoint - Negativfall - falsche HTTP Methode
 
   ```
@@ -112,8 +113,8 @@ Feature: Test IdpSektoral's Auth Endpoint
 
     Given TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope                    | acr_values               |
-      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | profile+telematik+openid | gematik-ehealth-loa-high |
+      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope      | acr_values               |
+      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scoped | gematik-ehealth-loa-high |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "405"
     And TGR current response at "$.body" matches as JSON:
@@ -124,3 +125,39 @@ Feature: Test IdpSektoral's Auth Endpoint
           }
         """
     And TGR current response at "$.body.error" matches "invalid_request"
+
+  @TCID:IDPSEKTORAL_AUTH_ENDPOINT_005
+    @Approval
+    @OpenBug
+  Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlende verpflichtende Parameter
+
+  ```
+  Wir senden invalide PAR an den sektoralen IDP
+
+  Die Response muss als Body eine passende Fehlermeldung enthalten:
+
+    Given TGR clear recorded messages
+    When Send Post Request to "${authorization_endpoint}" with
+      | client_id   | state       | redirect_uri   | code_challenge                              | code_challenge_method   | response_type   | nonce                | scope   | acr_values   |
+      | <client_id> | yyystateyyy | <redirect_uri> | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | <code_challenge_method> | <response_type> | vy7rM801AQw1or22GhrZ | <scope> | <acr_values> |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
+    And TGR current response at "$.body" matches as JSON:
+        """
+          {
+            "error":                        '.*',
+            "____error_description":        '.*',
+            "____error_uri":                '.*'
+          }
+        """
+    And TGR current response at "$.body.error" matches "<error>"
+
+    Examples:
+      | client_id    | redirect_uri    | code_challenge_method | response_type | scope     | acr_values               | error           | responseCode |
+      | $REMOVE      | gsi.redirectUri | S256                  | code          | gsi.scope | gematik-ehealth-loa-high | invalid_request | 400          |
+      | gsi.clientid | $REMOVE         | S256                  | code          | gsi.scope | gematik-ehealth-loa-high | invalid_request | 400          |
+      | gsi.clientid | gsi.redirectUri | $REMOVE               | code          | gsi.scope | gematik-ehealth-loa-high | invalid_request | 400          |
+      | gsi.clientid | gsi.redirectUri | S256                  | $REMOVE       | gsi.scope | gematik-ehealth-loa-high | invalid_request | 400          |
+      | gsi.clientid | gsi.redirectUri | S256                  | code          | $REMOVE   | gematik-ehealth-loa-high | invalid_scope   | 400          |
+      | gsi.clientid | gsi.redirectUri | S256                  | code          | gsi.scope | $REMOVE                  | invalid_request | 400          |
+

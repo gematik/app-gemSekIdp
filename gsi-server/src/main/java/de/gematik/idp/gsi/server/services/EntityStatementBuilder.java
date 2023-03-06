@@ -28,6 +28,7 @@ import de.gematik.idp.data.fedidp.FederationEntity;
 import de.gematik.idp.data.fedidp.Metadata;
 import de.gematik.idp.data.fedidp.OpenidProvider;
 import de.gematik.idp.data.fedidp.RequestAuthenticationMethodsSupported;
+import de.gematik.idp.gsi.server.data.GsiConstants;
 import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,16 +65,7 @@ public class EntityStatementBuilder {
             .clientRegistrationTypesSupported(new String[] {"automatic"})
             .subjectTypesSupported(new String[] {"pairwise"})
             .responseTypesSupported(new String[] {"code"})
-            .scopesSupported(
-                new String[] {
-                  "urn:telematik:geburtsdatum",
-                  "urn:telematik:alter",
-                  "urn:telematik:display_name",
-                  "urn:telematik:given_name",
-                  "urn:telematik:geschlecht",
-                  "urn:telematik:email",
-                  "urn:telematik:versicherter"
-                })
+            .scopesSupported(GsiConstants.SCOPES_SUPPORTED.toArray(String[]::new))
             .responseModesSupported(new String[] {"query"})
             .grantTypesSupported(new String[] {"authorization_code"})
             .requirePushedAuthorizationRequests(true)
@@ -83,7 +75,6 @@ public class EntityStatementBuilder {
                     .ar(new String[] {"none"})
                     .par(new String[] {"self_signed_tls_client_auth"})
                     .build())
-            .requestObjectSigningAlgValuesSupported(new String[] {"ES256"})
             .idTokenSigningAlgValuesSupported(new String[] {"ES256"})
             .idTokenEncryptionAlgValuesSupported(new String[] {"ECDH-ES"})
             .idTokenEncryptionEncValuesSupported(new String[] {"A256GCM"})

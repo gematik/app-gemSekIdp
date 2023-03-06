@@ -27,7 +27,7 @@ class GsiConfigurationTest {
   void testBuildComponent() {
     final GsiConfiguration gsiConfig =
         GsiConfiguration.builder()
-            .sigKeyConfig(new KeyConfig("a", "b", "c"))
+            .sigKeyConfig(new KeyConfig("a", "b", "c", false))
             .serverUrl("serverurl")
             .build();
     gsiConfig.setServerUrl("newUrl");

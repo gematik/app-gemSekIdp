@@ -3,10 +3,13 @@
 ports:
   gsiserver: ${free.port.100}
 
+gsi:
+  version: "1.0.1-SNAPSHOT"
 
 tigerProxy:
   adminPort: ${free.port.201}
   proxyPort: ${free.port.200}
+
 
 lib:
   activateWorkflowUI: false

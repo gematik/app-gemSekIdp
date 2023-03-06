@@ -67,7 +67,6 @@ class FedIdpControllerTest {
           "require_pushed_authorization_requests",
           "token_endpoint_auth_methods_supported",
           "request_authentication_methods_supported",
-          "request_object_signing_alg_values_supported",
           "id_token_signing_alg_values_supported",
           "id_token_encryption_alg_values_supported",
           "id_token_encryption_enc_values_supported",
@@ -165,7 +164,8 @@ class FedIdpControllerTest {
             "urn:telematik:given_name",
             "urn:telematik:geschlecht",
             "urn:telematik:email",
-            "urn:telematik:versicherter");
+            "urn:telematik:versicherter",
+            "openid");
     assertThat((List) openidProvider.get("response_modes_supported"))
         .containsExactlyInAnyOrder("query");
     assertThat((List) openidProvider.get("grant_types_supported"))
@@ -215,7 +215,12 @@ class FedIdpControllerTest {
 
   /************************** FEDIDP_AUTH_ENDPOINT *****************/
   @ValueSource(
-      strings = {"profile+telematik+openid", "telematik", "telematik+openid", "email+profile"})
+      strings = {
+        "urn:telematik:geburtsdatum urn:telematik:alter openid",
+        "urn:telematik:display_name",
+        "urn:telematik:given_name openid",
+        "urn:telematik:geschlecht urn:telematik:versicherter urn:telematik:email"
+      })
   @ParameterizedTest
   void uriRequest_ResponseStatus_NOT_BAD_REQUEST(final String scope) {
     final HttpResponse<String> resp =
@@ -238,6 +243,37 @@ class FedIdpControllerTest {
     // due to missing states, we may receive HttpStatus.INTERNAL_SERVER_ERROR but not
     // HttpStatus.BAD_REQUEST
     assertThat(resp.getStatus()).isNotEqualTo(HttpStatus.BAD_REQUEST);
+  }
+
+  @ValueSource(
+      strings = {
+        "urn:telematik:geburtsdatumurn:telematik:alter openid",
+        "urn%3Atelematik%3Adisplay_name",
+        "urn:telematik:given_name+openid",
+        "urn:telematik:schlecht openid"
+      })
+  @ParameterizedTest
+  void invalidScope_ResponseStatus_BAD_REQUEST(final String scope) {
+    final HttpResponse<String> resp =
+        Unirest.post(testHostUrl + IdpConstants.FED_AUTH_ENDPOINT)
+            .field("client_id", testHostUrl)
+            .field("state", "state_Fachdienst")
+            .field("redirect_uri", testHostUrl + "/AS")
+            .field("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
+            .field("code_challenge_method", "S256")
+            .field("response_type", "code")
+            .field("nonce", "42")
+            .field("scope", scope)
+            .field("acr_values", "gematik-ehealth-loa-high")
+            .field(
+                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
+            .field("client_assertion", "TODO")
+            .field("max_age", "0")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .asString();
+    // due to missing states, we may receive HttpStatus.INTERNAL_SERVER_ERROR but not
+    // HttpStatus.BAD_REQUEST
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
   @Test
@@ -283,7 +319,7 @@ class FedIdpControllerTest {
             .field("code_challenge_method", "S256")
             .field("response_type", "code")
             .field("nonce", "42")
-            .field("scope", "profile+telematik+openid")
+            .field("scope", "urn:telematik:geburtsdatum openid")
             .field("acr_values", "gematik-ehealth-loa-high")
             .field(
                 "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")

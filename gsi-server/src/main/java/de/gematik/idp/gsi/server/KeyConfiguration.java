@@ -21,11 +21,11 @@ import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.FederationPrivKey;
 import de.gematik.idp.data.KeyConfig;
+import de.gematik.idp.data.KeyConfigurationBase;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,7 +35,7 @@ import org.springframework.util.StreamUtils;
 
 @Configuration
 @RequiredArgsConstructor
-public class KeyConfiguration {
+public class KeyConfiguration implements KeyConfigurationBase {
 
   private final ResourceLoader resourceLoader;
   private final GsiConfiguration gsiConfiguration;
@@ -47,7 +47,7 @@ public class KeyConfiguration {
 
   @Bean
   public IdpJwtProcessor jwtProcessor() {
-    return new IdpJwtProcessor(sigKey().getIdentity());
+    return new IdpJwtProcessor(sigKey().getIdentity(), sigKey().getKeyId());
   }
 
   private FederationPrivKey getFederationPrivKey(final KeyConfig keyConfiguration) {
@@ -55,13 +55,13 @@ public class KeyConfiguration {
     try (final InputStream inputStream = resource.getInputStream()) {
       final PkiIdentity pkiIdentity =
           CryptoLoader.getIdentityFromP12(StreamUtils.copyToByteArray(inputStream), "00");
-
-      pkiIdentity.setKeyId(Optional.ofNullable(keyConfiguration.getKeyId()));
-      pkiIdentity.setUse(Optional.ofNullable(keyConfiguration.getUse()));
-      return new FederationPrivKey(pkiIdentity);
+      return getFederationPrivKey(keyConfiguration, pkiIdentity);
     } catch (final IOException e) {
       throw new GsiException(
-          "Error while loading Key from resource '" + keyConfiguration.getFileName() + "'", e);
+          "Error while loading Gsi-Srever Key from resource '"
+              + keyConfiguration.getFileName()
+              + "'",
+          e);
     }
   }
 }

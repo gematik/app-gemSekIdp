@@ -18,10 +18,12 @@ package de.gematik.idp.gsi.server.handler;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import de.gematik.idp.data.fedidp.FedIdpErrorResponse;
+import de.gematik.idp.data.fedidp.Oauth2ErrorCode;
+import de.gematik.idp.data.fedidp.Oauth2ErrorResponse;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.gsi.server.exceptions.handler.GsiExceptionHandler;
 import jakarta.validation.ValidationException;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,48 +34,52 @@ class FedIdpExceptionHandlerTest {
   private final GsiExceptionHandler fedIdpExceptionHandler = new GsiExceptionHandler();
 
   @Test
-  void testIdpSektoralException() {
-    final ResponseEntity<FedIdpErrorResponse> resp =
+  void testGsiException() {
+    final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleGsiException(
             new GsiException("something strange happened", HttpStatus.INSUFFICIENT_STORAGE));
-    assertThat(resp.toString()).isNotEmpty();
+    assertThat(Objects.requireNonNull(resp.getBody()).getError())
+        .isEqualTo(Oauth2ErrorCode.INVALID_REQUEST);
   }
 
   @Test
   void testValidationException() {
-    final ResponseEntity<FedIdpErrorResponse> resp =
+    final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleValidationException(
             new ValidationException("something strange happened again"));
-    assertThat(resp.toString()).isNotEmpty();
+    assertThat(Objects.requireNonNull(resp.getBody()).getError())
+        .isEqualTo(Oauth2ErrorCode.INVALID_REQUEST);
   }
 
   @Test
   void testMissingServletRequestParameterException() {
-    final ResponseEntity<FedIdpErrorResponse> resp =
+    final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleMissingServletRequestParameter(
             new MissingServletRequestParameterException("anyName", "anyType"));
-    assertThat(resp.toString()).isNotEmpty();
+    assertThat(Objects.requireNonNull(resp.getBody()).getError())
+        .isEqualTo(Oauth2ErrorCode.INVALID_REQUEST);
   }
 
   @Test
   void testRuntimeException() {
-    final ResponseEntity<FedIdpErrorResponse> resp =
+    final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleRuntimeException(new RuntimeException("anyMsg"));
-    assertThat(resp.toString()).isNotEmpty();
+    assertThat(Objects.requireNonNull(resp.getBody()).getError())
+        .isEqualTo(Oauth2ErrorCode.INVALID_REQUEST);
   }
 
   @Test
   void testGsiExceptionWithEx() {
-    final ResponseEntity<FedIdpErrorResponse> resp =
+    final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleGsiException(new GsiException(new NullPointerException()));
-    assertThat(resp.getStatusCode().is5xxServerError());
+    assertThat(resp.getStatusCode().is5xxServerError()).isTrue();
   }
 
   @Test
   void testGsiExceptionWithExAndMsg() {
-    final ResponseEntity<FedIdpErrorResponse> resp =
+    final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleGsiException(
             new GsiException("Oooops", new NullPointerException()));
-    assertThat(resp.getStatusCode().is5xxServerError());
+    assertThat(resp.getStatusCode().is5xxServerError()).isTrue();
   }
 }

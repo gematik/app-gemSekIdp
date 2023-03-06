@@ -1,3 +1,9 @@
+# Release 1.1.0
+
+### gsi-testsuite
+
+- test cases for pushed authorization requests
+
 # Release 1.0.0
 
 ### gsi-server
@@ -14,5 +20,4 @@
 ### gsi-testsuite
 
 - test cases to fetch and inspect an entity statement of a sectoral IDP
-
 

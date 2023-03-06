@@ -4,7 +4,7 @@ gsi:
     keyId: puk_fed_idp_sig
     use: sig
   serverUrl: "${GSI_SERVER_URL:http://localhost:8085}"
-  fedmasterUrl: "${FEDMASTER_SERVER_URL:http://gstopdh2.top.local:8574}"
+  fedmasterUrl: "${FEDMASTER_SERVER_URL:http://hidden}"
 server:
   port: ${SERVER_PORT:8085}
 management:

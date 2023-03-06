@@ -1,5 +1,7 @@
 xAuthHeader: myXauth
 
-clientid: myClientId
+clientid: https://idpfadi.dev.gematik.solutions
 
-redirectUri: https://my.redirect
+redirectUri: https://redirect.testsuite.gsi
+
+scope: urn:telematik:display_name urn:telematik:versicherter openid

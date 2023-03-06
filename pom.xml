@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.0.2</version>
+    <version>3.0.3</version>
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gemSekIdp-global</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <packaging>pom</packaging>
 
   <description>gsi - gematik sektoraler IDP</description>
@@ -79,19 +79,19 @@
     <version.assertj>3.24.2</version.assertj>
     <version.bouncycastle.bcpkix>1.72</version.bouncycastle.bcpkix>
     <version.commons-io>2.11.0</version.commons-io>
-    <version.json>20220924</version.json>
+    <version.json>20230227</version.json>
     <version.log4j2>2.19.0</version.log4j2>
     <version.plexus-utils>3.4.2</version.plexus-utils>
     <version.rest-assured>5.3.0</version.rest-assured>
-    <version.unirest>3.14.1</version.unirest>
+    <version.unirest>3.14.2</version.unirest>
 
     <version.build-helper-maven-plugin>3.3.0</version.build-helper-maven-plugin>
     <version.docker-maven-plugin>0.41.0</version.docker-maven-plugin>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
 
-    <version.idp-commons>21.0.23</version.idp-commons>
-    <version.idp-crypto>21.0.23</version.idp-crypto>
-    <version.idp-test>21.0.23</version.idp-test>
+    <version.idp-commons>21.0.30</version.idp-commons>
+    <version.idp-crypto>21.0.30</version.idp-crypto>
+    <version.idp-test>21.0.30</version.idp-test>
 
     <version.jacoco-maven-plugin>0.8.8</version.jacoco-maven-plugin>
     <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>

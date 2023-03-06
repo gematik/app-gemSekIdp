@@ -30,6 +30,7 @@ import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.data.fedidp.ParResponse;
 import de.gematik.idp.gsi.server.ServerUrlService;
 import de.gematik.idp.gsi.server.data.FedIdpAuthSession;
+import de.gematik.idp.gsi.server.data.GsiConstants;
 import de.gematik.idp.gsi.server.data.TokenResponse;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.gsi.server.services.EntityStatementBuilder;
@@ -41,7 +42,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -168,12 +168,11 @@ public class FedIdpController {
 
   private Set<String> getRequestedScopes(final String scope) {
     final Set<String> requestedScopes =
-        Optional.of(Arrays.stream(scope.split("\\+")).collect(Collectors.toSet()))
+        Optional.of(Arrays.stream(scope.split(" ")).collect(Collectors.toSet()))
             .orElseThrow(
                 () -> new GsiException("Requested scopes do no fit.", HttpStatus.BAD_REQUEST));
-    final Set<String> expectedScopes =
-        new HashSet<>(Arrays.asList("profile", "telematik", "openid", "email"));
-    if (!(requestedScopes.stream().allMatch(expectedScopes::contains))) {
+
+    if (!(requestedScopes.stream().allMatch(GsiConstants.SCOPES_SUPPORTED::contains))) {
       throw new GsiException("Requested scopes do no fit.", HttpStatus.BAD_REQUEST);
     }
     return requestedScopes;

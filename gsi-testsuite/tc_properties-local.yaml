@@ -2,4 +2,6 @@ xAuthHeader: myXauth
 
 clientid: myClientId
 
-redirectUri: https://my.redirect
+redirectUri: https://redirect.testsuite.gsi
+
+scope: urn:telematik:display_name urn:telematik:versicherter openid

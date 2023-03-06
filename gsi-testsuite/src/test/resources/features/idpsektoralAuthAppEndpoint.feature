@@ -37,8 +37,8 @@ Feature: Test IdpSektoral's Auth Endpoint
 
     Given TGR clear recorded messages
     When Send Post Request to "${authorization_endpoint}" with
-      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope                    | acr_values               |
-      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | profile+telematik+openid | gematik-ehealth-loa-high |
+      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
+      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
     And TGR find request to path "/auth"
     Then TGR set local variable "parRequestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     When Send Get Request to "${authorization_endpoint}/app" with
@@ -64,8 +64,8 @@ Feature: Test IdpSektoral's Auth Endpoint
 
     Given TGR clear recorded messages
     When Send Post Request to "${authorization_endpoint}" with
-      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope                    | acr_values               |
-      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | profile+telematik+openid | gematik-ehealth-loa-high |
+      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
+      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
     And TGR find request to path "/auth"
     Then TGR set local variable "parRequestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     When Send Get Request to "${authorization_endpoint}/app" with

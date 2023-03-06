@@ -16,24 +16,38 @@
 
 package de.gematik.idp.gsi.server.exceptions;
 
+import de.gematik.idp.data.fedidp.Oauth2ErrorCode;
+import java.io.Serial;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 public class GsiException extends ResponseStatusException {
 
+  @Serial private static final long serialVersionUID = -1744157595090697769L;
+  @Getter private final Oauth2ErrorCode oauth2ErrorCode;
+
   public GsiException(final String message, final HttpStatus status) {
     super(status, message);
+    this.oauth2ErrorCode = Oauth2ErrorCode.INVALID_REQUEST;
   }
 
   public GsiException(final Exception e) {
     super(HttpStatus.INTERNAL_SERVER_ERROR, "Runtime Error", e);
+    this.oauth2ErrorCode = Oauth2ErrorCode.INVALID_REQUEST;
   }
 
   public GsiException(final String message, final Exception e) {
     super(HttpStatus.INTERNAL_SERVER_ERROR, message, e);
+    this.oauth2ErrorCode = Oauth2ErrorCode.INVALID_REQUEST;
   }
 
-  public GsiException(final String message, final Exception e, final HttpStatus status) {
+  public GsiException(
+      final String message,
+      final Exception e,
+      final HttpStatus status,
+      final Oauth2ErrorCode oauth2ErrorCode) {
     super(status, message, e);
+    this.oauth2ErrorCode = oauth2ErrorCode;
   }
 }

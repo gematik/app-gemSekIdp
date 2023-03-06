@@ -52,6 +52,7 @@ public class IdpSektoralSteps {
     if (params != null) {
       parametersMap =
           params.transpose().cells().stream()
+              .filter(ele -> !ele.get(1).equals("$REMOVE"))
               .collect(
                   Collectors.toMap(
                       ele -> ele.get(0),

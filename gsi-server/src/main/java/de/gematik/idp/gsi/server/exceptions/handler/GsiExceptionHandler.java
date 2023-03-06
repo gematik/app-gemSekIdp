@@ -16,11 +16,12 @@
 
 package de.gematik.idp.gsi.server.exceptions.handler;
 
-import de.gematik.idp.data.fedidp.FedIdpErrorResponse;
+import de.gematik.idp.data.fedidp.Oauth2ErrorCode;
+import de.gematik.idp.data.fedidp.Oauth2ErrorResponse;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
-import java.time.ZonedDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -38,8 +39,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GsiExceptionHandler {
 
   @ExceptionHandler(GsiException.class)
-  public ResponseEntity<FedIdpErrorResponse> handleGsiException(final GsiException exc) {
-    final FedIdpErrorResponse body = getBody(exc);
+  public ResponseEntity<Oauth2ErrorResponse> handleGsiException(final GsiException exc) {
+    final Oauth2ErrorResponse body = getBody(exc);
     return new ResponseEntity<>(body, getHeader(), exc.getStatusCode());
   }
 
@@ -48,25 +49,37 @@ public class GsiExceptionHandler {
     ValidationException.class,
     MethodArgumentNotValidException.class
   })
-  public ResponseEntity<FedIdpErrorResponse> handleValidationException(final Exception exc) {
+  public ResponseEntity<Oauth2ErrorResponse> handleValidationException(final Exception exc) {
     return handleGsiException(
         (GsiException)
             ExceptionUtils.getThrowableList(exc).stream()
                 .filter(GsiException.class::isInstance)
                 .findAny()
-                .orElseGet(() -> new GsiException(exc.getMessage(), exc, HttpStatus.BAD_REQUEST)));
+                .orElseGet(
+                    () ->
+                        new GsiException(
+                            exc.getMessage(),
+                            exc,
+                            HttpStatus.BAD_REQUEST,
+                            Oauth2ErrorCode.INVALID_REQUEST)));
   }
 
   @ExceptionHandler(RuntimeException.class)
-  public ResponseEntity<FedIdpErrorResponse> handleRuntimeException(final Exception exc) {
+  public ResponseEntity<Oauth2ErrorResponse> handleRuntimeException(final Exception exc) {
     return handleGsiException(
-        new GsiException("Invalid Request", exc, HttpStatus.INTERNAL_SERVER_ERROR));
+        new GsiException(
+            "Invalid Request",
+            exc,
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            Oauth2ErrorCode.INVALID_REQUEST));
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
-  public ResponseEntity<FedIdpErrorResponse> handleMissingServletRequestParameter(
+  public ResponseEntity<Oauth2ErrorResponse> handleMissingServletRequestParameter(
       final MissingServletRequestParameterException ex) {
-    return handleGsiException(new GsiException(ex.getMessage(), ex, HttpStatus.BAD_REQUEST));
+    return handleGsiException(
+        new GsiException(
+            ex.getMessage(), ex, HttpStatus.BAD_REQUEST, Oauth2ErrorCode.INVALID_REQUEST));
   }
 
   private HttpHeaders getHeader() {
@@ -77,10 +90,10 @@ public class GsiExceptionHandler {
     return responseHeaders;
   }
 
-  private FedIdpErrorResponse getBody(final GsiException exception) {
-    return FedIdpErrorResponse.builder()
-        .timestamp(ZonedDateTime.now().toEpochSecond())
-        .errorMessage(exception.getReason())
+  private Oauth2ErrorResponse getBody(final GsiException exception) {
+    return Oauth2ErrorResponse.builder()
+        .errorDescription(exception.getReason())
+        .error(Optional.of(exception.getOauth2ErrorCode()).orElse(Oauth2ErrorCode.INVALID_REQUEST))
         .build();
   }
 }
