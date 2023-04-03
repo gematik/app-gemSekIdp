@@ -16,15 +16,13 @@
 
 package de.gematik.idp.gsi.server.controller;
 
-import static de.gematik.idp.IdpConstants.FACHDIENST_STATE_LENGTH;
 import static de.gematik.idp.IdpConstants.FED_AUTH_APP_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
-import static de.gematik.idp.gsi.server.controller.FedIdpController.URI_NONCE_LENGTH;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.IdpConstants;
-import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.gsi.server.GsiServer;
+import de.gematik.idp.gsi.server.services.EntityStmntRpService;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.List;
 import java.util.Map;
@@ -39,16 +37,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles("test")
 @SpringBootTest(
     classes = GsiServer.class,
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FedIdpControllerTest {
-
+  @Autowired private EntityStmntRpService entityStmntRpService;
   static final List<String> OPENID_PROVIDER_CLAIMS =
       List.of(
           "issuer",
@@ -76,52 +78,57 @@ class FedIdpControllerTest {
   private int serverPort;
 
   private String testHostUrl;
-  private HttpResponse<String> responseGood;
-  private JsonWebToken jwtInResponseGood;
-  private Map<String, Object> bodyClaims;
+  private HttpResponse<String> entityStatementResponseGood;
+  private JsonWebToken entityStatement;
+
+  private HttpResponse<String> sigendJwksResponseGood;
+  private JsonWebToken sigendJwks;
+  private Map<String, Object> entityStatementbodyClaims;
 
   @BeforeAll
   void setup() {
     testHostUrl = "http://localhost:" + serverPort;
-    responseGood = retrieveEntityStatement();
-    assertThat(responseGood.getStatus()).isEqualTo(HttpStatus.OK);
-    jwtInResponseGood = new JsonWebToken(responseGood.getBody());
-    bodyClaims = jwtInResponseGood.extractBodyClaims();
+    entityStatementResponseGood = retrieveEntityStatement();
+    sigendJwksResponseGood = retrieveSignedJwks();
+    assertThat(entityStatementResponseGood.getStatus()).isEqualTo(HttpStatus.OK);
+    entityStatement = new JsonWebToken(entityStatementResponseGood.getBody());
+    sigendJwks = new JsonWebToken(sigendJwksResponseGood.getBody());
+    entityStatementbodyClaims = entityStatement.extractBodyClaims();
   }
 
   /************************** ENTITY_STATEMENT_ENDPOINT *****************/
 
   @Test
   void entityStatementResponse_ContentTypeEntityStatement() {
-    assertThat(responseGood.getHeaders().get(HttpHeaders.CONTENT_TYPE).get(0))
+    assertThat(entityStatementResponseGood.getHeaders().get(HttpHeaders.CONTENT_TYPE).get(0))
         .isEqualTo("application/entity-statement+jwt;charset=UTF-8");
   }
 
   @Test
   void entityStatementResponse_JoseHeader() {
-    assertThat(jwtInResponseGood.extractHeaderClaims()).containsOnlyKeys("typ", "alg", "kid");
+    assertThat(entityStatement.extractHeaderClaims()).containsOnlyKeys("typ", "alg", "kid");
   }
 
   @Test
   void entityStatement_BodyClaimsComplete() {
-    assertThat(bodyClaims)
+    assertThat(entityStatementbodyClaims)
         .containsOnlyKeys("iss", "sub", "iat", "exp", "jwks", "authority_hints", "metadata");
   }
 
   @Test
   void entityStatement_ContainsJwks() {
-    assertThat(bodyClaims.get("jwks")).isNotNull();
+    assertThat(entityStatementbodyClaims.get("jwks")).isNotNull();
   }
 
   @Test
   void entityStatement_MetadataClaims() {
-    final Map<String, Object> metadata = getInnerClaimMap(bodyClaims, "metadata");
+    final Map<String, Object> metadata = getInnerClaimMap(entityStatementbodyClaims, "metadata");
     assertThat(metadata).containsOnlyKeys("openid_provider", "federation_entity");
   }
 
   @Test
   void entityStatement_OpenidProviderClaimsComplete() {
-    final Map<String, Object> metadata = getInnerClaimMap(bodyClaims, "metadata");
+    final Map<String, Object> metadata = getInnerClaimMap(entityStatementbodyClaims, "metadata");
     final Map<String, Object> openidProvider =
         Objects.requireNonNull(
             (Map<String, Object>) metadata.get("openid_provider"),
@@ -134,7 +141,7 @@ class FedIdpControllerTest {
   @Test
   void entityStatement_OpenidProviderClaimsContentCorrect() {
 
-    final Map<String, Object> metadata = getInnerClaimMap(bodyClaims, "metadata");
+    final Map<String, Object> metadata = getInnerClaimMap(entityStatementbodyClaims, "metadata");
     final Map<String, Object> openidProvider =
         Objects.requireNonNull(
             (Map<String, Object>) metadata.get("openid_provider"),
@@ -182,16 +189,14 @@ class FedIdpControllerTest {
         .containsExactlyInAnyOrder("ECDH-ES");
     assertThat((List) openidProvider.get("id_token_encryption_enc_values_supported"))
         .containsExactlyInAnyOrder("A256GCM");
-
-    // TODO: check content
-    assertThat(openidProvider.get("user_type_supported").toString())
-        .isIn(List.of("HCI", "HP", "IP"));
+    assertThat((List) openidProvider.get("user_type_supported"))
+        .isSubsetOf(List.of("HCI", "HP", "IP"));
   }
 
   @SuppressWarnings("unchecked")
   @Test
   void entityStatement_FederationEntityClaimsContentCorrect() {
-    final Map<String, Object> metadata = getInnerClaimMap(bodyClaims, "metadata");
+    final Map<String, Object> metadata = getInnerClaimMap(entityStatementbodyClaims, "metadata");
     final Map<String, Object> federationEntity =
         Objects.requireNonNull(
             (Map<String, Object>) metadata.get("federation_entity"),
@@ -212,6 +217,34 @@ class FedIdpControllerTest {
   private HttpResponse<String> retrieveEntityStatement() {
     return Unirest.get(testHostUrl + IdpConstants.ENTITY_STATEMENT_ENDPOINT).asString();
   }
+  /************************** SIGNED_JWKS_ENDPOINT *****************/
+  @Test
+  void sigendJwksResponse_ContentTypeEntityStatement() {
+    assertThat(sigendJwksResponseGood.getHeaders().get(HttpHeaders.CONTENT_TYPE).get(0))
+        .isEqualTo("application/jose;charset=UTF-8");
+  }
+
+  @Test
+  void signedJwksResponse_JoseHeader() {
+    assertThat(sigendJwks.extractHeaderClaims()).containsOnlyKeys("typ", "alg", "kid");
+  }
+
+  @Test
+  void signedJwksResponse_BodyClaims() {
+    assertThat(sigendJwks.extractBodyClaims()).containsOnlyKeys("keys");
+  }
+
+  @Test
+  void signedJwksResponse_Keys() {
+    final List<Map<String, Object>> keyList =
+        (List<Map<String, Object>>) sigendJwks.getBodyClaims().get("keys");
+    assertThat(keyList.get(0).keySet())
+        .containsExactlyInAnyOrder("use", "kid", "kty", "crv", "x", "y");
+  }
+
+  private HttpResponse<String> retrieveSignedJwks() {
+    return Unirest.get(testHostUrl + IdpConstants.FED_SIGNED_JWKS_ENDPOINT).asString();
+  }
 
   /************************** FEDIDP_AUTH_ENDPOINT *****************/
   @ValueSource(
@@ -222,9 +255,12 @@ class FedIdpControllerTest {
         "urn:telematik:geschlecht urn:telematik:versicherter urn:telematik:email"
       })
   @ParameterizedTest
-  void uriRequest_ResponseStatus_NOT_BAD_REQUEST(final String scope) {
+  void parRequest_validScope_ResponseStatus_CREATED(final String scope) {
+
+    Mockito.doNothing().when(entityStmntRpService).doAutoregistration(testHostUrl);
+
     final HttpResponse<String> resp =
-        Unirest.post(testHostUrl + IdpConstants.FED_AUTH_ENDPOINT)
+        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
             .field("client_id", testHostUrl)
             .field("state", "state_Fachdienst")
             .field("redirect_uri", testHostUrl + "/AS")
@@ -234,15 +270,36 @@ class FedIdpControllerTest {
             .field("nonce", "42")
             .field("scope", scope)
             .field("acr_values", "gematik-ehealth-loa-high")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .asString();
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.CREATED);
+  }
+
+  @ValueSource(strings = {"gematik-ehealth-loa-high", "gematik-ehealth-loa-substantial"})
+  @ParameterizedTest
+  void parRequest_validAcrValue_ResponseStatus_CREATED(final String acr_value) {
+
+    Mockito.doNothing().when(entityStmntRpService).doAutoregistration(testHostUrl);
+    Mockito.doNothing().when(entityStmntRpService).verifyRedirectUriExistsInEntityStmnt("", "");
+
+    final HttpResponse<String> resp =
+        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+            .field("client_id", testHostUrl)
+            .field("state", "state_Fachdienst")
+            .field("redirect_uri", testHostUrl + "/AS")
+            .field("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
+            .field("code_challenge_method", "S256")
+            .field("response_type", "code")
+            .field("nonce", "42")
+            .field("scope", "urn:telematik:given_name openid")
+            .field("acr_values", acr_value)
             .field(
                 "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
             .field("client_assertion", "TODO")
             .field("max_age", "0")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
-    // due to missing states, we may receive HttpStatus.INTERNAL_SERVER_ERROR but not
-    // HttpStatus.BAD_REQUEST
-    assertThat(resp.getStatus()).isNotEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.CREATED);
   }
 
   @ValueSource(
@@ -253,9 +310,9 @@ class FedIdpControllerTest {
         "urn:telematik:schlecht openid"
       })
   @ParameterizedTest
-  void invalidScope_ResponseStatus_BAD_REQUEST(final String scope) {
+  void parRequest_invalidScope_ResponseStatus_BAD_REQUEST(final String scope) {
     final HttpResponse<String> resp =
-        Unirest.post(testHostUrl + IdpConstants.FED_AUTH_ENDPOINT)
+        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
             .field("client_id", testHostUrl)
             .field("state", "state_Fachdienst")
             .field("redirect_uri", testHostUrl + "/AS")
@@ -271,23 +328,46 @@ class FedIdpControllerTest {
             .field("max_age", "0")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
-    // due to missing states, we may receive HttpStatus.INTERNAL_SERVER_ERROR but not
-    // HttpStatus.BAD_REQUEST
     assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
   @Test
-  void authRequest_MissingParameter() {
-    final String requestUri =
-        "urn:" + "https://Fachdienst007.de" + ":" + Nonce.getNonceAsHex(URI_NONCE_LENGTH);
-    final String fachdienstState = Nonce.getNonceAsHex(FACHDIENST_STATE_LENGTH);
-
+  void parRequest_missingParameterResponseType_ResponseStatus_BAD_REQUEST() {
     final HttpResponse<String> resp =
-        Unirest.post(testHostUrl + IdpConstants.FED_AUTH_ENDPOINT)
-            .field("request_uri", requestUri)
+        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+            .field("client_id", testHostUrl)
+            .field("client_id", testHostUrl)
+            .field("state", "state_Fachdienst")
+            .field("redirect_uri", testHostUrl + "/AS")
+            .field("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
+            .field("code_challenge_method", "S256")
+            .field("nonce", "42")
+            .field("scope", "urn:telematik:given_name openid")
+            .field("acr_values", "gematik-ehealth-loa-high")
+            .field(
+                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
+            .field("client_assertion", "TODO")
+            .field("max_age", "0")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
     assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+  }
+
+  @Test
+  void parRequest_InvalidGetOnPostMapping_ResponseStatus_BAD_REQUEST() {
+    final HttpResponse<String> resp =
+        Unirest.get(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+            .queryString("client_id", testHostUrl)
+            .queryString("state", "state_Fachdienst")
+            .queryString("redirect_uri", testHostUrl + "/AS")
+            .queryString("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
+            .queryString("code_challenge_method", "S256")
+            .queryString("response_type", "code")
+            .queryString("nonce", "42")
+            .queryString("scope", "urn:telematik:given_name openid")
+            .queryString("acr_values", "gematik-ehealth-loa-high")
+            .asString();
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
   }
 
   @Test
@@ -299,9 +379,6 @@ class FedIdpControllerTest {
             .field("code_verifier", "DUMMY_CODE_VERIFIER")
             .field("client_id", "https://DUMMY_CLIENT.de")
             .field("redirect_uri", "DUMMY_REDIRECT_URI")
-            .field(
-                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-            .field("client_assertion", "TODO")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .header(org.springframework.http.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .asJson();
@@ -309,33 +386,40 @@ class FedIdpControllerTest {
   }
 
   @Test
-  void fedIdpAuthEndpoint() {
-    final HttpResponse<String> resp =
-        Unirest.post(testHostUrl + IdpConstants.FED_AUTH_ENDPOINT)
-            .field("client_id", testHostUrl)
-            .field("state", "state_Fachdienst")
-            .field("redirect_uri", testHostUrl + "/AS")
-            .field("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
-            .field("code_challenge_method", "S256")
-            .field("response_type", "code")
-            .field("nonce", "42")
-            .field("scope", "urn:telematik:geburtsdatum openid")
-            .field("acr_values", "gematik-ehealth-loa-high")
-            .field(
-                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-            .field("client_assertion", "TODO")
-            .field("max_age", "0")
-            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            .asString();
-
-    assertThat(resp.getStatus()).isEqualTo(HttpStatus.CREATED);
-
+  void tokenRequest_invalidGrantType_ResponseStatus_BAD_REQUEST() {
     final HttpResponse<JsonNode> httpResponse =
-        Unirest.get(testHostUrl + FED_AUTH_APP_ENDPOINT)
-            .queryString("request_uri", "DUMMY_REQUEST_URI")
+        Unirest.post(testHostUrl + TOKEN_ENDPOINT)
+            .field("grant_type", "auth")
+            .field("code", "DUMMY_CODE")
+            .field("code_verifier", "DUMMY_CODE_VERIFIER")
+            .field("client_id", "https://DUMMY_CLIENT.de")
+            .field("redirect_uri", "DUMMY_REDIRECT_URI")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .header(org.springframework.http.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .asJson();
-    assertThat(httpResponse.getStatus())
-        .isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR.value());
+    assertThat(httpResponse.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+  }
+
+  @Test
+  void tokenRequest_InvalidGetOnPostMapping_ResponseStatus_BAD_REQUEST() {
+    final HttpResponse<String> resp =
+        Unirest.get(testHostUrl + TOKEN_ENDPOINT)
+            .queryString("client_id", testHostUrl)
+            .queryString("grant_type", "state_Fachdienst")
+            .queryString("redirect_uri", testHostUrl + "/AS")
+            .queryString("code_verifier", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
+            .queryString("code", "S256")
+            .queryString("response_type", "code")
+            .asString();
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
+  }
+
+  @Test
+  void authAppRequest_invalidRequestUri_ResponseStatus_BAD_REQUEST() {
+    final HttpResponse<String> resp =
+        Unirest.get(testHostUrl + FED_AUTH_APP_ENDPOINT)
+            .queryString("request_uri", "myInvalidRequestUri")
+            .asString();
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 }

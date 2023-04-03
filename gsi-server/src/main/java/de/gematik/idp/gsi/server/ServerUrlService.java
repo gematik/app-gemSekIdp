@@ -20,8 +20,6 @@ import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.boot.web.servlet.context.ServletWebServerInitializedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -29,23 +27,16 @@ import org.springframework.stereotype.Service;
 public class ServerUrlService {
 
   private final GsiConfiguration gsiConfiguration;
-  private int serverPort;
-
-  public int getServerPort() {
-    return serverPort;
-  }
-
-  @EventListener
-  public void onApplicationEvent(final ServletWebServerInitializedEvent event) {
-    serverPort = event.getWebServer().getPort();
-  }
 
   public String determineServerUrl() {
-    return getServerUrlFromConfig()
+    return Optional.ofNullable(gsiConfiguration.getServerUrl())
+        .filter(StringUtils::isNotBlank)
         .orElse("Parameter \"gsi.serverUrl\" not found in configuration.");
   }
 
-  private Optional<String> getServerUrlFromConfig() {
-    return Optional.ofNullable(gsiConfiguration.getServerUrl()).filter(StringUtils::isNotBlank);
+  public String determineFedmasterUrl() {
+    return Optional.ofNullable(gsiConfiguration.getFedmasterUrl())
+        .filter(StringUtils::isNotBlank)
+        .orElse("Parameter \"gsi.fedmasterUrl\" not found in configuration.");
   }
 }

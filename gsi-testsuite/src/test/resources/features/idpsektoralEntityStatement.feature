@@ -94,7 +94,7 @@ Feature: Test Entity Statement of IdpSektoral
             iat:                           "${json-unit.ignore}",
             exp:                           "${json-unit.ignore}",
             jwks:                          "${json-unit.ignore}",
-            authority_hints:                          "${json-unit.ignore}",
+            authority_hints:               "${json-unit.ignore}",
             metadata:                      "${json-unit.ignore}",
           }
         """
@@ -130,8 +130,8 @@ Feature: Test Entity Statement of IdpSektoral
             pushed_authorization_request_endpoint:        'http.*',
             client_registration_types_supported:          ["automatic"],
             subject_types_supported:                      ["pairwise"],
-            response_types_supported:                     ["code"],
-            scopes_supported:                             ["urn:telematik:given_name","urn:telematik:geburtsdatum","urn:telematik:alter","urn:telematik:display_name","urn:telematik:geschlecht","urn:telematik:email","urn:telematik:versicherter","openid"],
+            response_types_supported:                     "${json-unit.ignore}",
+            scopes_supported:                             "${json-unit.ignore}",
             response_modes_supported:                     ["query"],
             grant_types_supported:                        ["authorization_code"],
             require_pushed_authorization_requests:        true,
@@ -139,7 +139,9 @@ Feature: Test Entity Statement of IdpSektoral
             id_token_signing_alg_values_supported:        ["ES256"],
             id_token_encryption_alg_values_supported:     ["ECDH-ES"],
             id_token_encryption_enc_values_supported:     ["A256GCM"],
-            user_type_supported:                          'IP'
+            token_endpoint_auth_methods_supported:        [self_signed_tls_client_auth],
+            user_type_supported:                          ["IP"],
+            ____federation_registration_endpoint:         '.*'
           }
     """
     And TGR current response at "$.body.body.metadata.openid_provider.request_authentication_methods_supported" matches as JSON:
@@ -183,3 +185,40 @@ Feature: Test Entity Statement of IdpSektoral
             y:                             "${json-unit.ignore}",
           }
         """
+
+
+  @TCID:IDPSEKTORAL_ENTITY_STATEMENT_007
+  @Approval
+  Scenario: IdpSektoral EntityStatement - Gutfall - Validiere scopes_supported
+
+  ```
+  Wir rufen das EntityStatement beim IdpSektoral ab
+
+  In dem Claim scopes_supported müssen (neben möglichen anderen) die von der gematik vorgeschriebenen Scopes enthalten sein
+
+    Given TGR clear recorded messages
+    When Fetch Entity statement
+    And TGR find request to path "/.well-known/openid-federation"
+    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:given_name.*"
+    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:geburtsdatum.*"
+    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:alter.*"
+    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:display_name.*"
+    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:geschlecht.*"
+    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:email.*"
+    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:versicherter.*"
+    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*openid.*"
+
+
+  @TCID:IDPSEKTORAL_ENTITY_STATEMENT_008
+  @Approval
+  Scenario: IdpSektoral EntityStatement - Gutfall - Validiere response_types_supported
+
+  ```
+  Wir rufen das EntityStatement beim IdpSektoral ab
+
+  In dem Claim response_types_supported muss (neben möglichen anderen) der Wert "code" enthalten sein
+
+    Given TGR clear recorded messages
+    When Fetch Entity statement
+    And TGR find request to path "/.well-known/openid-federation"
+    And TGR current response at "$.body.body.metadata.openid_provider.response_types_supported" matches ".*code.*"

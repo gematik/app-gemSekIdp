@@ -27,9 +27,9 @@ public class GsiException extends ResponseStatusException {
   @Serial private static final long serialVersionUID = -1744157595090697769L;
   @Getter private final Oauth2ErrorCode oauth2ErrorCode;
 
-  public GsiException(final String message, final HttpStatus status) {
+  public GsiException(final Oauth2ErrorCode code, final String message, final HttpStatus status) {
     super(status, message);
-    this.oauth2ErrorCode = Oauth2ErrorCode.INVALID_REQUEST;
+    this.oauth2ErrorCode = code;
   }
 
   public GsiException(final Exception e) {

@@ -78,7 +78,7 @@ public class EntityStatementBuilder {
             .idTokenSigningAlgValuesSupported(new String[] {"ES256"})
             .idTokenEncryptionAlgValuesSupported(new String[] {"ECDH-ES"})
             .idTokenEncryptionEncValuesSupported(new String[] {"A256GCM"})
-            .userTypeSupported("IP")
+            .userTypeSupported(new String[] {"IP"})
             .build();
     final FederationEntity federationEntity =
         FederationEntity.builder()

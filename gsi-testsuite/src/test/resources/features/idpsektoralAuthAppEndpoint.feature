@@ -21,6 +21,7 @@ Feature: Test IdpSektoral's Auth Endpoint
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
     Given Fetch Entity statement
     And TGR find request to path "/.well-known/openid-federation"
+    Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
     Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$..authorization_endpoint')}"
 
   @TCID:IDPSEKTORAL_AUTHAPP_ENDPOINT_001
@@ -36,10 +37,10 @@ Feature: Test IdpSektoral's Auth Endpoint
   - einen Authorization Code in der Location
 
     Given TGR clear recorded messages
-    When Send Post Request to "${authorization_endpoint}" with
-      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
-      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path "/auth"
+    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
+      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
+    And TGR find request to path "/PAR_Auth"
     Then TGR set local variable "parRequestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     When Send Get Request to "${authorization_endpoint}/app" with
       | request_uri   |
@@ -63,10 +64,10 @@ Feature: Test IdpSektoral's Auth Endpoint
   - eine Fehlermeldung in der Location
 
     Given TGR clear recorded messages
-    When Send Post Request to "${authorization_endpoint}" with
-      | client_id    | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
-      | gsi.clientid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path "/auth"
+    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
+      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
+    And TGR find request to path "/PAR_Auth"
     Then TGR set local variable "parRequestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     When Send Get Request to "${authorization_endpoint}/app" with
       | request_uri     |

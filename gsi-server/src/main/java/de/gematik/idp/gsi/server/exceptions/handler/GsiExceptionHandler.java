@@ -28,8 +28,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -72,6 +74,25 @@ public class GsiExceptionHandler {
             exc,
             HttpStatus.INTERNAL_SERVER_ERROR,
             Oauth2ErrorCode.INVALID_REQUEST));
+  }
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<Oauth2ErrorResponse> handleMethodNotSupportedException(
+      final Exception exc) {
+    return handleGsiException(
+        new GsiException(
+            "Invalid Request",
+            exc,
+            HttpStatus.METHOD_NOT_ALLOWED,
+            Oauth2ErrorCode.INVALID_REQUEST));
+  }
+
+  @ExceptionHandler(UnsatisfiedServletRequestParameterException.class)
+  public ResponseEntity<Oauth2ErrorResponse> handleUnsatisfiedServletRequestParamException(
+      final UnsatisfiedServletRequestParameterException exc) {
+    return handleGsiException(
+        new GsiException(
+            exc.getMessage(), exc, HttpStatus.BAD_REQUEST, Oauth2ErrorCode.INVALID_REQUEST));
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)

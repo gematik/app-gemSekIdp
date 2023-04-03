@@ -19,13 +19,17 @@ package de.gematik.idp.gsi.server.controller;
 import static de.gematik.idp.EnvHelper.getSystemProperty;
 import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_ENDPOINT;
 import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_TYP;
+import static de.gematik.idp.IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.FED_AUTH_APP_ENDPOINT;
-import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
+import static de.gematik.idp.IdpConstants.FED_SIGNED_JWKS_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
+import static de.gematik.idp.data.fedidp.Oauth2ErrorCode.INVALID_REQUEST;
+import static de.gematik.idp.data.fedidp.Oauth2ErrorCode.INVALID_SCOPE;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.crypto.Nonce;
+import de.gematik.idp.data.FederationPrivKey;
 import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.data.fedidp.ParResponse;
 import de.gematik.idp.gsi.server.ServerUrlService;
@@ -34,9 +38,11 @@ import de.gematik.idp.gsi.server.data.GsiConstants;
 import de.gematik.idp.gsi.server.data.TokenResponse;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.gsi.server.services.EntityStatementBuilder;
+import de.gematik.idp.gsi.server.services.EntityStmntRpService;
 import de.gematik.idp.gsi.server.services.SektoralIdpAuthenticator;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -45,11 +51,11 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -68,11 +74,15 @@ public class FedIdpController {
   public static final int URI_NONCE_LENGTH = 16;
   public static final int AUTH_CODE_LENGTH = 16;
   private static final int MAX_AUTH_SESSION_AMOUNT = 10000;
+
+  private final EntityStmntRpService entityStmntRpService;
   private final EntityStatementBuilder entityStatementBuilder;
   private final SektoralIdpAuthenticator sektoralIdpAuthenticator;
   private final ServerUrlService serverUrlService;
   private final IdpJwtProcessor jwtProcessor;
   private final ObjectMapper objectMapper;
+
+  @Autowired FederationPrivKey entityStatementSigKey;
 
   private final Map<String, FedIdpAuthSession> fedIdpAuthSessions =
       new LinkedHashMap<>() {
@@ -99,6 +109,12 @@ public class FedIdpController {
         ENTITY_STATEMENT_TYP);
   }
 
+  @GetMapping(value = FED_SIGNED_JWKS_ENDPOINT, produces = "application/jose;charset=UTF-8")
+  public String getSignedJwks() {
+    return JwtHelper.signJson(
+        jwtProcessor, objectMapper, JwtHelper.getJwks(entityStatementSigKey), "jwk-set+json");
+  }
+
   /* Federation App2App flow
    * Request(in)  == message nr.2 PushedAuthRequest(PAR)
    *                 messages nr.2c ... nr.2d
@@ -106,12 +122,13 @@ public class FedIdpController {
    * Parameter "params" is used to filter by HTTP parameters and let spring decide which (multiple mappings of same endpoint) mapping matches.
    */
   @PostMapping(
-      value = FED_AUTH_ENDPOINT,
+      value = FEDIDP_PAR_AUTH_ENDPOINT,
       params = "acr_values",
       produces = "application/json;charset=UTF-8",
       consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
   public ParResponse postPar(
-      @RequestParam(name = "client_id") @NotEmpty final String fachdienstClientId,
+      @RequestParam(name = "client_id") @NotEmpty @Pattern(regexp = "^https?://.*$")
+          final String fachdienstClientId,
       @RequestParam(name = "state") @NotEmpty final String fachdienstState,
       @RequestParam(name = "redirect_uri") @NotEmpty String fachdienstRedirectUri,
       @RequestParam(name = "code_challenge") @NotEmpty final String fachdienstCodeChallenge,
@@ -121,14 +138,19 @@ public class FedIdpController {
           final String responseType,
       @RequestParam(name = "nonce") @NotEmpty final String fachdienstNonce,
       @RequestParam(name = "scope") @NotEmpty final String scope,
-      @RequestParam(name = "acr_values") @NotEmpty final String acrValues,
+      @RequestParam(name = "acr_values")
+          @NotEmpty
+          @Pattern(regexp = "gematik-ehealth-loa-high|gematik-ehealth-loa-substantial")
+          final String acrValues,
       final HttpServletResponse respMsgNr3) {
     log.info(
-        "App2App-Flow: RX message nr 2 (Authorization Request) at {}",
+        "App2App-Flow: RX message nr 2 (Pushed Authorization Request) received at {}",
         serverUrlService.determineServerUrl());
 
     final Set<String> requestedScopes = getRequestedScopes(scope);
-
+    entityStmntRpService.doAutoregistration(fachdienstClientId);
+    entityStmntRpService.verifyRedirectUriExistsInEntityStmnt(
+        fachdienstClientId, fachdienstRedirectUri);
     final int REQUEST_URI_TTL_SECS = 90;
     log.info("Amount of stored fedIdpAuthSessions: {}", fedIdpAuthSessions.size());
 
@@ -166,14 +188,11 @@ public class FedIdpController {
     return ParResponse.builder().requestUri(requestUri).expiresIn(REQUEST_URI_TTL_SECS).build();
   }
 
-  private Set<String> getRequestedScopes(final String scope) {
-    final Set<String> requestedScopes =
-        Optional.of(Arrays.stream(scope.split(" ")).collect(Collectors.toSet()))
-            .orElseThrow(
-                () -> new GsiException("Requested scopes do no fit.", HttpStatus.BAD_REQUEST));
+  private Set<String> getRequestedScopes(@NotNull final String scope) {
+    final Set<String> requestedScopes = Arrays.stream(scope.split(" ")).collect(Collectors.toSet());
 
-    if (!(requestedScopes.stream().allMatch(GsiConstants.SCOPES_SUPPORTED::contains))) {
-      throw new GsiException("Requested scopes do no fit.", HttpStatus.BAD_REQUEST);
+    if (!(GsiConstants.SCOPES_SUPPORTED.containsAll(requestedScopes))) {
+      throw new GsiException(INVALID_SCOPE, "Requested scopes do no fit.", HttpStatus.BAD_REQUEST);
     }
     return requestedScopes;
   }
@@ -213,7 +232,7 @@ public class FedIdpController {
    */
   @PostMapping(
       value = TOKEN_ENDPOINT,
-      params = {"client_assertion_type"},
+      params = {"code"},
       consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
   public TokenResponse getTokensForCode(
       @RequestParam("grant_type") @NotEmpty @Pattern(regexp = "authorization_code")
@@ -222,8 +241,6 @@ public class FedIdpController {
       @RequestParam("code_verifier") @NotEmpty final String code_verifier,
       @RequestParam("client_id") @NotEmpty final String clientId,
       @RequestParam("redirect_uri") @NotEmpty final String redirectUri,
-      @RequestParam("client_assertion_type") @NotEmpty final String clientAssertionType,
-      @RequestParam("client_assertion") @NotEmpty final String clientAssertion,
       final HttpServletResponse respMsgNr11) {
     log.info(
         "App2App-Flow: RX message nr 10 (Authorization Code) at {}",
@@ -247,6 +264,7 @@ public class FedIdpController {
         .filter(entry -> entry.getValue().getRequestUri().equals(requestUri))
         .map(Entry::getKey)
         .findAny()
-        .orElseThrow();
+        .orElseThrow(
+            () -> new GsiException(INVALID_REQUEST, "invalid request_uri", HttpStatus.BAD_REQUEST));
   }
 }

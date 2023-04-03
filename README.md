@@ -7,27 +7,17 @@ Project **gemSekIdp-global** consists of 2 subprojects. These are:
 
   <br>
 
-### Configure, build and test
+### build project and run unit tests
 
 To quickly check your build environment just do in project root:
 
-`mvn clean verify`
+`mvn clean package`
 
 This command
 
-- will build server and execute unit tests(disable: `mvn clean verify -Dskip.unittests`)
-- will build testsuite and execute its integration tests (tiger framework) (
-  disable: `mvn clean verify -Dskip.inttests`) <br>
-  (gsi-testsuite/tiger.yaml is used as default TIGER_TESTENV_CFGFILE)
-  <br>
-  A default test filter is set in pom (`<cucumber.filter.tags>`), so don't care.
-  <br>
-  All tests in serenity report should be passed.
-
-#### Serenity BDD Report
-
-- find your generated report (at the end of integration tests)
-  here:  [gsi-testsuite/target/site/serenity/index.html](gsi-testsuite/target/site/serenity/index.html)
+- will build server and testsuite and execute unit tests(disable: `mvn clean package -Dskip.unittests`)
+- in order to run the integration tests (= testsuite) follow the instruction listed under "Test an external sectoral
+  IDP"
 
 ### Test an external sectoral IDP (e.g. your own server)
 
@@ -35,3 +25,10 @@ This command
   execute [runTestsuite-external-Idp.sh](runTestsuite-external-Idp.sh).
 - The address of the SUT (system under test == sectoral IDP server) is configured
   in [gsi-testsuite/tiger-external-Idp.yaml](gsi-testsuite/tiger-external-Idp.yaml). Local gsi-server is set as default.
+- In order to validate the structure of an ID_TOKEN one has to add its value (base64 encoded) to the tc_properties-file
+  that is used during the test execution
+
+#### Serenity BDD Report
+
+- find your generated report (at the end of integration tests)
+  here:  [gsi-testsuite/target/site/serenity/index.html](gsi-testsuite/target/site/serenity/index.html)

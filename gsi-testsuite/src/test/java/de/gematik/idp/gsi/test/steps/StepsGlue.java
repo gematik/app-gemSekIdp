@@ -22,11 +22,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import de.gematik.rbellogger.RbelLogger;
 import de.gematik.rbellogger.data.RbelElement;
 import de.gematik.rbellogger.data.facet.RbelJsonFacet;
 import de.gematik.rbellogger.data.facet.RbelJwtFacet;
 import de.gematik.test.tiger.common.config.TigerGlobalConfiguration;
 import de.gematik.test.tiger.lib.TigerDirector;
+import de.gematik.test.tiger.lib.json.JsonChecker;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import net.serenitybdd.rest.SerenityRest;
 import net.thucydides.core.annotations.Steps;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwt.consumer.InvalidJwtException;
@@ -74,6 +77,16 @@ public class StepsGlue {
         replaceHostForTiger(TigerGlobalConfiguration.resolvePlaceholders(url)), "POST", params);
   }
 
+  @When("Send Post Request with invalid Client Cert to {string} with")
+  public void sendPostRequestViaTigerProxyInvalidCertTo(final String url, final DataTable params) {
+    SerenityRest.proxy(
+        "127.0.0.1",
+        Integer.valueOf(TigerGlobalConfiguration.readString("tiger.ports.invalidCertPort")));
+    SerenityRest.useRelaxedHTTPSValidation();
+    idpSektoralSteps.sendRequestTo(
+        TigerGlobalConfiguration.resolvePlaceholders(url), "POST", params);
+  }
+
   @And("Expect JWKS in last message and add its keys to truststore")
   public void findJwk() {
     final RbelElement lastMessage = getLastMessage();
@@ -107,6 +120,21 @@ public class StepsGlue {
             .getAsString();
     final JsonWebKey jwk = getJsonWebKey(truststore, kidInJws);
     validateJwsSignature(jwsAsString, jwk);
+  }
+
+  @Then("Json String {string} at {string} matches:")
+  public void jsonStringMatches(
+      final String jsonString, final String rbelPath, final String oracleDocStr) {
+    final RbelLogger rbelLogger = RbelLogger.build();
+    final RbelElement rbelElement =
+        rbelLogger
+            .getRbelConverter()
+            .convertElement(TigerGlobalConfiguration.readString(jsonString, jsonString), null);
+    new JsonChecker()
+        .compareJsonStrings(
+            rbelElement.findElement(rbelPath).orElseThrow().getRawStringContent(),
+            oracleDocStr,
+            false);
   }
 
   static void validateJwsSignature(final String jws, final JsonWebKey jwk)

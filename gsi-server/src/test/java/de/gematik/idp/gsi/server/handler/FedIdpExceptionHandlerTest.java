@@ -37,7 +37,10 @@ class FedIdpExceptionHandlerTest {
   void testGsiException() {
     final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleGsiException(
-            new GsiException("something strange happened", HttpStatus.INSUFFICIENT_STORAGE));
+            new GsiException(
+                Oauth2ErrorCode.INVALID_REQUEST,
+                "something strange happened",
+                HttpStatus.INSUFFICIENT_STORAGE));
     assertThat(Objects.requireNonNull(resp.getBody()).getError())
         .isEqualTo(Oauth2ErrorCode.INVALID_REQUEST);
   }

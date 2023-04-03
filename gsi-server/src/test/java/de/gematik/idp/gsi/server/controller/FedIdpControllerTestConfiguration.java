@@ -14,27 +14,21 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.gsi.server.configuration;
+package de.gematik.idp.gsi.server.controller;
 
-import de.gematik.idp.data.KeyConfig;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import de.gematik.idp.gsi.server.services.EntityStmntRpService;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 
-@Component
-@ConfigurationProperties("gsi")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class GsiConfiguration {
-
-  private String serverUrl;
-  private String fedmasterUrl;
-  private KeyConfig sigKeyConfig;
+@Profile("test")
+@Configuration
+public class FedIdpControllerTestConfiguration {
+  @Bean
+  @Primary
+  public EntityStmntRpService entityStmntRpServiceMock() {
+    return Mockito.mock(EntityStmntRpService.class);
+  }
 }
