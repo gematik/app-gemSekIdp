@@ -9,15 +9,17 @@ Project **gemSekIdp-global** consists of 2 subprojects. These are:
 
 ### build project and run unit tests
 
-To quickly check your build environment just do in project root:
+To quickly check your build environment without running any tests (just build idp sektoral server and testsuite) do in
+project root:
 
-`mvn clean package`
+`mvn clean package -Dskip.unittests`
 
-This command
+To execute unittests you have to set the environment variable where the tiger test framework find its configuration:
 
-- will build server and testsuite and execute unit tests(disable: `mvn clean package -Dskip.unittests`)
-- in order to run the integration tests (= testsuite) follow the instruction listed under "Test an external sectoral
-  IDP"
+`export TIGER_TESTENV_CFGFILE=tiger-external-Idp.yaml`
+`mvn test`
+
+In order to run the integration tests (= testsuite) follow the instruction listed under "Test an external sectoral IDP".
 
 ### Test an external sectoral IDP (e.g. your own server)
 
