@@ -16,7 +16,10 @@
 
 package de.gematik.idp.gsi.server.data;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -26,13 +29,18 @@ import lombok.Getter;
 public class FedIdpAuthSession {
 
   // outer session related artifacts taken from fachdienst request
+  private final String fachdienstClientId;
+  private final String fachdienstState;
   private final String fachdienstCodeChallenge;
   private final String fachdienstCodeChallengeMethod;
   private final String fachdienstNonce;
   private final Set<String> requestedScopes;
-  // wird in Nachricht 7 des App2App flows an das Frontend gesendet
+  // will be sent in message nr.7
   private final String fachdienstRedirectUri;
   private final String authorizationCode;
+
+  // contains data taken from messages nr.6a ... nr.6b
+  private final Map<String, Object> userData = new HashMap<>();
 
   // IDP-Sektoral, inner session related artifacts
   private final String requestUri;
@@ -40,7 +48,9 @@ public class FedIdpAuthSession {
 
   @Override
   public String toString() {
-    return "fachdienstCodeChallenge: "
+    return "fachdienstClientId: "
+        + fachdienstClientId
+        + "\n fachdienstCodeChallenge: "
         + fachdienstCodeChallenge
         + "\n fachdienstCodeChallengeMethod: "
         + fachdienstCodeChallengeMethod
@@ -55,6 +65,10 @@ public class FedIdpAuthSession {
         + "\n requestUri: "
         + requestUri
         + "\n expiresAt: "
-        + expiresAt;
+        + expiresAt
+        + "\n userData: "
+        + userData.keySet().stream()
+            .map(k -> k + userData.get(k))
+            .collect(Collectors.joining(", ", "{", "}"));
   }
 }

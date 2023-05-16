@@ -15,7 +15,8 @@
 #
 
 @AuthorizationEndpoint
-Feature: Test IdpSektoral's Auth Endpoint
+@GematikSekIdpOnly
+Feature: Test GSI specific authentication
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
     Given Fetch Entity statement
@@ -23,16 +24,17 @@ Feature: Test IdpSektoral's Auth Endpoint
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
     Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$..authorization_endpoint')}"
 
-  @TCID:IDPSEKTORAL_AUTH_ENDPOINT_001
+  @TCID:GSI_AUTH_001
   @Approval
-  Scenario: IdpSektoral Auth Endpoint - Gutfall - Validiere Response
+  Scenario: GSI Authentication - Gutfall - Validiere Response
 
   ```
-  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint
+  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint, um anschließend nochmal mit
+  der user_id zu demselben Endpunkt zu gehen
 
   Die HTTP Response muss:
 
-  - den Code 302 enthalten (TODO: was ist hier alles erlaubt? hauptsache kein fehler, oder?)
+  - den Code 302 enthalten
 
     Given TGR clear recorded messages
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
@@ -47,94 +49,25 @@ Feature: Test IdpSektoral's Auth Endpoint
       | ${requestUri} | gsi.clientid.valid |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
-
-
-  @TCID:IDPSEKTORAL_AUTH_ENDPOINT_002
-    @Approval
-  Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlerhaft befüllte Parameter
-
-  ```
-  Wir senden einen invaliden Request an den Authorization Endpoint
-
-  Die Response muss als Body eine passende Fehlermeldung enthalten:
-
-    Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "201"
-    And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | client_id   |
-      | <request_uri> | <client_id> |
+      | request_uri   | user_id  |
+      | ${requestUri} | 12345678 |
     And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
-    And TGR current response at "$.body" matches as JSON:
-        """
-          {
-            "error":                        '.*',
-            "____error_description":        '.*',
-            "____error_uri":                '.*'
-          }
-        """
-    And TGR current response at "$.body.error" matches "<error>"
-
-    Examples:
-      | client_id          | request_uri                                                    | error           | responseCode |
-      | gsi.clientid.valid | urn:ietf:params:oauth:request_uri:ZoWuCxe9C8-uW8T3ngvqoYN-stzw | invalid_request | 400          |
-      | invalidClient      | ${requestUri}                                                  | invalid_request | 400          |
+    Then TGR current response with attribute "$.responseCode" matches "302"
 
 
-  @TCID:IDPSEKTORAL_AUTH_ENDPOINT_003
-    @Approval
-  Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlende verpflichtende Parameter
-
-  ```
-  Wir senden einen invaliden Request an den Authorization Endpoint
-
-  Die Response muss als Body eine passende Fehlermeldung enthalten:
-
-    Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "201"
-    And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
-    And TGR clear recorded messages
-    When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | client_id   |
-      | <request_uri> | <client_id> |
-    And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
-    And TGR current response at "$.body" matches as JSON:
-        """
-          {
-            "error":                        '.*',
-            "____error_description":        '.*',
-            "____error_uri":                '.*'
-          }
-        """
-    And TGR current response at "$.body.error" matches "<error>"
-
-    Examples:
-      | client_id          | request_uri   | error           | responseCode |
-      | gsi.clientid.valid | $REMOVE       | invalid_request | 400          |
-      | $REMOVE            | ${requestUri} | invalid_request | 400          |
-
-
-  @TCID:IDPSEKTORAL_AUTH_ENDPOINT_004
-  @LongRunning
+  @TCID:GSI_AUTH_002
   @Approval
-  @OpenBug
-  Scenario: IdpSektoral Auth Endpoint - Negativfall - abgelaufene request_uri
+  Scenario: GSI Authentication - Gutfall - Validiere Code in Location
 
   ```
-  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir nach mehr als 90 Sekunden an den Authorization Endpoint
+  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint, um anschließend nochmal mit
+  der user_id zu demselben Endpunkt zu gehen
 
-  Die Response muss als Body eine passende Fehlermeldung enthalten:
+  Die HTTP Response muss:
+
+  - den Authorization Code enthalten
 
     Given TGR clear recorded messages
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
@@ -144,18 +77,83 @@ Feature: Test IdpSektoral's Auth Endpoint
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
-    And Wait for 100 Seconds
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
     And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "400"
-    And TGR current response at "$.body" matches as JSON:
-        """
-          {
-            "error":                        '.*',
-            "____error_description":        '.*',
-            "____error_uri":                '.*'
-          }
-        """
-    And TGR current response at "$.body.error" matches "invalid_request"
+    Then TGR current response with attribute "$.responseCode" matches "302"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri   | user_id  |
+      | ${requestUri} | 12345678 |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.header.Location" matches ".*code=.*"
+
+  @TCID:GSI_AUTH_003
+    @Approval
+    @OpenBug
+  Scenario Outline: GSI Authentication - Negativfall - invalide Werter für die Parameter
+
+  ```
+  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint, um anschließend nochmal mit
+  falsch befüllten Parametern zu demselben Endpunkt zu gehen.
+
+  Die HTTP Response muss eine Fehlermeldung per redirect enthalten
+
+    Given TGR clear recorded messages
+    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
+      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "201"
+    And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri   | client_id          |
+      | ${requestUri} | gsi.clientid.valid |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "302"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri       | user_id       |
+      | <requestUriExmpl> | <userIdExmpl> |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.header.Location" matches "<errorExmpl>"
+
+    Examples:
+      | requestUriExmpl | userIdExmpl   | errorExmpl                |
+      | invalidReqUri   | 12345678      | .*error=invalid_request.* |
+      | ${requestUri}   | 12345678      | .*error=invalid_request.* |
+      | ${requestUri}   | invalidUserId | .*error=invalid_request.* |
+
+
+  @TCID:GSI_AUTH_004
+  @Approval
+  @OpenBug
+  Scenario: GSI Authentication - Negativfall - fehlende Parameter
+
+  ```
+  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint, um anschließend nochmal mit
+  fehlenden Parametern zu demselben Endpunkt zu gehen
+
+  Die HTTP Response muss eine Fehlermeldung per redirect enthalten
+
+    Given TGR clear recorded messages
+    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
+      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "201"
+    And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri   | client_id          |
+      | ${requestUri} | gsi.clientid.valid |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "302"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | user_id  |
+      | 12345678 |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.header.Location" matches ".*error=invalid_request.*"

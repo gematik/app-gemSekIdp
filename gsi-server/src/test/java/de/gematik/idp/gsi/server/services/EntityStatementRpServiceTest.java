@@ -30,7 +30,6 @@ import de.gematik.idp.gsi.server.exceptions.GsiException;
 import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
@@ -46,13 +45,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 @MockServerTest("server.url=http://localhost:${mockServerPort}")
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class EntityStmntRpServiceTest {
+class EntityStatementRpServiceTest {
 
   @Value("${server.url}")
   private String mockServerUrl;
 
   private MockServerClient mockServerClient;
-  @Autowired EntityStmntRpService entityStmntRpService;
+  @Autowired EntityStatementRpService entityStatementRpService;
   @Autowired GsiConfiguration gsiConfiguration;
 
   private final String ENTITY_STMNT_IDP_FACHDIENST_EXPIRED =
@@ -81,23 +80,21 @@ class EntityStmntRpServiceTest {
                 .withContentType(MediaType.APPLICATION_JSON)
                 .withBody(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
     mockServerClient
-        .when(
-            request().withMethod("GET").withPath(IdpConstants.FEDMASTER_FEDERATION_FETCH_ENDPOINT))
+        .when(request().withMethod("GET").withPath("/federation/fetch"))
         .respond(
             response()
                 .withStatusCode(200)
                 .withContentType(MediaType.APPLICATION_JSON)
                 .withBody(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
     gsiConfiguration.setFedmasterUrl(mockServerUrl);
-    final String entStmntFd = entityStmntRpService.getEntityStatementRp(mockServerUrl);
+    final String entStmntFd = entityStatementRpService.getEntityStatementRp(mockServerUrl);
     assertThat(entStmntFd).isNotNull();
   }
 
   @Test
   void getEntityStatementAboutRp_Idpfachdienst() {
     mockServerClient
-        .when(
-            request().withMethod("GET").withPath(IdpConstants.FEDMASTER_FEDERATION_FETCH_ENDPOINT))
+        .when(request().withMethod("GET").withPath("/federation/fetch"))
         .respond(
             response()
                 .withStatusCode(200)
@@ -106,7 +103,7 @@ class EntityStmntRpServiceTest {
     // switch configuration to mockserver
     gsiConfiguration.setFedmasterUrl(mockServerUrl);
     final String entityStmntAboutFachdienst =
-        entityStmntRpService.getEntityStatementAboutRp("dummyUrl");
+        entityStatementRpService.getEntityStatementAboutRp("dummyUrl");
     assertThat(entityStmntAboutFachdienst).isNotNull();
     log.info(entityStmntAboutFachdienst);
   }
@@ -121,24 +118,16 @@ class EntityStmntRpServiceTest {
                 .withContentType(MediaType.APPLICATION_JSON)
                 .withBody(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
     mockServerClient
-        .when(
-            request().withMethod("GET").withPath(IdpConstants.FEDMASTER_FEDERATION_FETCH_ENDPOINT))
+        .when(request().withMethod("GET").withPath("/federation/fetch"))
         .respond(
             response()
                 .withStatusCode(200)
                 .withContentType(MediaType.APPLICATION_JSON)
                 .withBody(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
     gsiConfiguration.setFedmasterUrl(mockServerUrl);
-    assertDoesNotThrow(() -> entityStmntRpService.doAutoregistration(mockServerUrl));
-  }
-
-  @Test
-  void getRedirectUrisEntityStatementRp() {
-    final String entStmntFd =
-        "eyJhbGciOiJFUzI1NiIsInR5cCI6ImVudGl0eS1zdGF0ZW1lbnQrand0Iiwia2lkIjoicHVrX2ZhY2hkaWVuc3Rfc2lnIn0.eyJpc3MiOiJodHRwOi8vZ3NsdHVjZDAxLmx0dS5pbnQuZ2VtYXRpay5kZTo0MDE1Iiwic3ViIjoiaHR0cDovL2dzbHR1Y2QwMS5sdHUuaW50LmdlbWF0aWsuZGU6NDAxNSIsImlhdCI6MTY3OTA2OTYwOSwiZXhwIjoxNjc5MTU2MDA5LCJqd2tzIjp7ImtleXMiOlt7InVzZSI6InNpZyIsImtpZCI6InB1a19mYWNoZGllbnN0X3NpZyIsImt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiOWJKczI3WUFmbE1VV0s1bnh1aUY2WEFHMEphenV2d1JpMUVwRkswWEtpayIsInkiOiJQOGx6TlZST2dUdXdiRHFzZDhyVDFBSTN6ZXo5NEhCc1REcE92YWpQMHJZIn1dfSwiYXV0aG9yaXR5X2hpbnRzIjpbImh0dHA6Ly9nc2x0dWNkMDEubHR1LmludC5nZW1hdGlrLmRlOjQwMTQiXSwibWV0YWRhdGEiOnsib3BlbmlkX3JlbHlpbmdfcGFydHkiOnsic2lnbmVkX2p3a3NfdXJpIjoiaHR0cDovL2dzbHR1Y2QwMS5sdHUuaW50LmdlbWF0aWsuZGU6NDAxNS9qd3MuanNvbiIsIm9yZ2FuaXphdGlvbl9uYW1lIjoiRmFjaGRpZW5zdDAwNyBkZXMgRmVkSWRwIFBPQ3MiLCJjbGllbnRfbmFtZSI6IkZhY2hkaWVuc3QwMDciLCJsb2dvX3VyaSI6Imh0dHA6Ly9nc2x0dWNkMDEubHR1LmludC5nZW1hdGlrLmRlOjQwMTUvbm9Mb2dvWWV0IiwicmVkaXJlY3RfdXJpcyI6WyJodHRwczovL0ZhY2hkaWVuc3QwMDcuZGUvY2xpZW50IiwiaHR0cHM6Ly9yZWRpcmVjdC50ZXN0c3VpdGUuZ3NpIl0sInJlc3BvbnNlX3R5cGVzIjpbImNvZGUiXSwiY2xpZW50X3JlZ2lzdHJhdGlvbl90eXBlcyI6WyJhdXRvbWF0aWMiXSwiZ3JhbnRfdHlwZXMiOlsiYXV0aG9yaXphdGlvbl9jb2RlIl0sInJlcXVpcmVfcHVzaGVkX2F1dGhvcml6YXRpb25fcmVxdWVzdHMiOnRydWUsInRva2VuX2VuZHBvaW50X2F1dGhfbWV0aG9kIjoicHJpdmF0ZV9rZXlfand0IiwiZGVmYXVsdF9hY3JfdmFsdWVzIjoiZ2VtYXRpay1laGVhbHRoLWxvYS1oaWdoIiwiaWRfdG9rZW5fc2lnbmVkX3Jlc3BvbnNlX2FsZyI6IkVTMjU2IiwiaWRfdG9rZW5fZW5jcnlwdGVkX3Jlc3BvbnNlX2FsZyI6IkVDREgtRVMiLCJpZF90b2tlbl9lbmNyeXB0ZWRfcmVzcG9uc2VfZW5jIjoiQTI1NkdDTSIsInNjb3BlIjoidXJuOnRlbGVtYXRpazpkaXNwbGF5X25hbWUgdXJuOnRlbGVtYXRpazp2ZXJzaWNoZXJ0ZXIgb3BlbmlkIn0sImZlZGVyYXRpb25fZW50aXR5Ijp7Im5hbWUiOiJGYWNoZGllbnN0MDA3IiwiY29udGFjdHMiOiJTdXBwb3J0QEZhY2hkaWVuc3QwMDcuZGUiLCJob21lcGFnZV91cmkiOiJodHRwczovL0ZhY2hkaWVuc3QwMDcuZGUifX19.Is8Ag-3Z0DwWS7RXCSRDPy1_m3bZatBB12PFOmTa8cBw0WrzixE23VL6xFeBFAFowlez-QQKU_WRhyPkX18-wQ";
-    final List<String> redirecturis =
-        EntityStmntRpService.getRedirectUrisEntityStatementRp(entStmntFd);
-    assertThat(redirecturis.size()).isEqualTo(2);
+    final String correctRedirectUri = "https://redirect.testsuite.gsi";
+    assertDoesNotThrow(
+        () -> entityStatementRpService.doAutoregistration(mockServerUrl, correctRedirectUri));
   }
 
   @Test
@@ -151,8 +140,7 @@ class EntityStmntRpServiceTest {
                 .withContentType(MediaType.APPLICATION_JSON)
                 .withBody(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
     mockServerClient
-        .when(
-            request().withMethod("GET").withPath(IdpConstants.FEDMASTER_FEDERATION_FETCH_ENDPOINT))
+        .when(request().withMethod("GET").withPath("/federation/fetch"))
         .respond(
             response()
                 .withStatusCode(200)
@@ -161,9 +149,7 @@ class EntityStmntRpServiceTest {
     gsiConfiguration.setFedmasterUrl(mockServerUrl);
     final String nonExistingUri = "nonExistingUri";
     assertThatThrownBy(
-            () ->
-                entityStmntRpService.verifyRedirectUriExistsInEntityStmnt(
-                    mockServerUrl, nonExistingUri))
+            () -> entityStatementRpService.doAutoregistration(mockServerUrl, nonExistingUri))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining(
             "Content of parameter redirect_uri ["
@@ -180,7 +166,7 @@ class EntityStmntRpServiceTest {
             .getPublicKey();
     assertDoesNotThrow(
         () ->
-            EntityStmntRpService.verifySignature(
+            EntityStatementRpService.verifySignature(
                 ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043, publicKey));
   }
 
@@ -193,7 +179,7 @@ class EntityStmntRpServiceTest {
             .getPublicKey();
     assertDoesNotThrow(
         () ->
-            EntityStmntRpService.verifySignature(
+            EntityStatementRpService.verifySignature(
                 ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043, publicKey));
   }
 
@@ -206,7 +192,7 @@ class EntityStmntRpServiceTest {
             .getPublicKey();
     assertThatThrownBy(
             () ->
-                EntityStmntRpService.verifySignature(
+                EntityStatementRpService.verifySignature(
                     ENTITY_STMNT_IDP_FACHDIENST_EXPIRED, publicKey))
         .isInstanceOf(IdpJwtExpiredException.class);
   }

@@ -41,13 +41,24 @@ public class KeyConfiguration implements KeyConfigurationBase {
   private final GsiConfiguration gsiConfiguration;
 
   @Bean
-  public FederationPrivKey sigKey() {
+  public FederationPrivKey entityStatementSigKey() {
     return getFederationPrivKey(gsiConfiguration.getSigKeyConfig());
   }
 
   @Bean
-  public IdpJwtProcessor jwtProcessor() {
-    return new IdpJwtProcessor(sigKey().getIdentity(), sigKey().getKeyId());
+  public FederationPrivKey tokenKey() {
+    return getFederationPrivKey(gsiConfiguration.getTokenKeyConfig());
+  }
+
+  @Bean
+  public IdpJwtProcessor jwtProcessorSigKey() {
+    return new IdpJwtProcessor(
+        entityStatementSigKey().getIdentity(), entityStatementSigKey().getKeyId());
+  }
+
+  @Bean
+  public IdpJwtProcessor jwtProcessorTokenKey() {
+    return new IdpJwtProcessor(tokenKey().getIdentity(), tokenKey().getKeyId());
   }
 
   private FederationPrivKey getFederationPrivKey(final KeyConfig keyConfiguration) {
@@ -58,7 +69,7 @@ public class KeyConfiguration implements KeyConfigurationBase {
       return getFederationPrivKey(keyConfiguration, pkiIdentity);
     } catch (final IOException e) {
       throw new GsiException(
-          "Error while loading Gsi-Srever Key from resource '"
+          "Error while loading Gsi-Server Key from resource '"
               + keyConfiguration.getFileName()
               + "'",
           e);

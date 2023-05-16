@@ -42,6 +42,7 @@ public class GsiExceptionHandler {
 
   @ExceptionHandler(GsiException.class)
   public ResponseEntity<Oauth2ErrorResponse> handleGsiException(final GsiException exc) {
+    log.info("GsiException: {}", exc.getMessage());
     final Oauth2ErrorResponse body = getBody(exc);
     return new ResponseEntity<>(body, getHeader(), exc.getStatusCode());
   }
@@ -70,7 +71,7 @@ public class GsiExceptionHandler {
   public ResponseEntity<Oauth2ErrorResponse> handleRuntimeException(final Exception exc) {
     return handleGsiException(
         new GsiException(
-            "Invalid Request",
+            "GSI Runtime Exception: " + exc.getMessage(),
             exc,
             HttpStatus.INTERNAL_SERVER_ERROR,
             Oauth2ErrorCode.INVALID_REQUEST));

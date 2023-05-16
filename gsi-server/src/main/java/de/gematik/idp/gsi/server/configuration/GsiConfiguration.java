@@ -37,4 +37,5 @@ public class GsiConfiguration {
   private String serverUrl;
   private String fedmasterUrl;
   private KeyConfig sigKeyConfig;
+  private KeyConfig tokenKeyConfig;
 }

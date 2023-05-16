@@ -26,24 +26,20 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.rest.SerenityRest;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
 public class IdpSektoralSteps {
 
   static final String IDP_SEKTORAL_URL = "gsiserver";
+  static final String FED_MASTER_URL = "fedmaster";
   static final String ENTITY_STATEMENT_ENDPOINT = "/.well-known/openid-federation";
-
-  public static String replaceHostForTiger(final String url) {
-    final UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-    return builder.host(IDP_SEKTORAL_URL).port(null).scheme("http").toUriString();
-  }
 
   public void fetchEntStmnt() {
     sendRequestTo("http://" + IDP_SEKTORAL_URL + ENTITY_STATEMENT_ENDPOINT, "GET", null);
   }
 
   public void sendRequestTo(final String url, final String httpMethod, final DataTable params) {
+    SerenityRest.useRelaxedHTTPSValidation();
     final RequestSpecification reqSpec = SerenityRest.rest();
     reqSpec.redirects().follow(false);
     final Optional<String> xAuthHeaderInConfig =

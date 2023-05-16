@@ -16,12 +16,15 @@
 
 package de.gematik.idp.gsi.test.steps;
 
-import static de.gematik.idp.gsi.test.steps.IdpSektoralSteps.replaceHostForTiger;
+import static de.gematik.idp.gsi.test.steps.IdpSektoralSteps.ENTITY_STATEMENT_ENDPOINT;
+import static de.gematik.idp.gsi.test.steps.IdpSektoralSteps.FED_MASTER_URL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import de.gematik.idp.field.ClaimName;
+import de.gematik.idp.token.JsonWebToken;
 import de.gematik.rbellogger.RbelLogger;
 import de.gematik.rbellogger.data.RbelElement;
 import de.gematik.rbellogger.data.facet.RbelJsonFacet;
@@ -31,16 +34,19 @@ import de.gematik.test.tiger.lib.TigerDirector;
 import de.gematik.test.tiger.lib.json.JsonChecker;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.rest.SerenityRest;
 import net.thucydides.core.annotations.Steps;
+import org.awaitility.Awaitility;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
@@ -59,22 +65,27 @@ public class StepsGlue {
     idpSektoralSteps.fetchEntStmnt();
   }
 
+  @Given("Fetch Fed Master's Entity Statement")
+  public void fetchFedMasterSEntityStatement() {
+    idpSektoralSteps.sendRequestTo(
+        "http://" + FED_MASTER_URL + ENTITY_STATEMENT_ENDPOINT, "GET", null);
+  }
+
   @When("Send Get Request to {string}")
   public void sendGetRequestTo(final String url) {
-    idpSektoralSteps.sendRequestTo(
-        replaceHostForTiger(TigerGlobalConfiguration.resolvePlaceholders(url)), "GET", null);
+    idpSektoralSteps.sendRequestTo(TigerGlobalConfiguration.resolvePlaceholders(url), "GET", null);
   }
 
   @When("Send Get Request to {string} with")
   public void sendGetRequestTo(final String url, final DataTable params) {
     idpSektoralSteps.sendRequestTo(
-        replaceHostForTiger(TigerGlobalConfiguration.resolvePlaceholders(url)), "GET", params);
+        TigerGlobalConfiguration.resolvePlaceholders(url), "GET", params);
   }
 
   @When("Send Post Request to {string} with")
   public void sendPostRequestTo(final String url, final DataTable params) {
     idpSektoralSteps.sendRequestTo(
-        replaceHostForTiger(TigerGlobalConfiguration.resolvePlaceholders(url)), "POST", params);
+        TigerGlobalConfiguration.resolvePlaceholders(url), "POST", params);
   }
 
   @When("Send Post Request with invalid Client Cert to {string} with")
@@ -135,6 +146,26 @@ public class StepsGlue {
             rbelElement.findElement(rbelPath).orElseThrow().getRawStringContent(),
             oracleDocStr,
             false);
+  }
+
+  @Then("The JWT {string} is vaild for more than {int} but less than {int} seconds")
+  public void checkValidiyOfJwt(
+      final String jwtAsString, final int minSeconds, final int maxSeconds) {
+    final JsonWebToken jwt =
+        new JsonWebToken(TigerGlobalConfiguration.readString(jwtAsString, jwtAsString));
+    final Long expiresAt = (Long) jwt.getBodyClaim(ClaimName.EXPIRES_AT).orElseThrow();
+    final Long issuedAt = (Long) jwt.getBodyClaim(ClaimName.ISSUED_AT).orElseThrow();
+    assertThat(expiresAt - issuedAt)
+        .isBetween(TimeUnit.SECONDS.toSeconds(minSeconds), TimeUnit.SECONDS.toSeconds(maxSeconds));
+  }
+
+  @SneakyThrows
+  @When("Wait for {int} Seconds")
+  public void waitForSeconds(final int seconds) {
+    Awaitility.await()
+        .atMost(seconds + 1, TimeUnit.SECONDS)
+        .pollDelay(seconds, TimeUnit.SECONDS)
+        .until(() -> true);
   }
 
   static void validateJwsSignature(final String jws, final JsonWebKey jwk)

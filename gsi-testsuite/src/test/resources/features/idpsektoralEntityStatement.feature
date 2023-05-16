@@ -174,7 +174,7 @@ Feature: Test Entity Statement of IdpSektoral
     Given TGR clear recorded messages
     When Fetch Entity statement
     And TGR find request to path "/.well-known/openid-federation"
-    Then TGR current response at "$.body.body.jwks.keys.[?($.use.content == 'sig')]" matches as JSON:
+    Then TGR current response at "$.body.body.jwks.keys.[?(@.use.content =='sig')]" matches as JSON:
         """
           {
             use:                           'sig',

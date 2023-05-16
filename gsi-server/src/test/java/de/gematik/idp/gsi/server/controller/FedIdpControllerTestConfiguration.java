@@ -16,7 +16,7 @@
 
 package de.gematik.idp.gsi.server.controller;
 
-import de.gematik.idp.gsi.server.services.EntityStmntRpService;
+import de.gematik.idp.gsi.server.services.EntityStatementRpService;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Profile;
 public class FedIdpControllerTestConfiguration {
   @Bean
   @Primary
-  public EntityStmntRpService entityStmntRpServiceMock() {
-    return Mockito.mock(EntityStmntRpService.class);
+  public EntityStatementRpService entityStmntRpServiceMock() {
+    return Mockito.mock(EntityStatementRpService.class);
   }
 }

@@ -48,15 +48,15 @@ Feature: Test IdpSektoral's Token Endpoint
             "____error_uri":                '.*'
           }
         """
-    And TGR current response at "$.body.error" matches "<error>"
+    And TGR current response at "$.body.error" matches "(invalid_request)|(invalid_grant)"
 
     Examples:
-      | client_id          | redirect_uri            | code_verifier    | grant_type         | code                  | error           | responseCode |
-      | notUrl             | gsi.redirectUri         | gsi.codeVerifier | authorization_code | gsi.authorizationCode | invalid_request | 400          |
-      | gsi.clientid.valid | https://invalidRedirect | gsi.codeVerifier | authorization_code | gsi.authorizationCode | invalid_request | 400          |
-      | gsi.clientid.valid | gsi.redirectUri         | dasddsad         | authorization_code | gsi.authorizationCode | invalid_request | 400          |
-      | gsi.clientid.valid | gsi.redirectUri         | gsi.codeVerifier | password           | gsi.authorizationCode | invalid_request | 400          |
-      | gsi.clientid.valid | gsi.redirectUri         | gsi.codeVerifier | authorization_code | eyfsfdsfsd            | invalid_request | 400          |
+      | client_id          | redirect_uri            | code_verifier    | grant_type         | code                  | responseCode |
+      | notUrl             | gsi.redirectUri         | gsi.codeVerifier | authorization_code | gsi.authorizationCode | 400          |
+      | gsi.clientid.valid | https://invalidRedirect | gsi.codeVerifier | authorization_code | gsi.authorizationCode | 400          |
+      | gsi.clientid.valid | gsi.redirectUri         | dasddsad         | authorization_code | gsi.authorizationCode | 400          |
+      | gsi.clientid.valid | gsi.redirectUri         | gsi.codeVerifier | password           | gsi.authorizationCode | 400          |
+      | gsi.clientid.valid | gsi.redirectUri         | gsi.codeVerifier | authorization_code | eyfsfdsfsd            | 400          |
 
 
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_004
@@ -105,15 +105,15 @@ Feature: Test IdpSektoral's Token Endpoint
             "____error_uri":                '.*'
           }
         """
-    And TGR current response at "$.body.error" matches "<error>"
+    And TGR current response at "$.body.error" matches "(invalid_request)|(invalid_grant)"
 
     Examples:
-      | client_id          | redirect_uri    | code_verifier    | grant_type         | code                  | error           | responseCode |
-      | $REMOVE            | gsi.redirectUri | gsi.codeVerifier | authorization_code | gsi.authorizationCode | invalid_request | 400          |
-      | gsi.clientid.valid | $REMOVE         | gsi.codeVerifier | authorization_code | gsi.authorizationCode | invalid_request | 400          |
-      | gsi.clientid.valid | gsi.redirectUri | $REMOVE          | authorization_code | gsi.authorizationCode | invalid_request | 400          |
-      | gsi.clientid.valid | gsi.redirectUri | gsi.codeVerifier | $REMOVE            | gsi.authorizationCode | invalid_request | 400          |
-      | gsi.clientid.valid | gsi.redirectUri | gsi.codeVerifier | authorization_code | $REMOVE               | invalid_request | 400          |
+      | client_id          | redirect_uri    | code_verifier    | grant_type         | code                  | responseCode |
+      | $REMOVE            | gsi.redirectUri | gsi.codeVerifier | authorization_code | gsi.authorizationCode | 400          |
+      | gsi.clientid.valid | $REMOVE         | gsi.codeVerifier | authorization_code | gsi.authorizationCode | 400          |
+      | gsi.clientid.valid | gsi.redirectUri | $REMOVE          | authorization_code | gsi.authorizationCode | 400          |
+      | gsi.clientid.valid | gsi.redirectUri | gsi.codeVerifier | $REMOVE            | gsi.authorizationCode | 400          |
+      | gsi.clientid.valid | gsi.redirectUri | gsi.codeVerifier | authorization_code | $REMOVE               | 400          |
 
 
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_006

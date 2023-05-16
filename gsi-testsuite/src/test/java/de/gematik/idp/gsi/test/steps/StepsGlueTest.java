@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.assertj.core.api.Assertions;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.InvalidJwtSignatureException;
@@ -86,12 +85,5 @@ class StepsGlueTest {
     final String valueButNotPathInYaml = "myValue";
     assertThat(TigerGlobalConfiguration.readString(valueButNotPathInYaml, valueButNotPathInYaml))
         .isEqualTo("myValue");
-  }
-
-  @Test
-  void adaptUrlTest() {
-    final String url = "https://idp-sektoral-rpu.risedev.at/federation/list";
-    Assertions.assertThat(IdpSektoralSteps.replaceHostForTiger(url))
-        .isEqualTo("http://gsiserver/federation/list");
   }
 }

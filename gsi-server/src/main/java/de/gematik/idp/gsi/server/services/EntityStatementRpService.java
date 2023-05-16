@@ -48,7 +48,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class EntityStmntRpService {
+public class EntityStatementRpService {
 
   @Autowired ResourceReader resourceReader;
   /** Entity statements delivered by Fachdienst */
@@ -63,6 +63,9 @@ public class EntityStmntRpService {
     ENTITY_STATEMENTS_FEDMASTER_ABOUT_FACHDIENST = new HashMap<>();
   }
 
+  // TODO: sollte man diese methode nicht entweder private machen oder irgendwo anders hinziehen?
+  // irgendwie finde ich der EntityStatementRpService sollte keine generische verifySignature
+  // methode haben
   public static void verifySignature(final String jwsRawString, final PublicKey publicKey) {
     final JsonWebToken jsonWebToken = new JsonWebToken(jwsRawString);
     jsonWebToken.verify(publicKey);
@@ -71,17 +74,18 @@ public class EntityStmntRpService {
   /**
    * no exception -> client is registered
    *
-   * @param urlRp URL of relying party
+   * @param clientId URL of relying party
    */
-  public void doAutoregistration(final String urlRp) {
+  public void doAutoregistration(final String clientId, final String redirectUri) {
     // Msg 2a and 2b
     // Msg 2c and 2d
-    getEntityStatementRp(urlRp);
+    getEntityStatementRp(clientId);
+    verifyRedirectUriExistsInEntityStmnt(clientId, redirectUri);
   }
 
   /**
-   * @param issuerRp Issuer relying party
-   * @return
+   * @param issuerRp name and url of the fachdienst/relying party
+   * @return the entity statement issued by the fachdienst/relying party
    */
   public String getEntityStatementRp(final String issuerRp) {
     log.info("Entitystatement for RP [{}] requested.", issuerRp);
@@ -92,15 +96,15 @@ public class EntityStmntRpService {
   /**
    * Update Entity statement about a relying party, from Fedmaster.
    *
-   * @param sub Issuer of requested relying party
-   * @return
+   * @param sub identifier of the fachdienst/relying party
+   * @return the entity statement about the fachdienst/relying party issued by the fed master
    */
   public String getEntityStatementAboutRp(final String sub) {
     updateStatementAboutRpIfExpiredAndNewIsAvailable(sub);
     return ENTITY_STATEMENTS_FEDMASTER_ABOUT_FACHDIENST.get(sub);
   }
 
-  public static List<String> getRedirectUrisEntityStatementRp(final String entityStmntRp) {
+  private static List<String> getRedirectUrisEntityStatementRp(final String entityStmntRp) {
     final Map<String, Object> bodyClaims = new JsonWebToken(entityStmntRp).getBodyClaims();
     final Map<String, Object> metadata =
         Objects.requireNonNull(
@@ -117,7 +121,7 @@ public class EntityStmntRpService {
    * @param fachdienstClientId
    * @param redirectUri
    */
-  public void verifyRedirectUriExistsInEntityStmnt(
+  private void verifyRedirectUriExistsInEntityStmnt(
       final String fachdienstClientId, final String redirectUri) {
     if (getRedirectUrisEntityStatementRp(getEntityStatementRp(fachdienstClientId)).stream()
         .noneMatch(entry -> entry.equals(redirectUri))) {
@@ -190,9 +194,7 @@ public class EntityStmntRpService {
     final String entityIdentifierFedmaster = serverUrlService.determineFedmasterUrl();
     log.info("FedmasterUrl: " + entityIdentifierFedmaster);
     final HttpResponse<String> resp =
-        Unirest.get(
-                serverUrlService.determineFedmasterUrl()
-                    + IdpConstants.FEDMASTER_FEDERATION_FETCH_ENDPOINT)
+        Unirest.get(serverUrlService.determineFedmasterUrl() + "/federation/fetch")
             .queryString("iss", entityIdentifierFedmaster)
             .queryString("sub", sub)
             .asString();
@@ -205,7 +207,9 @@ public class EntityStmntRpService {
           Oauth2ErrorCode.INVALID_REQUEST,
           "No entity statement for relying party ["
               + sub
-              + "] at Fedmaster available. Reason: "
+              + "] at Fedmaster iss: "
+              + entityIdentifierFedmaster
+              + " available. Reason: "
               + resp.getBody()
               + HttpStatus.valueOf(resp.getStatus()),
           HttpStatus.BAD_REQUEST);
@@ -218,6 +222,8 @@ public class EntityStmntRpService {
         .getPublicKey();
   }
 
+  // TODO: das sind ja eigentlich generische methoden, um aus JWKS keys zu holen. wollen wir das mal
+  // irgendwo hin umziehen? Ticket GSI-67
   private PublicKey getRpSigKey(final String entityStmntAboutRp) {
     final Map<String, Object> keyMap =
         (Map<String, Object>) new JsonWebToken(entityStmntAboutRp).getBodyClaims().get("jwks");

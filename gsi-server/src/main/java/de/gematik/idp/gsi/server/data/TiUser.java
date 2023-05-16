@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.gsi.server;
+package de.gematik.idp.gsi.server.data;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
-import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+@Builder
+@Getter
+@Setter
+public class TiUser {
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class GsiServerTests {
-  @Autowired private GsiConfiguration gsiConfiguration;
-
-  @Test
-  void contextLoads() {
-    assertThat(gsiConfiguration).isNotNull();
-  }
+  private final String kvnr;
+  private final String givenName;
 }

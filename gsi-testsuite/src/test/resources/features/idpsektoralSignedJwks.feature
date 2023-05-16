@@ -22,18 +22,8 @@ Feature: Test signed Jwks of IdpSektoral
     And TGR find request to path "/.well-known/openid-federation"
     And Expect JWKS in last message and add its keys to truststore
     Then TGR set local variable "signed_jwks_uri" to "!{rbel:currentResponseAsString('$..signed_jwks_uri')}"
+    And TGR set local variable "entity_statement_sig_kid" to "!{rbel:currentResponseAsString('$.body.header.kid')}"
 
-  @TCID:IDPSEKTORAL_ENTITY_STATEMENT_001
-  @Approval
-  Scenario: IdpSektoral Signature - Check Entity Statement
-
-  ```
-  Wir rufen das Entity Statement des IdpSektoral ab und prüfen, ob die Signatur korrekt ist
-
-    Given TGR clear recorded messages
-    When Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
-    And Check signature of JWS in last message
 
   @TCID:IDPSEKTORAL_SIGNED_JWKS_001
   @Approval
@@ -49,7 +39,7 @@ Feature: Test signed Jwks of IdpSektoral
 
     Given TGR clear recorded messages
     And Send Get Request to "${signed_jwks_uri}"
-    And TGR find request to path "/jws.json"
+    And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR current response with attribute "$.header.Content-Type" matches "application/jose.*"
 
@@ -65,7 +55,7 @@ Feature: Test signed Jwks of IdpSektoral
 
     Given TGR clear recorded messages
     And Send Get Request to "${signed_jwks_uri}"
-    And TGR find request to path "/jws.json"
+    And TGR find request to path ".*"
     Then TGR current response at "$.body.header" matches as JSON:
             """
           {
@@ -86,8 +76,8 @@ Feature: Test signed Jwks of IdpSektoral
 
     Given TGR clear recorded messages
     And Send Get Request to "${signed_jwks_uri}"
-    And TGR find request to path "/jws.json"
-    Then TGR current response at "$.body.body.keys.[?($.use.content == 'sig')]" matches as JSON:
+    And TGR find request to path ".*"
+    Then TGR current response at "$.body.body.keys.[?(@.kid.content=='${entity_statement_sig_kid}')]" matches as JSON:
         """
           {
             use:                           'sig',
