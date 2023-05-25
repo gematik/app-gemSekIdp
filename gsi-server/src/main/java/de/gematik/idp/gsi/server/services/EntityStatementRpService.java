@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2023 gematik GmbH
- * 
- * Licensed under the Apache License, Version 2.0 (the License);
+ *  Copyright [2023] gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -16,13 +16,11 @@
 
 package de.gematik.idp.gsi.server.services;
 
-import static de.gematik.idp.data.fedidp.Oauth2ErrorCode.INVALID_REQUEST;
+import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.EcKeyUtility;
-import de.gematik.idp.data.fedidp.Oauth2ErrorCode;
-import de.gematik.idp.gsi.server.ServerUrlService;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.NoSuchAlgorithmException;
@@ -40,7 +38,6 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -50,26 +47,14 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EntityStatementRpService {
 
-  @Autowired ResourceReader resourceReader;
-  /** Entity statements delivered by Fachdienst */
-  private static final Map<String, String> ENTITY_STATEMENTS_OF_FACHDIENST;
-  /** Entity statements about Fachdienste. Delivered by Fedmaster. */
-  private static final Map<String, String> ENTITY_STATEMENTS_FEDMASTER_ABOUT_FACHDIENST;
-
+  private final ResourceReader resourceReader;
   private final ServerUrlService serverUrlService;
 
-  static {
-    ENTITY_STATEMENTS_OF_FACHDIENST = new HashMap<>();
-    ENTITY_STATEMENTS_FEDMASTER_ABOUT_FACHDIENST = new HashMap<>();
-  }
-
-  // TODO: sollte man diese methode nicht entweder private machen oder irgendwo anders hinziehen?
-  // irgendwie finde ich der EntityStatementRpService sollte keine generische verifySignature
-  // methode haben
-  public static void verifySignature(final String jwsRawString, final PublicKey publicKey) {
-    final JsonWebToken jsonWebToken = new JsonWebToken(jwsRawString);
-    jsonWebToken.verify(publicKey);
-  }
+  /** Entity statements delivered by Fachdienst */
+  private final Map<String, JsonWebToken> entityStatementsOfFachdienst = new HashMap<>();
+  /** Entity statements about Fachdienste. Delivered by Fedmaster. */
+  private final Map<String, JsonWebToken> entityStatementsFedmasterAboutFachdienst =
+      new HashMap<>();
 
   /**
    * no exception -> client is registered
@@ -87,10 +72,10 @@ public class EntityStatementRpService {
    * @param issuerRp name and url of the fachdienst/relying party
    * @return the entity statement issued by the fachdienst/relying party
    */
-  public String getEntityStatementRp(final String issuerRp) {
+  public JsonWebToken getEntityStatementRp(final String issuerRp) {
     log.info("Entitystatement for RP [{}] requested.", issuerRp);
     updateStatementRpIfExpiredAndNewIsAvailable(issuerRp);
-    return ENTITY_STATEMENTS_OF_FACHDIENST.get(issuerRp);
+    return entityStatementsOfFachdienst.get(issuerRp);
   }
 
   /**
@@ -99,13 +84,13 @@ public class EntityStatementRpService {
    * @param sub identifier of the fachdienst/relying party
    * @return the entity statement about the fachdienst/relying party issued by the fed master
    */
-  public String getEntityStatementAboutRp(final String sub) {
+  public JsonWebToken getEntityStatementAboutRp(final String sub) {
     updateStatementAboutRpIfExpiredAndNewIsAvailable(sub);
-    return ENTITY_STATEMENTS_FEDMASTER_ABOUT_FACHDIENST.get(sub);
+    return entityStatementsFedmasterAboutFachdienst.get(sub);
   }
 
-  private static List<String> getRedirectUrisEntityStatementRp(final String entityStmntRp) {
-    final Map<String, Object> bodyClaims = new JsonWebToken(entityStmntRp).getBodyClaims();
+  private static List<String> getRedirectUrisEntityStatementRp(final JsonWebToken entityStmntRp) {
+    final Map<String, Object> bodyClaims = entityStmntRp.getBodyClaims();
     final Map<String, Object> metadata =
         Objects.requireNonNull(
             (Map<String, Object>) bodyClaims.get("metadata"), "missing claim: metadata");
@@ -133,8 +118,8 @@ public class EntityStatementRpService {
   }
 
   private void updateStatementRpIfExpiredAndNewIsAvailable(final String issuer) {
-    if (ENTITY_STATEMENTS_OF_FACHDIENST.containsKey(issuer)) {
-      if (stmntIsEpired(ENTITY_STATEMENTS_OF_FACHDIENST.get(issuer))) {
+    if (entityStatementsOfFachdienst.containsKey(issuer)) {
+      if (stmntIsEpired(entityStatementsOfFachdienst.get(issuer))) {
         fetchEntityStatementRp(issuer);
       }
       return;
@@ -143,8 +128,8 @@ public class EntityStatementRpService {
   }
 
   private void updateStatementAboutRpIfExpiredAndNewIsAvailable(final String sub) {
-    if (ENTITY_STATEMENTS_FEDMASTER_ABOUT_FACHDIENST.containsKey(sub)) {
-      if (stmntIsEpired(ENTITY_STATEMENTS_FEDMASTER_ABOUT_FACHDIENST.get(sub))) {
+    if (entityStatementsFedmasterAboutFachdienst.containsKey(sub)) {
+      if (stmntIsEpired(entityStatementsFedmasterAboutFachdienst.get(sub))) {
         fetchEntityStatementAboutRp(sub);
       }
       return;
@@ -152,8 +137,8 @@ public class EntityStatementRpService {
     fetchEntityStatementAboutRp(sub);
   }
 
-  private boolean stmntIsEpired(final String entityStmnt) {
-    final Map<String, Object> bodyClaims = new JsonWebToken(entityStmnt).getBodyClaims();
+  private boolean stmntIsEpired(final JsonWebToken entityStmnt) {
+    final Map<String, Object> bodyClaims = entityStmnt.getBodyClaims();
     final Long exp = (Long) bodyClaims.get("exp");
     return isExpired(exp);
   }
@@ -169,13 +154,14 @@ public class EntityStatementRpService {
     final HttpResponse<String> resp =
         Unirest.get(issuer + IdpConstants.ENTITY_STATEMENT_ENDPOINT).asString();
     if (resp.getStatus() == HttpStatus.OK.value()) {
-      final String entityStmnt = resp.getBody();
+      final JsonWebToken entityStmnt = new JsonWebToken(resp.getBody());
       verifyEntityStmntRp(entityStmnt, issuer);
-      ENTITY_STATEMENTS_OF_FACHDIENST.put(issuer, entityStmnt);
+      entityStatementsOfFachdienst.put(
+          issuer, entityStmnt); // TODO: hier nicht als string sondern als entityStatementObjekt
     } else {
       log.info(resp.getBody());
       throw new GsiException(
-          Oauth2ErrorCode.INVALID_REQUEST,
+          INVALID_REQUEST,
           "No entity statement from relying party ["
               + issuer
               + "] available. Reason: "
@@ -185,26 +171,27 @@ public class EntityStatementRpService {
     }
   }
 
-  private void verifyEntityStmntRp(final String entityStmnt, final String issuer) {
-    final String esAboutRp = getEntityStatementAboutRp(issuer);
-    verifySignature(entityStmnt, getRpSigKey(esAboutRp));
+  private void verifyEntityStmntRp(final JsonWebToken entityStmnt, final String issuer) {
+    final JsonWebToken esAboutRp = getEntityStatementAboutRp(issuer);
+    entityStmnt.verify(getRpSigKey(esAboutRp));
   }
 
   private void fetchEntityStatementAboutRp(final String sub) {
     final String entityIdentifierFedmaster = serverUrlService.determineFedmasterUrl();
     log.info("FedmasterUrl: " + entityIdentifierFedmaster);
     final HttpResponse<String> resp =
-        Unirest.get(serverUrlService.determineFedmasterUrl() + "/federation/fetch")
+        Unirest.get(serverUrlService.determineFetchEntityStatementEndpoint())
             .queryString("iss", entityIdentifierFedmaster)
             .queryString("sub", sub)
             .asString();
     if (resp.getStatus() == HttpStatus.OK.value()) {
-      verifySignature(resp.getBody(), getFedmasterSigKey());
-      ENTITY_STATEMENTS_FEDMASTER_ABOUT_FACHDIENST.put(sub, resp.getBody());
+      final JsonWebToken entityStatementAboutRp = new JsonWebToken(resp.getBody());
+      entityStatementAboutRp.verify(getFedmasterSigKey());
+      entityStatementsFedmasterAboutFachdienst.put(sub, entityStatementAboutRp);
     } else {
       log.info(resp.getBody());
       throw new GsiException(
-          Oauth2ErrorCode.INVALID_REQUEST,
+          INVALID_REQUEST,
           "No entity statement for relying party ["
               + sub
               + "] at Fedmaster iss: "
@@ -224,9 +211,9 @@ public class EntityStatementRpService {
 
   // TODO: das sind ja eigentlich generische methoden, um aus JWKS keys zu holen. wollen wir das mal
   // irgendwo hin umziehen? Ticket GSI-67
-  private PublicKey getRpSigKey(final String entityStmntAboutRp) {
+  private PublicKey getRpSigKey(final JsonWebToken entityStmntAboutRp) {
     final Map<String, Object> keyMap =
-        (Map<String, Object>) new JsonWebToken(entityStmntAboutRp).getBodyClaims().get("jwks");
+        (Map<String, Object>) entityStmntAboutRp.getBodyClaims().get("jwks");
     final List<Map<String, String>> keyList = (List<Map<String, String>>) keyMap.get("keys");
     final Map<String, String> rpSigKeyValues = keyList.get(0);
     return createEcPubKey(rpSigKeyValues);

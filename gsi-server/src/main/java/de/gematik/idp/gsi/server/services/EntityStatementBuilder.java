@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2023 gematik GmbH
- * 
- * Licensed under the Apache License, Version 2.0 (the License);
+ *  Copyright [2023] gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -16,19 +16,19 @@
 
 package de.gematik.idp.gsi.server.services;
 
-import static de.gematik.idp.IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
-import static de.gematik.idp.IdpConstants.FED_SIGNED_JWKS_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
 
 import de.gematik.idp.data.FederationPrivKey;
 import de.gematik.idp.data.JwtHelper;
-import de.gematik.idp.data.fedidp.EntityStatement;
-import de.gematik.idp.data.fedidp.FederationEntity;
-import de.gematik.idp.data.fedidp.Metadata;
-import de.gematik.idp.data.fedidp.OpenidProvider;
-import de.gematik.idp.data.fedidp.RequestAuthenticationMethodsSupported;
+import de.gematik.idp.gsi.server.data.EntityStatement;
+import de.gematik.idp.gsi.server.data.FederationEntity;
 import de.gematik.idp.gsi.server.data.GsiConstants;
+import de.gematik.idp.gsi.server.data.Metadata;
+import de.gematik.idp.gsi.server.data.OpenidProvider;
+import de.gematik.idp.gsi.server.data.RequestAuthenticationMethodsSupported;
 import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

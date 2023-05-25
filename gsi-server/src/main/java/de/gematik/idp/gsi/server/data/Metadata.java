@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.gsi.server;
+package de.gematik.idp.gsi.server.data;
 
-import java.security.Security;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
-@SpringBootApplication
-public class GsiServer {
+@Getter
+@Builder
+@AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class Metadata {
 
-  static {
-    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-    Security.insertProviderAt(new BouncyCastleProvider(), 1);
-  }
-
-  public static void main(final String[] args) {
-
-    SpringApplication.run(GsiServer.class, args);
-  }
+  private OpenidProvider openidProvider;
+  private FederationEntity federationEntity;
 }

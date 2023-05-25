@@ -1,3 +1,13 @@
+# Release 1.3.6
+
+- update dependencies
+- refactor services
+- refactor license header
+
+# Release 1.3.5
+
+- deployment to https://gsi.dev.gematik.solutions
+
 # Release 1.3.3
 
 - update tiger

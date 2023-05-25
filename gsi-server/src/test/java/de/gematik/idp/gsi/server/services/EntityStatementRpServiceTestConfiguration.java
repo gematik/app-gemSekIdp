@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.gsi.server;
+package de.gematik.idp.gsi.server.services;
 
-import java.security.Security;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 
-@SpringBootApplication
-public class GsiServer {
-
-  static {
-    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-    Security.insertProviderAt(new BouncyCastleProvider(), 1);
-  }
-
-  public static void main(final String[] args) {
-
-    SpringApplication.run(GsiServer.class, args);
+@Profile("test-entityservice")
+@Configuration
+public class EntityStatementRpServiceTestConfiguration {
+  @Bean
+  @Primary
+  public ServerUrlService serverUrlServiceMock() {
+    return Mockito.mock(ServerUrlService.class);
   }
 }

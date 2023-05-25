@@ -1,0 +1,9 @@
+version: '3.7'
+
+services:
+
+  gsi-server:
+    ports:
+      - "4016:8085"
+    environment:
+      LTU_DEV: yes
