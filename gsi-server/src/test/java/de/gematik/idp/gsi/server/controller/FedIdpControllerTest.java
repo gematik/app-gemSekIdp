@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2023 gematik GmbH
- * 
- * Licensed under the Apache License, Version 2.0 (the License);
+ *  Copyright [2023] gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -18,6 +18,8 @@ package de.gematik.idp.gsi.server.controller;
 
 import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.gson.JsonObject;
@@ -49,7 +51,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 
-@ActiveProfiles("test")
+@ActiveProfiles("test-controller")
 @SpringBootTest(
     classes = GsiServer.class,
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -248,7 +250,7 @@ class FedIdpControllerTest {
   }
 
   private HttpResponse<String> retrieveSignedJwks() {
-    return Unirest.get(testHostUrl + IdpConstants.FED_SIGNED_JWKS_ENDPOINT).asString();
+    return Unirest.get(testHostUrl + FED_SIGNED_JWKS_ENDPOINT).asString();
   }
 
   /************************** FEDIDP_PUSHED AUTH_ENDPOINT *****************/
@@ -267,7 +269,7 @@ class FedIdpControllerTest {
         .doAutoregistration(testHostUrl, testHostUrl + "/AS");
 
     final HttpResponse<String> resp =
-        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
             .field("client_id", testHostUrl)
             .field("state", "state_Fachdienst")
             .field("redirect_uri", testHostUrl + "/AS")
@@ -291,7 +293,7 @@ class FedIdpControllerTest {
         .doAutoregistration(testHostUrl, testHostUrl + "/AS");
 
     final HttpResponse<String> resp =
-        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
             .field("client_id", testHostUrl)
             .field("state", "state_Fachdienst")
             .field("redirect_uri", testHostUrl + "/AS")
@@ -322,7 +324,7 @@ class FedIdpControllerTest {
         .doAutoregistration(testHostUrl, testHostUrl + "/AS");
 
     final HttpResponse<String> respMsg3 =
-        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
             .field("client_id", testHostUrl)
             .field("state", "state_Fachdienst")
             .field("redirect_uri", testHostUrl + "/AS")
@@ -363,7 +365,7 @@ class FedIdpControllerTest {
   @ParameterizedTest
   void parRequest_invalidScope_ResponseStatus_BAD_REQUEST(final String scope) {
     final HttpResponse<String> resp =
-        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
             .field("client_id", testHostUrl)
             .field("state", "state_Fachdienst")
             .field("redirect_uri", testHostUrl + "/AS")
@@ -385,7 +387,7 @@ class FedIdpControllerTest {
   @Test
   void parRequest_missingParameterResponseType_ResponseStatus_BAD_REQUEST() {
     final HttpResponse<String> resp =
-        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
             .field("client_id", testHostUrl)
             .field("client_id", testHostUrl)
             .field("state", "state_Fachdienst")
@@ -407,7 +409,7 @@ class FedIdpControllerTest {
   @Test
   void parRequest_InvalidGetOnPostMapping_ResponseStatus_BAD_REQUEST() {
     final HttpResponse<String> resp =
-        Unirest.get(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+        Unirest.get(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
             .queryString("client_id", testHostUrl)
             .queryString("state", "state_Fachdienst")
             .queryString("redirect_uri", testHostUrl + "/AS")
@@ -497,7 +499,7 @@ class FedIdpControllerTest {
     final String fachdienstClientId = testHostUrl;
 
     final HttpResponse<String> respMsg3 =
-        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
             .field("client_id", fachdienstClientId)
             .field("state", "state_Fachdienst")
             .field("redirect_uri", redirectUri)
@@ -557,7 +559,7 @@ class FedIdpControllerTest {
     final String redirectUri = testHostUrl + "/AS";
 
     final HttpResponse<String> respMsg3 =
-        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
             .field("client_id", "invalidClientId")
             .field("state", "state_Fachdienst")
             .field("redirect_uri", redirectUri)
@@ -589,7 +591,7 @@ class FedIdpControllerTest {
     final String fachdienstClientId = testHostUrl;
 
     final HttpResponse<String> respMsg3 =
-        Unirest.post(testHostUrl + IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT)
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
             .field("client_id", fachdienstClientId)
             .field("state", "state_Fachdienst")
             .field("redirect_uri", redirectUri)

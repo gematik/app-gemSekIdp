@@ -26,10 +26,26 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class TokenResponse {
+public class OpenidProvider {
 
-  private int expiresIn;
-  private String tokenType;
-  private String idToken;
-  private String accessToken;
+  private String issuer;
+  private String signedJwksUri;
+  private String organizationName;
+  private String logoUri;
+  private String authorizationEndpoint;
+  private String tokenEndpoint;
+  private String pushedAuthorizationRequestEndpoint;
+  private String[] clientRegistrationTypesSupported;
+  private String[] subjectTypesSupported;
+  private String[] responseTypesSupported;
+  private String[] scopesSupported;
+  private String[] responseModesSupported;
+  private String[] grantTypesSupported;
+  private boolean requirePushedAuthorizationRequests;
+  private String[] tokenEndpointAuthMethodsSupported;
+  private RequestAuthenticationMethodsSupported requestAuthenticationMethodsSupported;
+  private String[] idTokenSigningAlgValuesSupported;
+  private String[] idTokenEncryptionAlgValuesSupported;
+  private String[] idTokenEncryptionEncValuesSupported;
+  private String[] userTypeSupported;
 }

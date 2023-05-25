@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2023 gematik GmbH
- * 
- * Licensed under the Apache License, Version 2.0 (the License);
+ *  Copyright [2023] gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -19,18 +19,18 @@ package de.gematik.idp.gsi.server.controller;
 import static de.gematik.idp.EnvHelper.getSystemProperty;
 import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_ENDPOINT;
 import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_TYP;
-import static de.gematik.idp.IdpConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
-import static de.gematik.idp.IdpConstants.FED_SIGNED_JWKS_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
-import static de.gematik.idp.data.fedidp.Oauth2ErrorCode.INVALID_REQUEST;
-import static de.gematik.idp.data.fedidp.Oauth2ErrorCode.INVALID_SCOPE;
+import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
+import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_SCOPE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_GIVEN_NAME;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_ORGANIZATION;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_PROFESSION;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.REQUEST_URI_TTL_SECS;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,9 +39,8 @@ import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.data.FederationPrivKey;
 import de.gematik.idp.data.JwtHelper;
-import de.gematik.idp.data.fedidp.ParResponse;
+import de.gematik.idp.data.ParResponse;
 import de.gematik.idp.field.ClientUtilities;
-import de.gematik.idp.gsi.server.ServerUrlService;
 import de.gematik.idp.gsi.server.data.FedIdpAuthSession;
 import de.gematik.idp.gsi.server.data.GsiConstants;
 import de.gematik.idp.gsi.server.data.TokenResponse;
@@ -50,6 +49,7 @@ import de.gematik.idp.gsi.server.services.AuthenticationService;
 import de.gematik.idp.gsi.server.services.EntityStatementBuilder;
 import de.gematik.idp.gsi.server.services.EntityStatementRpService;
 import de.gematik.idp.gsi.server.services.SektoralIdpAuthenticator;
+import de.gematik.idp.gsi.server.services.ServerUrlService;
 import de.gematik.idp.gsi.server.token.IdTokenBuilder;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;

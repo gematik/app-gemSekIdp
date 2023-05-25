@@ -16,15 +16,25 @@
 
 package de.gematik.idp.gsi.server.data;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import de.gematik.idp.data.IdpJwksDocument;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
-@Builder
+/** Entity statement related to sektoralem (federated) IDP issued by sektoralem (federated) IDP */
 @Getter
-@Setter
-public class TiUser {
+@Builder
+@AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class EntityStatement {
 
-  private final String kvnr;
-  private final String givenName;
+  private String iss;
+  private String sub;
+  private long iat;
+  private long exp;
+  private IdpJwksDocument jwks;
+  private String[] authorityHints;
+  private Metadata metadata;
 }

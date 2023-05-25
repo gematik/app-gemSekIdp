@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2023 gematik GmbH
- * 
- * Licensed under the Apache License, Version 2.0 (the License);
+ *  Copyright [2023] gematik GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -27,6 +27,7 @@ import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.exceptions.IdpJwtExpiredException;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
+import de.gematik.idp.token.JsonWebToken;
 import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
@@ -34,14 +35,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.MediaType;
 import org.mockserver.springtest.MockServerTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @Slf4j
+@ActiveProfiles("test-entityservice")
 @MockServerTest("server.url=http://localhost:${mockServerPort}")
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -53,6 +57,7 @@ class EntityStatementRpServiceTest {
   private MockServerClient mockServerClient;
   @Autowired EntityStatementRpService entityStatementRpService;
   @Autowired GsiConfiguration gsiConfiguration;
+  @Autowired ServerUrlService serverUrlService;
 
   private final String ENTITY_STMNT_IDP_FACHDIENST_EXPIRED =
       "eyJhbGciOiJFUzI1NiIsInR5cCI6ImVudGl0eS1zdGF0ZW1lbnQrand0Iiwia2lkIjoicHVrX2ZhY2hkaWVuc3Rfc2lnIn0.eyJpc3MiOiJodHRwOi8vZ3NsdHVjZDAxLmx0dS5pbnQuZ2VtYXRpay5kZTo0MDE1Iiwic3ViIjoiaHR0cDovL2dzbHR1Y2QwMS5sdHUuaW50LmdlbWF0aWsuZGU6NDAxNSIsImlhdCI6MTY3ODM1NjM5OSwiZXhwIjoxNjc4NDQyNzk5LCJqd2tzIjp7ImtleXMiOlt7InVzZSI6InNpZyIsImtpZCI6InB1a19mYWNoZGllbnN0X3NpZyIsImt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiOWJKczI3WUFmbE1VV0s1bnh1aUY2WEFHMEphenV2d1JpMUVwRkswWEtpayIsInkiOiJQOGx6TlZST2dUdXdiRHFzZDhyVDFBSTN6ZXo5NEhCc1REcE92YWpQMHJZIn1dfSwiYXV0aG9yaXR5X2hpbnRzIjpbImh0dHA6Ly9nc2x0dWNkMDEubHR1LmludC5nZW1hdGlrLmRlOjQwMTQiXSwibWV0YWRhdGEiOnsib3BlbmlkX3JlbHlpbmdfcGFydHkiOnsic2lnbmVkX2p3a3NfdXJpIjoiaHR0cDovL2dzbHR1Y2QwMS5sdHUuaW50LmdlbWF0aWsuZGU6NDAxNS9qd3MuanNvbiIsIm9yZ2FuaXphdGlvbl9uYW1lIjoiRmFjaGRpZW5zdDAwNyBkZXMgRmVkSWRwIFBPQ3MiLCJjbGllbnRfbmFtZSI6IkZhY2hkaWVuc3QwMDciLCJsb2dvX3VyaSI6Imh0dHA6Ly9nc2x0dWNkMDEubHR1LmludC5nZW1hdGlrLmRlOjQwMTUvbm9Mb2dvWWV0IiwicmVkaXJlY3RfdXJpcyI6WyJodHRwczovL0ZhY2hkaWVuc3QwMDcuZGUvY2xpZW50IiwiaHR0cHM6Ly9yZWRpcmVjdC50ZXN0c3VpdGUuZ3NpIl0sInJlc3BvbnNlX3R5cGVzIjpbImNvZGUiXSwiY2xpZW50X3JlZ2lzdHJhdGlvbl90eXBlcyI6WyJhdXRvbWF0aWMiXSwiZ3JhbnRfdHlwZXMiOlsiYXV0aG9yaXphdGlvbl9jb2RlIl0sInJlcXVpcmVfcHVzaGVkX2F1dGhvcml6YXRpb25fcmVxdWVzdHMiOnRydWUsInRva2VuX2VuZHBvaW50X2F1dGhfbWV0aG9kIjoicHJpdmF0ZV9rZXlfand0IiwiZGVmYXVsdF9hY3JfdmFsdWVzIjoiZ2VtYXRpay1laGVhbHRoLWxvYS1oaWdoIiwiaWRfdG9rZW5fc2lnbmVkX3Jlc3BvbnNlX2FsZyI6IkVTMjU2IiwiaWRfdG9rZW5fZW5jcnlwdGVkX3Jlc3BvbnNlX2FsZyI6IkVDREgtRVMiLCJpZF90b2tlbl9lbmNyeXB0ZWRfcmVzcG9uc2VfZW5jIjoiQTI1NkdDTSIsInNjb3BlIjoidXJuOnRlbGVtYXRpazpkaXNwbGF5X25hbWUgdXJuOnRlbGVtYXRpazp2ZXJzaWNoZXJ0ZXIgb3BlbmlkIn0sImZlZGVyYXRpb25fZW50aXR5Ijp7Im5hbWUiOiJGYWNoZGllbnN0MDA3IiwiY29udGFjdHMiOiJTdXBwb3J0QEZhY2hkaWVuc3QwMDcuZGUiLCJob21lcGFnZV91cmkiOiJodHRwczovL0ZhY2hkaWVuc3QwMDcuZGUifX19.sJ0XjEEs-VL0kupnZgWEFgAN0OXGQgMIRPwlXgqa1TWh_OGbbFbuE-nIlrgFkc6mqBXVS9imeVZFs6-3_NtiTA";
@@ -87,7 +92,7 @@ class EntityStatementRpServiceTest {
                 .withContentType(MediaType.APPLICATION_JSON)
                 .withBody(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
     gsiConfiguration.setFedmasterUrl(mockServerUrl);
-    final String entStmntFd = entityStatementRpService.getEntityStatementRp(mockServerUrl);
+    final JsonWebToken entStmntFd = entityStatementRpService.getEntityStatementRp(mockServerUrl);
     assertThat(entStmntFd).isNotNull();
   }
 
@@ -102,14 +107,16 @@ class EntityStatementRpServiceTest {
                 .withBody(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
     // switch configuration to mockserver
     gsiConfiguration.setFedmasterUrl(mockServerUrl);
-    final String entityStmntAboutFachdienst =
+    final JsonWebToken entityStmntAboutFachdienst =
         entityStatementRpService.getEntityStatementAboutRp("dummyUrl");
     assertThat(entityStmntAboutFachdienst).isNotNull();
-    log.info(entityStmntAboutFachdienst);
   }
 
   @Test
   void doAutoregistration() {
+    Mockito.doReturn(mockServerUrl + "/federation/fetch")
+        .when(serverUrlService)
+        .determineFetchEntityStatementEndpoint();
     mockServerClient
         .when(request().withMethod("GET").withPath(IdpConstants.ENTITY_STATEMENT_ENDPOINT))
         .respond(
@@ -165,9 +172,7 @@ class EntityStatementRpServiceTest {
                     new File("src/test/resources/cert/fachdienst-sig.pem")))
             .getPublicKey();
     assertDoesNotThrow(
-        () ->
-            EntityStatementRpService.verifySignature(
-                ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043, publicKey));
+        () -> new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043).verify(publicKey));
   }
 
   @Test
@@ -179,8 +184,8 @@ class EntityStatementRpServiceTest {
             .getPublicKey();
     assertDoesNotThrow(
         () ->
-            EntityStatementRpService.verifySignature(
-                ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043, publicKey));
+            new JsonWebToken(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043)
+                .verify(publicKey));
   }
 
   @Test
@@ -190,10 +195,8 @@ class EntityStatementRpServiceTest {
                 FileUtils.readFileToByteArray(
                     new File("src/test/resources/cert/fachdienst-sig.pem")))
             .getPublicKey();
-    assertThatThrownBy(
-            () ->
-                EntityStatementRpService.verifySignature(
-                    ENTITY_STMNT_IDP_FACHDIENST_EXPIRED, publicKey))
+    final JsonWebToken jsonWebTokenExpired = new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRED);
+    assertThatThrownBy(() -> jsonWebTokenExpired.verify(publicKey))
         .isInstanceOf(IdpJwtExpiredException.class);
   }
 }
