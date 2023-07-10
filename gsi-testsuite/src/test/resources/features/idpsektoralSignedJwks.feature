@@ -1,5 +1,5 @@
 #
-# Copyright [2023] gematik GmbH
+# Copyright 2023 gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 #
 
 @SignedJwks
+@PRODUKT:IDP-Sek
 Feature: Test signed Jwks of IdpSektoral
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
@@ -27,6 +28,8 @@ Feature: Test signed Jwks of IdpSektoral
 
   @TCID:IDPSEKTORAL_SIGNED_JWKS_001
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral signedJwks - Gutfall - Validiere Response
 
   ```
@@ -41,11 +44,13 @@ Feature: Test signed Jwks of IdpSektoral
     And Send Get Request to "${signed_jwks_uri}"
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "200"
-    And TGR current response with attribute "$.header.Content-Type" matches "application/jose.*"
+    And TGR current response with attribute "$.header.Content-Type" matches "application/jwk-set.*"
 
 
   @TCID:IDPSEKTORAL_SIGNED_JWKS_002
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral signedJwks - Gutfall - Validiere Response Header Claims
 
   ```
@@ -67,6 +72,8 @@ Feature: Test signed Jwks of IdpSektoral
 
   @TCID:IDPSEKTORAL_SIGNED_JWKS_003
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral signedJwks - Gutfall - Validiere Response Body Claims
 
   ```
@@ -77,7 +84,7 @@ Feature: Test signed Jwks of IdpSektoral
     Given TGR clear recorded messages
     And Send Get Request to "${signed_jwks_uri}"
     And TGR find request to path ".*"
-    Then TGR current response at "$.body.body.keys.[?(@.kid.content=='${entity_statement_sig_kid}')]" matches as JSON:
+    Then TGR current response at "$.body.body.keys.0" matches as JSON:
         """
           {
             use:                           'sig',

@@ -1,5 +1,5 @@
 /*
- *  Copyright [2023] gematik GmbH
+ *  Copyright 2023 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,13 +41,12 @@ public class ServerUrlService {
   private String fedmasterFetchEntityStatementEndpoint;
 
   public String determineServerUrl() {
-    if (serverUrl == null) {
-      serverUrl =
-          Optional.ofNullable(gsiConfiguration.getServerUrl())
-              .filter(StringUtils::isNotBlank)
-              .orElse("Parameter \"gsi.serverUrl\" not found in configuration.");
-    }
-    return serverUrl;
+    return getServerUrlFromConfig()
+        .orElse("Parameter \"fd-auth-server.serverUrl\" not found in configuration.");
+  }
+
+  private Optional<String> getServerUrlFromConfig() {
+    return Optional.ofNullable(gsiConfiguration.getServerUrl()).filter(StringUtils::isNotBlank);
   }
 
   public String determineFedmasterUrl() {

@@ -1,5 +1,5 @@
 #
-# Copyright [2023] gematik GmbH
+# Copyright 2023 gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 #
 
 @EntityStatement
+@PRODUKT:IDP-Sek
 Feature: Test Entity Statement of IdpSektoral
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
@@ -24,6 +25,8 @@ Feature: Test Entity Statement of IdpSektoral
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_001
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral Signature - Check Entity Statement
 
   ```
@@ -36,6 +39,8 @@ Feature: Test Entity Statement of IdpSektoral
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_002
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral EntityStatement - Gutfall - Validiere Response
 
   ```
@@ -55,6 +60,8 @@ Feature: Test Entity Statement of IdpSektoral
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_003
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral EntityStatement - Gutfall - Validiere Response Header Claims
 
   ```
@@ -76,6 +83,8 @@ Feature: Test Entity Statement of IdpSektoral
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_004
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral EntityStatement - Gutfall - Validiere Response Body Claims
 
   ```
@@ -101,6 +110,8 @@ Feature: Test Entity Statement of IdpSektoral
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_005
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral EntityStatement - Gutfall - Validiere Metadata Body Claim
 
   ```
@@ -163,6 +174,8 @@ Feature: Test Entity Statement of IdpSektoral
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_006
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral EntityStatement - Gutfall - Validiere JWKS in Body Claims
 
   ```
@@ -189,6 +202,8 @@ Feature: Test Entity Statement of IdpSektoral
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_007
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral EntityStatement - Gutfall - Validiere scopes_supported
 
   ```
@@ -211,6 +226,8 @@ Feature: Test Entity Statement of IdpSektoral
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_008
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral EntityStatement - Gutfall - Validiere response_types_supported
 
   ```

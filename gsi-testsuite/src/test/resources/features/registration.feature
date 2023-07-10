@@ -1,5 +1,5 @@
 #
-# Copyright [2023] gematik GmbH
+# Copyright 2023 gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,15 +15,20 @@
 #
 
 @Registration
+@PRODUKT:IDP-Sek
 Feature: Test Fed Master's Entity Statement about IdpSektoral
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
+    Given TGR clear recorded messages
     Given Fetch Fed Master's Entity Statement
     And TGR find request to path "/.well-known/openid-federation"
     Then TGR set local variable "fedmasterFederationFetchEndpoint" to "!{rbel:currentResponseAsString('$..federation_fetch_endpoint')}"
     Then TGR set local variable "fedmasterIdpListEndpoint" to "!{rbel:currentResponseAsString('$..idp_list_endpoint')}"
 
   @TCID:IDPSEKTORAL_FEDM_ENTITY_STATEMENT_001
+  @PRIO:1
+  @TESTSTUFE:4
+  @Approval
   Scenario: IdpSektoral - Check Registration in Fed Master's Entity Statement
 
   ```
@@ -52,6 +57,9 @@ Feature: Test Fed Master's Entity Statement about IdpSektoral
 
 
   @TCID:IDPSEKTORAL_FEDM_ENTITY_STATEMENT_002
+  @PRIO:1
+  @TESTSTUFE:4
+  @Approval
   Scenario: IdpSektoral - Check Registration in Fed Master's IDP List
 
   ```
