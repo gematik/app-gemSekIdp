@@ -1,10 +1,10 @@
 gsi:
   sigKeyConfig:
-    fileName: classpath:cert/fedidp-sig.p12
+    fileName: classpath:cert/ref-es-sig.p12
     keyId: puk_idp_sig
     use: sig
   tokenKeyConfig:
-    fileName: classpath:cert/fedidp-token.p12
+    fileName: classpath:cert/ref-es-sig.p12
     keyId: puk_fed_idp_token
     use: sig
   serverUrl: "${GSI_SERVER_URL:https://gsi.dev.gematik.solutions}"

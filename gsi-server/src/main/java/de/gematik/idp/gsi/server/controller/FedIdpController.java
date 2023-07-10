@@ -1,5 +1,5 @@
 /*
- *  Copyright [2023] gematik GmbH
+ *  Copyright 2023 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package de.gematik.idp.gsi.server.controller;
 
-import static de.gematik.idp.EnvHelper.getSystemProperty;
 import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_ENDPOINT;
 import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_TYP;
 import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
@@ -25,7 +24,7 @@ import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
 import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_SCOPE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_GIVEN_NAME;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_DISPLAY_NAME;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_ORGANIZATION;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_PROFESSION;
@@ -40,10 +39,11 @@ import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.data.FederationPrivKey;
 import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.data.ParResponse;
+import de.gematik.idp.data.TokenResponse;
 import de.gematik.idp.field.ClientUtilities;
+import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.data.FedIdpAuthSession;
 import de.gematik.idp.gsi.server.data.GsiConstants;
-import de.gematik.idp.gsi.server.data.TokenResponse;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.gsi.server.services.AuthenticationService;
 import de.gematik.idp.gsi.server.services.EntityStatementBuilder;
@@ -61,6 +61,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,6 +69,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
+import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -88,6 +90,7 @@ public class FedIdpController {
   public static final int URI_NONCE_LENGTH = 16;
   public static final int AUTH_CODE_LENGTH = 16;
   private static final int MAX_AUTH_SESSION_AMOUNT = 10000;
+  public static final int ID_TOKEN_TTL_SECONDS = 300;
 
   private final EntityStatementRpService entityStatementRpService;
   private final EntityStatementBuilder entityStatementBuilder;
@@ -97,11 +100,13 @@ public class FedIdpController {
   private final IdpJwtProcessor jwtProcessorSigKey;
   private final IdpJwtProcessor jwtProcessorTokenKey;
   private final ObjectMapper objectMapper;
+  private final GsiConfiguration gsiConfiguration;
 
   @Autowired FederationPrivKey entityStatementSigKey;
 
   // TODO: delete oldest entry
-  private final List<FedIdpAuthSession> fedIdpAuthSessions = new ArrayList<>();
+  private final List<FedIdpAuthSession> fedIdpAuthSessions =
+      Collections.synchronizedList(new ArrayList<>());
 
   private static void setNoCacheHeader(final HttpServletResponse response) {
     response.setHeader("Cache-Control", "no-store");
@@ -115,11 +120,12 @@ public class FedIdpController {
     return JwtHelper.signJson(
         jwtProcessorSigKey,
         objectMapper,
-        entityStatementBuilder.buildEntityStatement(serverUrlService.determineServerUrl()),
+        entityStatementBuilder.buildEntityStatement(
+            serverUrlService.determineServerUrl(), gsiConfiguration.getFedmasterUrl()),
         ENTITY_STATEMENT_TYP);
   }
 
-  @GetMapping(value = FED_SIGNED_JWKS_ENDPOINT, produces = "application/jose;charset=UTF-8")
+  @GetMapping(value = FED_SIGNED_JWKS_ENDPOINT, produces = "application/jwk-set+json;charset=UTF-8")
   public String getSignedJwks() {
     return JwtHelper.signJson(
         jwtProcessorSigKey, objectMapper, JwtHelper.getJwks(entityStatementSigKey), "jwk-set+json");
@@ -140,7 +146,7 @@ public class FedIdpController {
       @RequestParam(name = "client_id") @NotEmpty @Pattern(regexp = "^https?://.*$")
           final String fachdienstClientId,
       @RequestParam(name = "state") @NotEmpty final String fachdienstState,
-      @RequestParam(name = "redirect_uri") @NotEmpty String fachdienstRedirectUri,
+      @RequestParam(name = "redirect_uri") @NotEmpty final String fachdienstRedirectUri,
       @RequestParam(name = "code_challenge") @NotEmpty final String fachdienstCodeChallenge,
       @RequestParam(name = "code_challenge_method") @NotEmpty @Pattern(regexp = "S256")
           final String fachdienstCodeChallengeMethod,
@@ -165,11 +171,6 @@ public class FedIdpController {
     // https://tools.ietf.org/id/draft-ietf-oauth-par-04.html#section-2.2
     final String requestUri =
         "urn:" + fachdienstClientId + ":" + Nonce.getNonceAsHex(URI_NONCE_LENGTH);
-
-    if (getSystemProperty("LTU_DEV").isPresent()) {
-      log.info("\"LTU_DEV\" as system property detected, overwrite fachdienstRedirectUri");
-      fachdienstRedirectUri = "https://idpfadi.dev.gematik.solutions";
-    }
 
     fedIdpAuthSessions.add(
         FedIdpAuthSession.builder()
@@ -290,15 +291,21 @@ public class FedIdpController {
 
     final IdTokenBuilder idTokenBuilder =
         new IdTokenBuilder(jwtProcessorTokenKey, serverUrlService.determineServerUrl());
-    final String idToken =
-        idTokenBuilder
-            .buildIdToken(clientId, getUserDataClaims(), session.getFachdienstNonce())
-            .getRawString();
+    final String idToken;
+    try {
+      idToken =
+          idTokenBuilder
+              .buildIdToken(clientId, getUserDataClaims(), session.getFachdienstNonce())
+              .encryptAsJwt(entityStatementRpService.getRpEncKey(clientId))
+              .getRawString();
+    } catch (final JoseException e) {
+      throw new GsiException(e);
+    }
     return TokenResponse.builder()
         .idToken(idToken)
         .accessToken("TODO ACCESS_TOKEN")
         .tokenType("Bearer")
-        .expiresIn(300)
+        .expiresIn(ID_TOKEN_TTL_SECONDS)
         .build();
   }
 
@@ -321,14 +328,19 @@ public class FedIdpController {
   }
 
   private Map<String, Object> getUserDataClaims() {
-    // TODO: claims depend on other data -> refactor
+    // claims hard coded for E-Rezept
     return Map.ofEntries(
-        Map.entry(TELEMATIK_GIVEN_NAME.getJoseName(), "Jules Winnfield"),
-        Map.entry(TELEMATIK_ID.getJoseName(), "230847"),
-        Map.entry(TELEMATIK_ORGANIZATION.getJoseName(), "Heartbreakers"),
-        Map.entry(TELEMATIK_PROFESSION.getJoseName(), "Patient"),
+        // acr & amr
         Map.entry(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH),
-        Map.entry(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "urn:telematik:auth:eID"));
+        Map.entry(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "urn:telematik:auth:eID"),
+        // scope   urn:telematik:display_name (usual values taken from
+        // idp\idp-testsuite\src\test\resources\certs\valid\80276883110000018680-C_CH_AUT_E256.p12)
+        Map.entry(
+            TELEMATIK_DISPLAY_NAME.getJoseName(), "Darius Michael Brian Ubbo Graf von Bödefeld"),
+        // scope urn:telematik:versicherter
+        Map.entry(TELEMATIK_PROFESSION.getJoseName(), "1.2.276.0.76.4.49"),
+        Map.entry(TELEMATIK_ID.getJoseName(), "X110411675"),
+        Map.entry(TELEMATIK_ORGANIZATION.getJoseName(), "109500969"));
   }
 
   private int getSessionIndex(final String requestUri) {

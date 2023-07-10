@@ -1,5 +1,5 @@
 /*
- *  Copyright [2023] gematik GmbH
+ *  Copyright 2023 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,10 @@ import de.gematik.idp.token.JsonWebToken;
 import java.io.File;
 import java.io.IOException;
 import java.security.PublicKey;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.jose4j.jwk.PublicJsonWebKey;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.mockito.Mockito;
@@ -65,7 +67,7 @@ class EntityStatementRpServiceTest {
   //      "[\"http://idp-fachdienst:8084\",\"http://idp-sektoral:8082\"]";
 
   private final String ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043 =
-      "eyJhbGciOiJFUzI1NiIsInR5cCI6ImVudGl0eS1zdGF0ZW1lbnQrand0Iiwia2lkIjoicHVrX2ZhY2hkaWVuc3Rfc2lnIn0.eyJpc3MiOiJodHRwczovL2lkcGZhZGkuZGV2LmdlbWF0aWsuc29sdXRpb25zIiwic3ViIjoiaHR0cHM6Ly9pZHBmYWRpLmRldi5nZW1hdGlrLnNvbHV0aW9ucyIsImlhdCI6MTY3OTU2NTMzMCwiZXhwIjoyMzEwMjg1MzMwLCJqd2tzIjp7ImtleXMiOlt7InVzZSI6InNpZyIsImtpZCI6InB1a19mYWNoZGllbnN0X3NpZyIsImt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiOWJKczI3WUFmbE1VV0s1bnh1aUY2WEFHMEphenV2d1JpMUVwRkswWEtpayIsInkiOiJQOGx6TlZST2dUdXdiRHFzZDhyVDFBSTN6ZXo5NEhCc1REcE92YWpQMHJZIn1dfSwiYXV0aG9yaXR5X2hpbnRzIjpbImh0dHBzOi8vaWRwLWZlZG1hc3Rlci1ycHUucmlzZWRldi5hdCJdLCJtZXRhZGF0YSI6eyJvcGVuaWRfcmVseWluZ19wYXJ0eSI6eyJzaWduZWRfandrc191cmkiOiJodHRwczovL2lkcGZhZGkuZGV2LmdlbWF0aWsuc29sdXRpb25zL2p3cy5qc29uIiwib3JnYW5pemF0aW9uX25hbWUiOiJGYWNoZGllbnN0MDA3IGRlcyBGZWRJZHAgUE9DcyIsImNsaWVudF9uYW1lIjoiRmFjaGRpZW5zdDAwNyIsImxvZ29fdXJpIjoiaHR0cHM6Ly9pZHBmYWRpLmRldi5nZW1hdGlrLnNvbHV0aW9ucy9ub0xvZ29ZZXQiLCJyZWRpcmVjdF91cmlzIjpbImh0dHBzOi8vRmFjaGRpZW5zdDAwNy5kZS9jbGllbnQiLCJodHRwczovL3JlZGlyZWN0LnRlc3RzdWl0ZS5nc2kiXSwicmVzcG9uc2VfdHlwZXMiOlsiY29kZSJdLCJjbGllbnRfcmVnaXN0cmF0aW9uX3R5cGVzIjpbImF1dG9tYXRpYyJdLCJncmFudF90eXBlcyI6WyJhdXRob3JpemF0aW9uX2NvZGUiXSwicmVxdWlyZV9wdXNoZWRfYXV0aG9yaXphdGlvbl9yZXF1ZXN0cyI6dHJ1ZSwidG9rZW5fZW5kcG9pbnRfYXV0aF9tZXRob2QiOiJwcml2YXRlX2tleV9qd3QiLCJkZWZhdWx0X2Fjcl92YWx1ZXMiOiJnZW1hdGlrLWVoZWFsdGgtbG9hLWhpZ2giLCJpZF90b2tlbl9zaWduZWRfcmVzcG9uc2VfYWxnIjoiRVMyNTYiLCJpZF90b2tlbl9lbmNyeXB0ZWRfcmVzcG9uc2VfYWxnIjoiRUNESC1FUyIsImlkX3Rva2VuX2VuY3J5cHRlZF9yZXNwb25zZV9lbmMiOiJBMjU2R0NNIiwic2NvcGUiOiJ1cm46dGVsZW1hdGlrOmRpc3BsYXlfbmFtZSB1cm46dGVsZW1hdGlrOnZlcnNpY2hlcnRlciBvcGVuaWQifSwiZmVkZXJhdGlvbl9lbnRpdHkiOnsibmFtZSI6IkZhY2hkaWVuc3QwMDciLCJjb250YWN0cyI6IlN1cHBvcnRARmFjaGRpZW5zdDAwNy5kZSIsImhvbWVwYWdlX3VyaSI6Imh0dHBzOi8vRmFjaGRpZW5zdDAwNy5kZSJ9fX0.pdNCBhrNw4lU9Uewg1l8nHUS0xvJDM5kxogiBhmcdvxguzlggWPd_hLz4DtS5ITQFL-othO6oLC7MBqziH3wtw";
+      "eyJhbGciOiJFUzI1NiIsInR5cCI6ImVudGl0eS1zdGF0ZW1lbnQrand0Iiwia2lkIjoicHVrX2ZkX3NpZyJ9.eyJpc3MiOiJodHRwczovL2lkcGZhZGkuZGV2LmdlbWF0aWsuc29sdXRpb25zIiwic3ViIjoiaHR0cHM6Ly9pZHBmYWRpLmRldi5nZW1hdGlrLnNvbHV0aW9ucyIsImlhdCI6MTY4ODU0ODUyNywiZXhwIjoyMzE5NzAwNTI3LCJqd2tzIjp7ImtleXMiOlt7InVzZSI6InNpZyIsImtpZCI6InB1a19mZF9zaWciLCJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI6IjliSnMyN1lBZmxNVVdLNW54dWlGNlhBRzBKYXp1dndSaTFFcEZLMFhLaWsiLCJ5IjoiUDhsek5WUk9nVHV3YkRxc2Q4clQxQUkzemV6OTRIQnNURHBPdmFqUDByWSJ9LHsidXNlIjoiZW5jIiwia2lkIjoicHVrX2ZkX2VuYyIsImt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiTlFMYVdidVFESGdTSGFocWI5enhsRGRpTUNIWFNnWTBMOXFsMWs3QlZVRSIsInkiOiJfVVNnbXFobE0zcHZhYmtaMlNTX1lFMlE1N3RUczZwSzljRV91WkItdTNjIn0seyJ4NWMiOlsiTUlJQ0dqQ0NBY0NnQXdJQkFnSVVUR3lMbTBkWENTd1V1blMrQzdZNGRyWmdHNWt3Q2dZSUtvWkl6ajBFQXdJd2Z6RUxNQWtHQTFVRUJoTUNSRVV4RHpBTkJnTlZCQWdNQmtKbGNteHBiakVQTUEwR0ExVUVCd3dHUW1WeWJHbHVNUm93R0FZRFZRUUtEQkZuWlcxaGRHbHJJRTVQVkMxV1FVeEpSREVQTUEwR0ExVUVDd3dHVUZRZ1NVUk5NU0V3SHdZRFZRUUREQmhtWVdOb1pHbGxibk4wVkd4elF5QlVSVk5VTFU5T1RGa3dIaGNOTWpNd01qRXdNVEl6TlRNMVdoY05NalF3TWpFd01USXpOVE0xV2pCL01Rc3dDUVlEVlFRR0V3SkVSVEVQTUEwR0ExVUVDQXdHUW1WeWJHbHVNUTh3RFFZRFZRUUhEQVpDWlhKc2FXNHhHakFZQmdOVkJBb01FV2RsYldGMGFXc2dUazlVTFZaQlRFbEVNUTh3RFFZRFZRUUxEQVpRVkNCSlJFMHhJVEFmQmdOVkJBTU1HR1poWTJoa2FXVnVjM1JVYkhORElGUkZVMVF0VDA1TVdUQlpNQk1HQnlxR1NNNDlBZ0VHQ0NxR1NNNDlBd0VIQTBJQUJPUnFxU3VyKzJIWlRoRnFBN0VHcThiYkYyLzV3TDVtamMvQnhvT2RvdDdydDBRTDBEbksyMGVyNHBLVHhyaXkwK05Qc3hRRmt2bUtlRUtiVjRFaUo2U2pHakFZTUFrR0ExVWRFd1FDTUFBd0N3WURWUjBQQkFRREFnWGdNQW9HQ0NxR1NNNDlCQU1DQTBnQU1FVUNJRDBUaXZWK25sVE4wNnZqQlp0MVBVUWQ2R2hRa2F5RUorYURxUzBSMloveEFpRUExS3hGSFE3R0xEU2wvNk9vZ1dGc3hLYWZYUSt5WktrOXZ0Sy9Qb2hmbTNvPSJdLCJ1c2UiOiJzaWciLCJraWQiOiJwdWtfdGxzX3NpZyIsImt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoiNUdxcEs2djdZZGxPRVdvRHNRYXJ4dHNYYl9uQXZtYU56OEhHZzUyaTN1cyIsInkiOiJ0MFFMMERuSzIwZXI0cEtUeHJpeTAtTlBzeFFGa3ZtS2VFS2JWNEVpSjZRIn1dfSwiYXV0aG9yaXR5X2hpbnRzIjpbImh0dHBzOi8vYXBwLXRlc3QuZmVkZXJhdGlvbm1hc3Rlci5kZSJdLCJtZXRhZGF0YSI6eyJvcGVuaWRfcmVseWluZ19wYXJ0eSI6eyJzaWduZWRfandrc191cmkiOiJodHRwczovL2lkcGZhZGkuZGV2LmdlbWF0aWsuc29sdXRpb25zL2p3cy5qc29uIiwib3JnYW5pemF0aW9uX25hbWUiOiJGYWNoZGllbnN0MDA3IGRlcyBGZWRJZHAgUE9DcyIsImNsaWVudF9uYW1lIjoiRmFjaGRpZW5zdDAwNyIsImxvZ29fdXJpIjoiaHR0cHM6Ly9pZHBmYWRpLmRldi5nZW1hdGlrLnNvbHV0aW9ucy9ub0xvZ29ZZXQiLCJyZWRpcmVjdF91cmlzIjpbImh0dHBzOi8vRmFjaGRpZW5zdDAwNy5kZS9jbGllbnQiLCJodHRwczovL3JlZGlyZWN0LnRlc3RzdWl0ZS5nc2kiLCJodHRwczovL2lkcGZhZGkuZGV2LmdlbWF0aWsuc29sdXRpb25zL2F1dGgiXSwicmVzcG9uc2VfdHlwZXMiOlsiY29kZSJdLCJjbGllbnRfcmVnaXN0cmF0aW9uX3R5cGVzIjpbImF1dG9tYXRpYyJdLCJncmFudF90eXBlcyI6WyJhdXRob3JpemF0aW9uX2NvZGUiXSwicmVxdWlyZV9wdXNoZWRfYXV0aG9yaXphdGlvbl9yZXF1ZXN0cyI6dHJ1ZSwidG9rZW5fZW5kcG9pbnRfYXV0aF9tZXRob2QiOiJzZWxmX3NpZ25lZF90bHNfY2xpZW50X2F1dGgiLCJkZWZhdWx0X2Fjcl92YWx1ZXMiOiJnZW1hdGlrLWVoZWFsdGgtbG9hLWhpZ2giLCJpZF90b2tlbl9zaWduZWRfcmVzcG9uc2VfYWxnIjoiRVMyNTYiLCJpZF90b2tlbl9lbmNyeXB0ZWRfcmVzcG9uc2VfYWxnIjoiRUNESC1FUyIsImlkX3Rva2VuX2VuY3J5cHRlZF9yZXNwb25zZV9lbmMiOiJBMjU2R0NNIiwic2NvcGUiOiJ1cm46dGVsZW1hdGlrOmRpc3BsYXlfbmFtZSB1cm46dGVsZW1hdGlrOnZlcnNpY2hlcnRlciBvcGVuaWQifSwiZmVkZXJhdGlvbl9lbnRpdHkiOnsibmFtZSI6IkZhY2hkaWVuc3QwMDciLCJjb250YWN0cyI6IlN1cHBvcnRARmFjaGRpZW5zdDAwNy5kZSIsImhvbWVwYWdlX3VyaSI6Imh0dHBzOi8vRmFjaGRpZW5zdDAwNy5kZSJ9fX0.B-r9wLHKEsxmo6GwQWV-OSg9hzIz-mDAlK5mpCFBkD_LJDAeMY4BU4exUBDr89dSHUoCU6LCzARECeLpN48SKw";
   /*
   http://idp-fachdienst:8084 is part of this saved entity statement
    */
@@ -180,7 +182,7 @@ class EntityStatementRpServiceTest {
     final PublicKey publicKey =
         CryptoLoader.getCertificateFromPem(
                 FileUtils.readFileToByteArray(
-                    new File("src/test/resources/cert/fedmaster-sig.pem")))
+                    new File("src/test/resources/cert/fedmaster-sig-TU.pem")))
             .getPublicKey();
     assertDoesNotThrow(
         () ->
@@ -198,5 +200,28 @@ class EntityStatementRpServiceTest {
     final JsonWebToken jsonWebTokenExpired = new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRED);
     assertThatThrownBy(() -> jsonWebTokenExpired.verify(publicKey))
         .isInstanceOf(IdpJwtExpiredException.class);
+  }
+
+  @SneakyThrows
+  @Test
+  void getEncKeyRp() {
+    doAutoregistration();
+    mockServerClient
+        .when(request().withMethod("GET").withPath(IdpConstants.ENTITY_STATEMENT_ENDPOINT))
+        .respond(
+            response()
+                .withStatusCode(200)
+                .withContentType(MediaType.APPLICATION_JSON)
+                .withBody(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
+    mockServerClient
+        .when(request().withMethod("GET").withPath("/federation/fetch"))
+        .respond(
+            response()
+                .withStatusCode(200)
+                .withContentType(MediaType.APPLICATION_JSON)
+                .withBody(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
+    gsiConfiguration.setFedmasterUrl(mockServerUrl);
+    final PublicJsonWebKey rpEncKey = entityStatementRpService.getRpEncKey(mockServerUrl);
+    assertThat(rpEncKey).isNotNull();
   }
 }

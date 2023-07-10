@@ -1,5 +1,5 @@
 /*
- *  Copyright [2023] gematik GmbH
+ *  Copyright 2023 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.rest.SerenityRest;
@@ -146,6 +147,23 @@ public class StepsGlue {
             rbelElement.findElement(rbelPath).orElseThrow().getRawStringContent(),
             oracleDocStr,
             false);
+  }
+
+  @Then("Json String {string} at {string} matches {string}")
+  public void jsonStringMatchesStringValue(
+      final String jsonString, final String rbelPath, final String value) {
+    final RbelLogger rbelLogger = RbelLogger.build();
+    final RbelElement rbelElement =
+        rbelLogger
+            .getRbelConverter()
+            .convertElement(TigerGlobalConfiguration.readString(jsonString, jsonString), null);
+    final String text = rbelElement.findElement(rbelPath).orElseThrow().getRawStringContent();
+    assertThat(text).isNotNull();
+    if (!text.equals(value)) {
+      assertThat(text)
+          .as("Rbelpath '%s' matches", rbelPath)
+          .matches(Pattern.compile(value, Pattern.MULTILINE | Pattern.DOTALL));
+    }
   }
 
   @Then("The JWT {string} is vaild for more than {int} but less than {int} seconds")

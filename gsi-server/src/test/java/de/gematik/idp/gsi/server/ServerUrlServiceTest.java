@@ -1,5 +1,5 @@
 /*
- *  Copyright [2023] gematik GmbH
+ *  Copyright 2023 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,13 +50,13 @@ class ServerUrlServiceTest {
 
   @Test
   void testDetermineServerUrl() {
-    assertThat(serverUrlService.determineServerUrl()).contains(":8085");
+    assertThat(serverUrlService.determineServerUrl()).contains("gsi.dev.gematik.solutions");
   }
 
   @Test
   void testFedmasterServerUrl() {
     assertThat(serverUrlService.determineFedmasterUrl())
-        .isEqualTo("https://app-ref.federationmaster.de");
+        .isEqualTo("https://app-test.federationmaster.de");
   }
 
   @Test

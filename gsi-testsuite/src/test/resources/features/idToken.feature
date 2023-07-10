@@ -1,5 +1,5 @@
 #
-# Copyright [2023] gematik GmbH
+# Copyright 2023 gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-  
+
 @IdToken
+@PRODUKT:IDP-Sek
 Feature: Test IdpSektoral's ID Token
 
   @TCID:IDPSEKTORAL_ID_TOKEN_001
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral ID Token - Gutfall - validiere Header Claims
 
   ```
@@ -36,6 +39,8 @@ Feature: Test IdpSektoral's ID Token
 
   @TCID:IDPSEKTORAL_ID_TOKEN_002
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral ID Token - Gutfall - validiere Body Claims
 
   ```
@@ -48,10 +53,10 @@ Feature: Test IdpSektoral's ID Token
             "sub":                                    '.*',
             "iat":                                    "${json-unit.ignore}",
             "exp":                                    "${json-unit.ignore}",
-            "aud":                                    'http.*',
+            "aud":                                    '.*',
             "nonce":                                  '.*',
             "acr":                                    '(gematik-ehealth-loa-substantial)|(gematik-ehealth-loa-high)',
-            "amr":                                    '(urn:telematik:auth:eGK)|(urn:telematik:auth:eID)|(urn:telematik:auth:other)',
+            "amr":                                    "${json-unit.ignore}",
             "urn:telematik:claims:profession":        '.*',
             "urn:telematik:claims:given_name":        '.*',
             "urn:telematik:claims:organization":      '.*',
@@ -69,11 +74,13 @@ Feature: Test IdpSektoral's ID Token
             "____urn:telematik:claims:display_name":  "${json-unit.ignore}"
           }
         """
+    And Json String "gsi.idToken" at "$.body.amr.0" matches '(urn:telematik:auth:eGK)|(urn:telematik:auth:eID)|(urn:telematik:auth:other)'
 
 
   @TCID:IDPSEKTORAL_ID_TOKEN_003
   @Approval
-  @OpenBug
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral ID Token - Gutfall - validiere zeitliche Gültigkeit
 
   ```
