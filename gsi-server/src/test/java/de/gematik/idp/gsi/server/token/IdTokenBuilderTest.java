@@ -1,5 +1,5 @@
 /*
- *  Copyright [2023] gematik GmbH
+ *  Copyright 2023 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_ORGANIZATION;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_PROFESSION;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -38,6 +37,7 @@ import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,7 +53,9 @@ class IdTokenBuilderTest {
   @BeforeEach
   public void init(@PkiKeyResolver.Filename("authz_rsa") final PkiIdentity clientIdentity) {
     pkiIdentity = clientIdentity;
-    idTokenBuilder = new IdTokenBuilder(new IdpJwtProcessor(pkiIdentity), uriIdpServer);
+    idTokenBuilder =
+        new IdTokenBuilder(
+            new IdpJwtProcessor(pkiIdentity, Optional.of("authz_rsa")), uriIdpServer);
   }
 
   @Test

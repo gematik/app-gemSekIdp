@@ -1,5 +1,5 @@
 /*
- *  Copyright [2023] gematik GmbH
+ *  Copyright 2023 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -30,6 +31,7 @@ import de.gematik.idp.field.ClientUtilities;
 import de.gematik.idp.field.CodeChallengeMethod;
 import de.gematik.idp.gsi.server.GsiServer;
 import de.gematik.idp.gsi.server.services.EntityStatementRpService;
+import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +40,9 @@ import kong.unirest.HttpResponse;
 import kong.unirest.HttpStatus;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
+import lombok.SneakyThrows;
 import org.apache.http.HttpHeaders;
+import org.jose4j.jwk.PublicJsonWebKey;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -57,6 +61,7 @@ import org.springframework.test.context.ActiveProfiles;
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FedIdpControllerTest {
+
   @Autowired private EntityStatementRpService entityStatementRpService;
   static final List<String> OPENID_PROVIDER_CLAIMS =
       List.of(
@@ -148,6 +153,7 @@ class FedIdpControllerTest {
   @Test
   void entityStatement_OpenidProviderClaimsContentCorrect() {
 
+    final String gsiServerUrl = "https://gsi.dev.gematik.solutions";
     final Map<String, Object> metadata = getInnerClaimMap(entityStatementbodyClaims, "metadata");
     final Map<String, Object> openidProvider =
         Objects.requireNonNull(
@@ -155,14 +161,14 @@ class FedIdpControllerTest {
             "missing claim: openid_provider");
 
     assertThat(openidProvider)
-        .containsEntry("issuer", testHostUrl)
-        .containsEntry("signed_jwks_uri", testHostUrl + "/jws.json");
+        .containsEntry("issuer", gsiServerUrl)
+        .containsEntry("signed_jwks_uri", gsiServerUrl + "/jws.json");
     assertThat(openidProvider.get("organization_name")).asString().isNotEmpty();
     assertThat(openidProvider.get("logo_uri")).asString().isNotEmpty();
     assertThat(openidProvider)
-        .containsEntry("authorization_endpoint", testHostUrl + "/auth")
-        .containsEntry("token_endpoint", testHostUrl + "/token")
-        .containsEntry("pushed_authorization_request_endpoint", testHostUrl + "/PAR_Auth");
+        .containsEntry("authorization_endpoint", gsiServerUrl + "/auth")
+        .containsEntry("token_endpoint", gsiServerUrl + "/token")
+        .containsEntry("pushed_authorization_request_endpoint", gsiServerUrl + "/PAR_Auth");
     assertThat((List) openidProvider.get("client_registration_types_supported"))
         .containsExactlyInAnyOrder("automatic");
     assertThat((List) openidProvider.get("subject_types_supported"))
@@ -210,7 +216,7 @@ class FedIdpControllerTest {
             "missing claim: federation_entity");
 
     assertThat(federationEntity)
-        .containsEntry("name", "idp4711")
+        .containsEntry("name", "gematik sektoraler IDP")
         .containsEntry("contacts", "support@idp4711.de")
         .containsEntry("homepage_uri", "https://idp4711.de");
   }
@@ -224,11 +230,12 @@ class FedIdpControllerTest {
   private HttpResponse<String> retrieveEntityStatement() {
     return Unirest.get(testHostUrl + IdpConstants.ENTITY_STATEMENT_ENDPOINT).asString();
   }
+
   /************************** SIGNED_JWKS_ENDPOINT *****************/
   @Test
   void sigendJwksResponse_ContentTypeEntityStatement() {
     assertThat(sigendJwksResponseGood.getHeaders().get(HttpHeaders.CONTENT_TYPE).get(0))
-        .isEqualTo("application/jose;charset=UTF-8");
+        .isEqualTo("application/jwk-set+json;charset=UTF-8");
   }
 
   @Test
@@ -488,11 +495,26 @@ class FedIdpControllerTest {
     assertThat(resp.getStatus()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
   }
 
+  @SneakyThrows
   @Test
   void parRequest_authRequestUriPar_tokenResponse_contains_httpStatus_200() {
+
+    final String KEY_ID = "ref_puk_fd_enc";
+    // key from idp\idp-commons\src\test\resources\sig-nist.p12
+    final String JWK_AS_STRING =
+        "{\"use\": \"enc\",\"kid\": \""
+            + KEY_ID
+            + "\",\"kty\": \"EC\",\"crv\": \"P-256\",\"x\":"
+            + " \"Mq933FT_V8xd1TkfB0pH02d6cx2bmUS-bxHuBtA1yfs\",\"y\":"
+            + " \"5uwf8phUbWIi92CqgglM94ft-FC4MHH836khswo6ppo\"}";
+
     Mockito.doNothing()
         .when(entityStatementRpService)
         .doAutoregistration(testHostUrl, testHostUrl + "/AS");
+
+    Mockito.doReturn(PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING))
+        .when(entityStatementRpService)
+        .getRpEncKey(any());
 
     final String codeVerifier = ClientUtilities.generateCodeVerifier();
     final String redirectUri = testHostUrl + "/AS";
@@ -544,8 +566,11 @@ class FedIdpControllerTest {
             .asJson();
     assertThat(httpResponse.getStatus()).isEqualTo(HttpStatus.OK);
 
-    final String idToken = httpResponse.getBody().getObject().getString("id_token");
-    // Der ID_TOKEN ist hier noch plain. siehe GSI-70
+    final String idTokenEncrypted = httpResponse.getBody().getObject().getString("id_token");
+    final IdpJwe idpJwe = new IdpJwe(idTokenEncrypted);
+
+    // verify that token is encrypted and check kid
+    assertThat(idpJwe.extractHeaderClaims().get("kid")).isEqualTo(KEY_ID);
   }
 
   /** Increase Test coverage of Landing page endpoint */

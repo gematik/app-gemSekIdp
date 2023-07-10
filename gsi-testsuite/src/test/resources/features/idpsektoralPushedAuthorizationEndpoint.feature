@@ -1,5 +1,5 @@
 #
-# Copyright [2023] gematik GmbH
+# Copyright 2023 gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 #
 
 @PushedAuthorizationEndpoint
+@PRODUKT:IDP-Sek
 Feature: Test IdpSektoral's Pushed Auth Endpoint
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
@@ -24,6 +25,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_001
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral Pushed Auth Endpoint - Gutfall - Validiere Response
 
   ```
@@ -45,6 +48,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_002
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral Pushed Auth Endpoint - Gutfall - Validiere Response Body
 
   ```
@@ -67,6 +72,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_003
     @Approval
+    @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - fehlerhaft befüllte Parameter
 
   ```
@@ -102,6 +109,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_004
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral Pushed Auth Endpoint - Negativfall - falsche HTTP Methode
 
   ```
@@ -125,6 +134,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_005
     @Approval
+    @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - fehlende verpflichtende Parameter
 
   ```
@@ -159,7 +170,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_006
-  @OpenBug
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral Pushed Auth Endpoint - Negativfall - invalid TLS Client Cert
 
   ```
@@ -190,7 +202,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_007
-    @OpenBug
+    @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - invalide Entity Statements
 
   ```

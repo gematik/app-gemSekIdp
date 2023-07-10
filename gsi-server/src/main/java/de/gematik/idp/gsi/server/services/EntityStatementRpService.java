@@ -1,5 +1,5 @@
 /*
- *  Copyright [2023] gematik GmbH
+ *  Copyright 2023 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jose4j.jwk.PublicJsonWebKey;
+import org.jose4j.lang.JoseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -87,6 +89,22 @@ public class EntityStatementRpService {
   public JsonWebToken getEntityStatementAboutRp(final String sub) {
     updateStatementAboutRpIfExpiredAndNewIsAvailable(sub);
     return entityStatementsFedmasterAboutFachdienst.get(sub);
+  }
+
+  public PublicJsonWebKey getRpEncKey(final String sub) throws JoseException {
+    final JsonWebToken entityStmntRp = getEntityStatementRp(sub);
+    final Map<String, Object> keyMap =
+        (Map<String, Object>) entityStmntRp.getBodyClaims().get("jwks");
+    final List<Map<String, Object>> keyList = (List<Map<String, Object>>) keyMap.get("keys");
+    final Map<String, Object> encKeyAsMap =
+        keyList.stream()
+            .filter(key -> key.get("use").equals("enc"))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new GsiException(
+                        INVALID_REQUEST, "Kein ENC Key gefunden", HttpStatus.BAD_REQUEST));
+    return PublicJsonWebKey.Factory.newPublicJwk(encKeyAsMap);
   }
 
   private static List<String> getRedirectUrisEntityStatementRp(final JsonWebToken entityStmntRp) {
@@ -205,7 +223,7 @@ public class EntityStatementRpService {
 
   private PublicKey getFedmasterSigKey() {
     return CryptoLoader.getCertificateFromPem(
-            resourceReader.getFileFromResourceAsBytes("cert/fedmaster-sig.pem"))
+            resourceReader.getFileFromResourceAsBytes("cert/fedmaster-sig-TU.pem"))
         .getPublicKey();
   }
 

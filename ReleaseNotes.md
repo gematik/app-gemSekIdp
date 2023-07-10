@@ -1,3 +1,11 @@
+# Release 2.0.2
+
+- fix entity statement for gsi.dev.gematik.solutions
+- fix user data claims in ID-TOKEN
+- encryption of ID_TOKEN implemented
+- set log level for some packages as JVM property
+- several fixes in testsuite
+
 # Release 1.3.6
 
 - update dependencies

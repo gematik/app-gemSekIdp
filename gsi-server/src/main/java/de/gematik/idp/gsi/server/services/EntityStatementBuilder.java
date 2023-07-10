@@ -1,5 +1,5 @@
 /*
- *  Copyright [2023] gematik GmbH
+ *  Copyright 2023 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,15 +39,15 @@ public class EntityStatementBuilder {
   private static final int ENTITY_STATEMENT_TTL_DAYS = 7;
   @Autowired FederationPrivKey entityStatementSigKey;
 
-  public EntityStatement buildEntityStatement(final String serverUrl) {
+  public EntityStatement buildEntityStatement(final String serverUrl, final String fedmasterUrl) {
     final ZonedDateTime currentTime = ZonedDateTime.now();
     return EntityStatement.builder()
         .exp(currentTime.plusDays(ENTITY_STATEMENT_TTL_DAYS).toEpochSecond())
         .iat(currentTime.toEpochSecond())
         .iss(serverUrl)
-        .sub("https://idp4711.de")
+        .sub(serverUrl)
         .jwks(JwtHelper.getJwks(entityStatementSigKey))
-        .authorityHints(new String[] {"todo Bezeichnung des Federation Master"})
+        .authorityHints(new String[] {fedmasterUrl})
         .metadata(getMetadata(serverUrl))
         .build();
   }
@@ -57,7 +57,7 @@ public class EntityStatementBuilder {
         OpenidProvider.builder()
             .issuer(serverUrl)
             .signedJwksUri(serverUrl + FED_SIGNED_JWKS_ENDPOINT)
-            .organizationName("Föderierter IDP des POC")
+            .organizationName("gematik sektoraler IDP")
             .logoUri(serverUrl + "/noLogoYet")
             .authorizationEndpoint(serverUrl + FED_AUTH_ENDPOINT)
             .tokenEndpoint(serverUrl + TOKEN_ENDPOINT)
@@ -82,7 +82,7 @@ public class EntityStatementBuilder {
             .build();
     final FederationEntity federationEntity =
         FederationEntity.builder()
-            .name("idp4711")
+            .name("gematik sektoraler IDP")
             .contacts("support@idp4711.de")
             .homepageUri("https://idp4711.de")
             .build();

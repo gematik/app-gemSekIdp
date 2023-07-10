@@ -1,5 +1,5 @@
 #
-# Copyright [2023] gematik GmbH
+# Copyright 2023 gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 #
 
 @AuthorizationEndpoint
+@PRODUKT:IDP-Sek
 Feature: Test IdpSektoral's Auth Endpoint
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
@@ -25,6 +26,8 @@ Feature: Test IdpSektoral's Auth Endpoint
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_001
   @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral Auth Endpoint - Gutfall - Validiere Response
 
   ```
@@ -32,7 +35,7 @@ Feature: Test IdpSektoral's Auth Endpoint
 
   Die HTTP Response muss:
 
-  - den Code 302 enthalten (TODO: was ist hier alles erlaubt? hauptsache kein fehler, oder?)
+  - den Code 302 enthalten
 
     Given TGR clear recorded messages
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
@@ -51,6 +54,8 @@ Feature: Test IdpSektoral's Auth Endpoint
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_002
     @Approval
+    @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlerhaft befüllte Parameter
 
   ```
@@ -89,6 +94,8 @@ Feature: Test IdpSektoral's Auth Endpoint
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_003
     @Approval
+    @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlende verpflichtende Parameter
 
   ```
@@ -129,6 +136,8 @@ Feature: Test IdpSektoral's Auth Endpoint
   @LongRunning
   @Approval
   @OpenBug
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario: IdpSektoral Auth Endpoint - Negativfall - abgelaufene request_uri
 
   ```
