@@ -89,4 +89,16 @@ public class ServerUrlService {
             "missing claim: federation_entity");
     return Objects.requireNonNull((String) federationEntity.get("federation_fetch_endpoint"));
   }
+
+  public Optional<String> determineSignedJwsUri(final JsonWebToken entityStmntRp) {
+    final Map<String, Object> bodyClaims = entityStmntRp.getBodyClaims();
+    final Map<String, Object> metadata =
+        Objects.requireNonNull(
+            (Map<String, Object>) bodyClaims.get("metadata"), "missing claim: metadata");
+    final Map<String, Object> openidRelyingParty =
+        Objects.requireNonNull(
+            (Map<String, Object>) metadata.get("openid_relying_party"),
+            "missing claim: openid_relying_party");
+    return Optional.of((String) openidRelyingParty.get("signed_jwks_uri"));
+  }
 }

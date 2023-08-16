@@ -499,20 +499,20 @@ class FedIdpControllerTest {
   @Test
   void parRequest_authRequestUriPar_tokenResponse_contains_httpStatus_200() {
 
-    final String KEY_ID = "ref_puk_fd_enc";
-    // key from idp\idp-commons\src\test\resources\sig-nist.p12
-    final String JWK_AS_STRING =
+    final String KEY_ID = "puk_fd_enc";
+    // key from gra-server/src/main/resources/cert/fachdienst-enc.p12
+    final String JWK_AS_STRING_PUK_FED_ENC =
         "{\"use\": \"enc\",\"kid\": \""
             + KEY_ID
             + "\",\"kty\": \"EC\",\"crv\": \"P-256\",\"x\":"
-            + " \"Mq933FT_V8xd1TkfB0pH02d6cx2bmUS-bxHuBtA1yfs\",\"y\":"
-            + " \"5uwf8phUbWIi92CqgglM94ft-FC4MHH836khswo6ppo\"}";
+            + " \"NQLaWbuQDHgSHahqb9zxlDdiMCHXSgY0L9ql1k7BVUE\",\"y\":"
+            + " \"_USgmqhlM3pvabkZ2SS_YE2Q57tTs6pK9cE_uZB-u3c\"}";
 
     Mockito.doNothing()
         .when(entityStatementRpService)
         .doAutoregistration(testHostUrl, testHostUrl + "/AS");
 
-    Mockito.doReturn(PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING))
+    Mockito.doReturn(PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING_PUK_FED_ENC))
         .when(entityStatementRpService)
         .getRpEncKey(any());
 

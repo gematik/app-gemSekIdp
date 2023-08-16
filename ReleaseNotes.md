@@ -1,3 +1,9 @@
+# Release 2.0.4
+
+- read key from entity statement by keyId
+- update dependencies
+- fix expected location of jwks in entity statements of relying parties
+
 # Release 2.0.2
 
 - fix entity statement for gsi.dev.gematik.solutions

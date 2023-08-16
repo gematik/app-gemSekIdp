@@ -195,7 +195,61 @@ Feature: Test IdpSektoral's Token Endpoint
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR current response with attribute "$.header.Content-Type" matches "application/json.*"
 
+
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_006
+  @Approval
+  @GematikSekIdpOnly
+  Scenario: IdpSektoral Token Endpoint - Gutfall - validiere ID_TOKEN Header Claims
+
+  ```
+  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint, um anschließend nochmal mit
+  der user_id zu demselben Endpunkt zu gehen. Den resultierenden authorization_code lösen wir ein
+
+  Der verschlüsselte ID_TOKEN muss:
+
+  - die richtigen encryption Header haben
+
+    Given TGR clear recorded messages
+    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
+      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "201"
+    And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri   | client_id          |
+      | ${requestUri} | gsi.clientid.valid |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "302"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri   | user_id  |
+      | ${requestUri} | 12345678 |
+    And TGR find request to path ".*"
+    And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
+    Given TGR clear recorded messages
+    When Send Post Request to "${token_endpoint}" with
+      | client_id          | redirect_uri    | code_verifier                                                                      | grant_type         | code        |
+      | gsi.clientid.valid | gsi.redirectUri | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | authorization_code | ${authCode} |
+    And TGR find request to path ".*"
+    Then TGR current response at "$.body.id_token.content.header" matches as JSON:
+    """
+      {
+        "alg": "ECDH-ES",
+        "enc": "A256GCM",
+        "cty": "JWT",
+        "kid": "puk_fd_enc",
+        "epk": {
+          "kty": "EC",
+          "x": '.*',
+          "y": '.*',
+          "crv": "P-256"
+        }
+      }
+    """
+
+  @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_007
   @Approval
   @GematikSekIdpOnly
   Scenario: IdpSektoral Token Endpoint - Negativfall - Fehlerhafter code_verifier
