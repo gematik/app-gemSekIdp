@@ -38,6 +38,7 @@ public class EntityStatementBuilder {
 
   private static final int ENTITY_STATEMENT_TTL_DAYS = 7;
   @Autowired FederationPrivKey entityStatementSigKey;
+  @Autowired FederationPrivKey tokenSigKey;
 
   public EntityStatement buildEntityStatement(final String serverUrl, final String fedmasterUrl) {
     final ZonedDateTime currentTime = ZonedDateTime.now();
@@ -46,7 +47,7 @@ public class EntityStatementBuilder {
         .iat(currentTime.toEpochSecond())
         .iss(serverUrl)
         .sub(serverUrl)
-        .jwks(JwtHelper.getJwks(entityStatementSigKey))
+        .jwks(JwtHelper.getJwks(entityStatementSigKey, tokenSigKey))
         .authorityHints(new String[] {fedmasterUrl})
         .metadata(getMetadata(serverUrl))
         .build();
@@ -83,7 +84,7 @@ public class EntityStatementBuilder {
     final FederationEntity federationEntity =
         FederationEntity.builder()
             .name("gematik sektoraler IDP")
-            .contacts("support@idp4711.de")
+            .contacts(new String[] {"support@idp4711.de", "idm@gematik.de"})
             .homepageUri("https://idp4711.de")
             .build();
     return Metadata.builder()

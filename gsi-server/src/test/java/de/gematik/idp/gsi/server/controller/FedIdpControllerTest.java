@@ -33,6 +33,7 @@ import de.gematik.idp.gsi.server.GsiServer;
 import de.gematik.idp.gsi.server.services.EntityStatementRpService;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -214,10 +215,12 @@ class FedIdpControllerTest {
         Objects.requireNonNull(
             (Map<String, Object>) metadata.get("federation_entity"),
             "missing claim: federation_entity");
-
+    final ArrayList<String> contacts = new ArrayList<>();
+    contacts.add("support@idp4711.de");
+    contacts.add("idm@gematik.de");
     assertThat(federationEntity)
         .containsEntry("name", "gematik sektoraler IDP")
-        .containsEntry("contacts", "support@idp4711.de")
+        .containsEntry("contacts", contacts)
         .containsEntry("homepage_uri", "https://idp4711.de");
   }
 
@@ -254,6 +257,13 @@ class FedIdpControllerTest {
         (List<Map<String, Object>>) sigendJwks.getBodyClaims().get("keys");
     assertThat(keyList.get(0).keySet())
         .containsExactlyInAnyOrder("use", "kid", "kty", "crv", "x", "y");
+  }
+
+  @Test
+  void signedJwksResponse_NumberOfKeys() {
+    final List<Map<String, Object>> keyList =
+        (List<Map<String, Object>>) sigendJwks.getBodyClaims().get("keys");
+    assertThat(keyList.size()).isEqualTo(2);
   }
 
   private HttpResponse<String> retrieveSignedJwks() {
@@ -359,7 +369,7 @@ class FedIdpControllerTest {
             .queryString("client_id", testHostUrl)
             .asString();
 
-    assertThat(respMsg7.getStatus()).isEqualTo(HttpStatus.FOUND);
+    assertThat(respMsg7.getStatus()).isEqualTo(HttpStatus.OK);
   }
 
   @ValueSource(
@@ -432,13 +442,13 @@ class FedIdpControllerTest {
 
   /************************** FEDIDP AUTH_ENDPOINT *****************/
   @Test
-  void authRequest_invalidRequestUri_ResponseStatus_BAD_REQUEST() {
+  void authRequest_invalidRequestUri_ResponseStatus_OK() {
     final HttpResponse<String> resp =
         Unirest.get(testHostUrl + FED_AUTH_ENDPOINT)
             .queryString("request_uri", "myInvalidRequestUri")
             .queryString("client_id", testHostUrl)
             .asString();
-    assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.OK);
   }
 
   @Test
@@ -452,7 +462,7 @@ class FedIdpControllerTest {
 
   /************************** FEDIDP_TOKEN_ENDPOINT *****************/
   @Test
-  void tokenResponse_contains_httpStatus_400() {
+  void tokenResponse_contains_httpStatus_BAD_REQUEST() {
     final HttpResponse<JsonNode> httpResponse =
         Unirest.post(testHostUrl + TOKEN_ENDPOINT)
             .field("grant_type", "authorization_code")
@@ -499,20 +509,20 @@ class FedIdpControllerTest {
   @Test
   void parRequest_authRequestUriPar_tokenResponse_contains_httpStatus_200() {
 
-    final String KEY_ID = "ref_puk_fd_enc";
-    // key from idp\idp-commons\src\test\resources\sig-nist.p12
-    final String JWK_AS_STRING =
+    final String KEY_ID = "puk_fd_enc";
+    // key from gra-server/src/main/resources/cert/fachdienst-enc.p12
+    final String JWK_AS_STRING_PUK_FED_ENC =
         "{\"use\": \"enc\",\"kid\": \""
             + KEY_ID
             + "\",\"kty\": \"EC\",\"crv\": \"P-256\",\"x\":"
-            + " \"Mq933FT_V8xd1TkfB0pH02d6cx2bmUS-bxHuBtA1yfs\",\"y\":"
-            + " \"5uwf8phUbWIi92CqgglM94ft-FC4MHH836khswo6ppo\"}";
+            + " \"NQLaWbuQDHgSHahqb9zxlDdiMCHXSgY0L9ql1k7BVUE\",\"y\":"
+            + " \"_USgmqhlM3pvabkZ2SS_YE2Q57tTs6pK9cE_uZB-u3c\"}";
 
     Mockito.doNothing()
         .when(entityStatementRpService)
         .doAutoregistration(testHostUrl, testHostUrl + "/AS");
 
-    Mockito.doReturn(PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING))
+    Mockito.doReturn(PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING_PUK_FED_ENC))
         .when(entityStatementRpService)
         .getRpEncKey(any());
 

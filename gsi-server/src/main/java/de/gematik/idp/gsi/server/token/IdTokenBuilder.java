@@ -18,13 +18,18 @@ package de.gematik.idp.gsi.server.token;
 
 import static de.gematik.idp.field.ClaimName.*;
 import static de.gematik.idp.gsi.server.data.GsiConstants.IDTOKEN_TTL_MINUTES;
+import static de.gematik.idp.gsi.server.data.GsiConstants.SCOPES_TO_CLAIM_MAP;
 
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.authentication.JwtBuilder;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.jose4j.jwt.NumericDate;
 
@@ -33,11 +38,12 @@ public class IdTokenBuilder {
 
   private final IdpJwtProcessor jwtProcessor;
   private final String issuerUrl;
+  private final Set<String> requestedScopes;
+  private final String nonceFachdienst;
+  private final String fachdienstClientId;
+  private final Map<String, Object> userDataClaims;
 
-  public JsonWebToken buildIdToken(
-      final String fachdienstClientId,
-      final Map<String, Object> userDataClaims,
-      final String nonceFachdienst) {
+  public JsonWebToken buildIdToken() {
     final Map<String, Object> claimsMap = new HashMap<>();
     final ZonedDateTime now = ZonedDateTime.now();
     claimsMap.put(ISSUER.getJoseName(), issuerUrl);
@@ -50,12 +56,28 @@ public class IdTokenBuilder {
         NumericDate.fromSeconds(now.plusMinutes(IDTOKEN_TTL_MINUTES).toEpochSecond()).getValue());
     claimsMap.put(AUDIENCE.getJoseName(), fachdienstClientId);
     claimsMap.put(NONCE.getJoseName(), nonceFachdienst);
-    claimsMap.putAll(userDataClaims);
+    claimsMap.putAll(filterUserDataClaimsWithRespectToScope(userDataClaims, requestedScopes));
 
     final Map<String, Object> headerClaims = new HashMap<>();
     headerClaims.put(TYPE.getJoseName(), "JWT");
 
     return jwtProcessor.buildJwt(
         new JwtBuilder().addAllBodyClaims(claimsMap).addAllHeaderClaims(headerClaims));
+  }
+
+  private Map<String, Object> filterUserDataClaimsWithRespectToScope(
+      final Map<String, Object> userDataClaims, final Set<String> requestedScopes) {
+    final Stream<String> requestedClaims =
+        requestedScopes.stream().flatMap(this::getClaimsForScope);
+    final Stream<String> claimsForAuthenticationDetails =
+        Stream.of(
+            AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
+            AUTHENTICATION_METHODS_REFERENCE.getJoseName());
+    return Stream.concat(requestedClaims, claimsForAuthenticationDetails)
+        .collect(Collectors.toMap(claim -> claim, userDataClaims::get));
+  }
+
+  private Stream<String> getClaimsForScope(final String scope) {
+    return SCOPES_TO_CLAIM_MAP.get(scope).stream().map(ClaimName::getJoseName);
   }
 }

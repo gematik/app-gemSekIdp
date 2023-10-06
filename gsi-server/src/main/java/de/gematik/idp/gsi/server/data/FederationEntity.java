@@ -29,6 +29,6 @@ import lombok.Getter;
 public class FederationEntity {
 
   private String name;
-  private String contacts;
+  private String[] contacts;
   private String homepageUri;
 }

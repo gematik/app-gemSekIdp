@@ -38,6 +38,7 @@ import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,13 +56,10 @@ class IdTokenBuilderTest {
     pkiIdentity = clientIdentity;
     idTokenBuilder =
         new IdTokenBuilder(
-            new IdpJwtProcessor(pkiIdentity, Optional.of("authz_rsa")), uriIdpServer);
-  }
-
-  @Test
-  void checkIdTokenClaims() {
-    final JsonWebToken idToken =
-        idTokenBuilder.buildIdToken(
+            new IdpJwtProcessor(pkiIdentity, Optional.of("authz_rsa")),
+            uriIdpServer,
+            Set.of("urn:telematik:versicherter", "urn:telematik:given_name"),
+            "NONCE123456",
             "http://NonSmokersFachdienst.de",
             Map.ofEntries(
                 Map.entry(TELEMATIK_GIVEN_NAME.getJoseName(), "Vincent Vega"),
@@ -71,8 +69,12 @@ class IdTokenBuilderTest {
                 Map.entry(
                     AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH),
                 Map.entry(
-                    AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "urn:telematik:auth:eID")),
-            "NONCE123456");
+                    AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "urn:telematik:auth:eID")));
+  }
+
+  @Test
+  void checkIdTokenClaims() {
+    final JsonWebToken idToken = idTokenBuilder.buildIdToken();
 
     assertThat(idToken.getBodyClaims())
         .containsEntry(ISSUER.getJoseName(), uriIdpServer)

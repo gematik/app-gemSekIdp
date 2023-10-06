@@ -36,7 +36,6 @@ import org.springframework.stereotype.Service;
 public class ServerUrlService {
 
   private final GsiConfiguration gsiConfiguration;
-  private String serverUrl;
   private String fedmasterUrl;
   private String fedmasterFetchEntityStatementEndpoint;
 
@@ -67,11 +66,12 @@ public class ServerUrlService {
         final JsonWebToken fedmasterEntityStatement = new JsonWebToken(resp.getBody());
         fedmasterFetchEntityStatementEndpoint =
             readFederationFetchEndpointFromEntityStatement(fedmasterEntityStatement);
+      } else {
+        log.error(
+            "Error while Fetching the Fedmasters EntityStatement: "
+                + determineFedmasterUrl()
+                + IdpConstants.ENTITY_STATEMENT_ENDPOINT);
       }
-      log.info(
-          "Error while Fetching the Fedmasters EntityStatement: "
-              + determineFedmasterUrl()
-              + IdpConstants.ENTITY_STATEMENT_ENDPOINT);
     }
     return fedmasterFetchEntityStatementEndpoint;
   }
@@ -88,5 +88,17 @@ public class ServerUrlService {
             (Map<String, Object>) metadata.get("federation_entity"),
             "missing claim: federation_entity");
     return Objects.requireNonNull((String) federationEntity.get("federation_fetch_endpoint"));
+  }
+
+  public Optional<String> determineSignedJwksUri(final JsonWebToken entityStmntRp) {
+    final Map<String, Object> bodyClaims = entityStmntRp.getBodyClaims();
+    final Map<String, Object> metadata =
+        Objects.requireNonNull(
+            (Map<String, Object>) bodyClaims.get("metadata"), "missing claim: metadata");
+    final Map<String, Object> openidRelyingParty =
+        Objects.requireNonNull(
+            (Map<String, Object>) metadata.get("openid_relying_party"),
+            "missing claim: openid_relying_party");
+    return Optional.of((String) openidRelyingParty.get("signed_jwks_uri"));
   }
 }

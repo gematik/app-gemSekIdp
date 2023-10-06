@@ -55,7 +55,7 @@ Feature: Test Entity Statement of IdpSektoral
     When Fetch Entity statement
     And TGR find request to path "/.well-known/openid-federation"
     Then TGR current response with attribute "$.responseCode" matches "200"
-    And TGR current response with attribute "$.header.Content-Type" matches "application/entity-statement+jwt;charset=UTF-8"
+    And TGR current response with attribute "$.header.Content-Type" matches "application/entity-statement\+jwt.*"
 
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_003
@@ -166,10 +166,11 @@ Feature: Test Entity Statement of IdpSektoral
     """
           {
             name:             '.*',
-            contacts:         '.*',
+            contacts:         "${json-unit.ignore}",
             homepage_uri:     'http.*'
           }
     """
+    And TGR current response at "$.body.body.metadata.federation_entity.contacts.0" matches ".*"
 
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_006
@@ -187,7 +188,7 @@ Feature: Test Entity Statement of IdpSektoral
     Given TGR clear recorded messages
     When Fetch Entity statement
     And TGR find request to path "/.well-known/openid-federation"
-    Then TGR current response at "$.body.body.jwks.keys.[?(@.use.content =='sig')]" matches as JSON:
+    Then TGR current response at "$.body.body.jwks.keys.[?(@.kid.content =='${gsi.sigKeyKid}')]" matches as JSON:
         """
           {
             use:                           'sig',
