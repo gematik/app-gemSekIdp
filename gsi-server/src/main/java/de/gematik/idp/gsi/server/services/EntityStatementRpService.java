@@ -20,13 +20,10 @@ import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.CryptoLoader;
-import de.gematik.idp.crypto.EcKeyUtility;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import de.gematik.idp.token.TokenClaimExtraction;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -34,10 +31,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.lang.JoseException;
 import org.springframework.http.HttpStatus;
@@ -92,19 +91,67 @@ public class EntityStatementRpService {
   }
 
   public PublicJsonWebKey getRpEncKey(final String sub) throws JoseException {
+    final Optional<PublicJsonWebKey> encKeyFromEntityStatement =
+        getRpEncKeyFromEntityStatement(sub);
+    if (encKeyFromEntityStatement.isPresent()) {
+      return encKeyFromEntityStatement.get();
+    }
+    return getRpEncKeyFromSignedJwks(sub)
+        .orElseThrow(
+            () ->
+                new GsiException(
+                    INVALID_REQUEST, "No Relying Party Enc Key found", HttpStatus.BAD_REQUEST));
+  }
+
+  private Optional<PublicJsonWebKey> getRpEncKeyFromEntityStatement(final String sub)
+      throws JoseException {
     final JsonWebToken entityStmntRp = getEntityStatementRp(sub);
-    final Map<String, Object> keyMap =
-        (Map<String, Object>) entityStmntRp.getBodyClaims().get("jwks");
-    final List<Map<String, Object>> keyList = (List<Map<String, Object>>) keyMap.get("keys");
-    final Map<String, Object> encKeyAsMap =
-        keyList.stream()
-            .filter(key -> key.get("use").equals("enc"))
-            .findFirst()
-            .orElseThrow(
-                () ->
-                    new GsiException(
-                        INVALID_REQUEST, "Kein ENC Key gefunden", HttpStatus.BAD_REQUEST));
-    return PublicJsonWebKey.Factory.newPublicJwk(encKeyAsMap);
+    final Map<String, Object> metadata =
+        (Map<String, Object>) entityStmntRp.getBodyClaims().get("metadata");
+    final Map<String, Object> openidRelyingParty =
+        Objects.requireNonNull(
+            (Map<String, Object>) metadata.get("openid_relying_party"),
+            "missing claim: openid_relying_party");
+
+    if (openidRelyingParty.containsKey("jwks")) {
+      final Map<String, Object> jwksMap = (Map<String, Object>) openidRelyingParty.get("jwks");
+      final List<Map<String, Object>> keyList = (List<Map<String, Object>>) jwksMap.get("keys");
+      final Optional<Map<String, Object>> encKeyAsMap =
+          keyList.stream().filter(key -> key.get("use").equals("enc")).findFirst();
+      if (encKeyAsMap.isPresent()) {
+        return Optional.of(PublicJsonWebKey.Factory.newPublicJwk(encKeyAsMap.get()));
+      }
+    }
+    return Optional.empty();
+  }
+
+  private Optional<PublicJsonWebKey> getRpEncKeyFromSignedJwks(final String sub)
+      throws JoseException {
+    final Optional<JsonWebToken> signedJwks = getSignedJwks(sub);
+    if (signedJwks.isPresent()) {
+      final Map<String, Object> jwksMap =
+          (Map<String, Object>) signedJwks.get().getBodyClaims().get("jwks");
+      final List<Map<String, Object>> keyList = (List<Map<String, Object>>) jwksMap.get("keys");
+      final Optional<Map<String, Object>> encKeyAsMap =
+          keyList.stream().filter(key -> key.get("use").equals("enc")).findFirst();
+      if (encKeyAsMap.isPresent()) {
+        return Optional.of(PublicJsonWebKey.Factory.newPublicJwk(encKeyAsMap.get()));
+      }
+    }
+    return Optional.empty();
+  }
+
+  private Optional<JsonWebToken> getSignedJwks(final String sub) {
+    final Optional<String> rpSignedJwksUri =
+        serverUrlService.determineSignedJwksUri(getEntityStatementRp(sub));
+    if (rpSignedJwksUri.isPresent()) {
+      final HttpResponse<String> resp = Unirest.get(rpSignedJwksUri.get()).asString();
+      if (resp.isSuccess()) {
+        // TODO check signature
+        return Optional.of(new JsonWebToken(resp.getBody()));
+      }
+    }
+    return Optional.empty();
   }
 
   private static List<String> getRedirectUrisEntityStatementRp(final JsonWebToken entityStmntRp) {
@@ -190,8 +237,10 @@ public class EntityStatementRpService {
   }
 
   private void verifyEntityStmntRp(final JsonWebToken entityStmnt, final String issuer) {
+    final String keyIdSigEntStmnt = (String) entityStmnt.getHeaderClaims().get("kid");
     final JsonWebToken esAboutRp = getEntityStatementAboutRp(issuer);
-    entityStmnt.verify(getRpSigKey(esAboutRp));
+    final JsonWebKeySet jwks = TokenClaimExtraction.extractJwksFromBody(esAboutRp.getRawString());
+    entityStmnt.verify(TokenClaimExtraction.getECPublicKey(jwks, keyIdSigEntStmnt));
   }
 
   private void fetchEntityStatementAboutRp(final String sub) {
@@ -225,24 +274,5 @@ public class EntityStatementRpService {
     return CryptoLoader.getCertificateFromPem(
             resourceReader.getFileFromResourceAsBytes("cert/fedmaster-sig-TU.pem"))
         .getPublicKey();
-  }
-
-  // TODO: das sind ja eigentlich generische methoden, um aus JWKS keys zu holen. wollen wir das mal
-  // irgendwo hin umziehen? Ticket GSI-67
-  private PublicKey getRpSigKey(final JsonWebToken entityStmntAboutRp) {
-    final Map<String, Object> keyMap =
-        (Map<String, Object>) entityStmntAboutRp.getBodyClaims().get("jwks");
-    final List<Map<String, String>> keyList = (List<Map<String, String>>) keyMap.get("keys");
-    final Map<String, String> rpSigKeyValues = keyList.get(0);
-    return createEcPubKey(rpSigKeyValues);
-  }
-
-  private PublicKey createEcPubKey(final Map<String, String> rpSigKeyValues) {
-    try {
-      return EcKeyUtility.genECPublicKey(
-          rpSigKeyValues.get("crv"), rpSigKeyValues.get("x"), rpSigKeyValues.get("y"));
-    } catch (final NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
-      throw new GsiException("Creation of ECPublicKey failed", e);
-    }
   }
 }

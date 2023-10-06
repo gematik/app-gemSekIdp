@@ -17,14 +17,6 @@
 package de.gematik.idp.gsi.server.data;
 
 import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
 
 @Builder
-@Getter
-@Setter
-public class TiUser {
-
-  private final String kvnr;
-  private final String givenName;
-}
+public record TiUser(String kvnr, String givenName) {}

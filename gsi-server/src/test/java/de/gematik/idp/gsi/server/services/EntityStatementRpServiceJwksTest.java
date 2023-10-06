@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.gsi.server;
+package de.gematik.idp.gsi.server.services;
 
-import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STATEMENT_FED_MASTER;
-import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
+import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
+import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_FACHDIENST_WITH_OPTIONAL_JWKS;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
-import de.gematik.idp.gsi.server.services.ServerUrlService;
-import de.gematik.idp.token.JsonWebToken;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.jose4j.jwk.PublicJsonWebKey;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.MediaType;
 import org.mockserver.springtest.MockServerTest;
@@ -35,49 +37,48 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
-@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
+@Slf4j
+@ActiveProfiles("test-entityservice")
 @MockServerTest("server.url=http://localhost:${mockServerPort}")
-class ServerUrlServiceTest {
+@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
+@SpringBootTest
+class EntityStatementRpServiceJwksTest {
 
   @Value("${server.url}")
   private String mockServerUrl;
 
-  @Autowired ServerUrlService serverUrlService;
-  @Autowired GsiConfiguration gsiConfiguration;
   private MockServerClient mockServerClient;
+  @Autowired EntityStatementRpService entityStatementRpService;
+  @Autowired GsiConfiguration gsiConfiguration;
+  @Autowired ServerUrlService serverUrlService;
 
+  @SneakyThrows
   @Test
-  void testDetermineServerUrl() {
-    assertThat(serverUrlService.determineServerUrl()).contains("gsi.dev.gematik.solutions");
+  void getEncKeyRpFromEntityStatement() {
+    prepareMocks();
+    final PublicJsonWebKey rpEncKey = entityStatementRpService.getRpEncKey(mockServerUrl);
+    assertThat(rpEncKey).isNotNull();
   }
 
-  @Test
-  void testFedmasterServerUrl() {
-    assertThat(serverUrlService.determineFedmasterUrl())
-        .isEqualTo("https://app-test.federationmaster.de");
-  }
-
-  @Test
-  void testDetermineFetchEntityStatementEndpoint() {
+  private void prepareMocks() {
+    Mockito.doReturn(mockServerUrl + "/federation/fetch")
+        .when(serverUrlService)
+        .determineFetchEntityStatementEndpoint();
     mockServerClient
         .when(request().withMethod("GET").withPath(IdpConstants.ENTITY_STATEMENT_ENDPOINT))
         .respond(
             response()
                 .withStatusCode(200)
                 .withContentType(MediaType.APPLICATION_JSON)
-                .withBody(ENTITY_STATEMENT_FED_MASTER));
-    gsiConfiguration.setFedmasterUrl(mockServerUrl);
-    assertThat(serverUrlService.determineFetchEntityStatementEndpoint())
-        .isEqualTo("https://app-ref.federationmaster.de/federation/fetch");
-  }
-
-  @Test
-  void testDetermineSignedJwksUri() {
-    assertThat(
-            serverUrlService.determineSignedJwksUri(
-                new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043)))
-        .contains("https://idpfadi.dev.gematik.solutions/jws.json");
+                .withBody(ENTITY_STMNT_FACHDIENST_WITH_OPTIONAL_JWKS));
+    mockServerClient
+        .when(request().withMethod("GET").withPath("/federation/fetch"))
+        .respond(
+            response()
+                .withStatusCode(200)
+                .withContentType(MediaType.APPLICATION_JSON)
+                .withBody(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
   }
 }

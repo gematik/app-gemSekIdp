@@ -48,7 +48,7 @@ Feature: Test GSI specific authentication
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
     And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "302"
+    Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | user_id  |
@@ -81,7 +81,7 @@ Feature: Test GSI specific authentication
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
     And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "302"
+    Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | user_id  |

@@ -46,7 +46,7 @@ public class KeyConfiguration implements KeyConfigurationBase {
   }
 
   @Bean
-  public FederationPrivKey tokenKey() {
+  public FederationPrivKey tokenSigKey() {
     return getFederationPrivKey(gsiConfiguration.getTokenKeyConfig());
   }
 
@@ -58,7 +58,7 @@ public class KeyConfiguration implements KeyConfigurationBase {
 
   @Bean
   public IdpJwtProcessor jwtProcessorTokenKey() {
-    return new IdpJwtProcessor(tokenKey().getIdentity(), tokenKey().getKeyId());
+    return new IdpJwtProcessor(tokenSigKey().getIdentity(), tokenSigKey().getKeyId());
   }
 
   private FederationPrivKey getFederationPrivKey(final KeyConfig keyConfiguration) {

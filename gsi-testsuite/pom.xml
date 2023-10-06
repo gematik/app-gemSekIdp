@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>gemSekIdp-global</artifactId>
-    <version>2.0.2</version>
+    <version>3.0.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>gsi-testsuite</artifactId>
-  <version>2.0.2</version>
+  <version>3.0.1</version>
   <packaging>jar</packaging>
   <description>Testsuite fuer sektorale IDPs</description>
 
@@ -36,7 +36,7 @@
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>5.9.3</version>
+      <version>5.10.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

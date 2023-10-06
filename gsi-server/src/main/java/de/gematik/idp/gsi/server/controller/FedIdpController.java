@@ -24,7 +24,12 @@ import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
 import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_SCOPE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.BIRTHDATE;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_ALTER;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_DISPLAY_NAME;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_EMAIL;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_GESCHLECHT;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_GIVEN_NAME;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_ORGANIZATION;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_PROFESSION;
@@ -44,6 +49,7 @@ import de.gematik.idp.field.ClientUtilities;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.data.FedIdpAuthSession;
 import de.gematik.idp.gsi.server.data.GsiConstants;
+import de.gematik.idp.gsi.server.data.QRCodeGenerator;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.gsi.server.services.AuthenticationService;
 import de.gematik.idp.gsi.server.services.EntityStatementBuilder;
@@ -55,7 +61,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
@@ -68,21 +73,22 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.utils.URIBuilder;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 
 @Validated
-@RestController
+@Controller
 @RequiredArgsConstructor
 @Slf4j
 public class FedIdpController {
@@ -101,8 +107,10 @@ public class FedIdpController {
   private final IdpJwtProcessor jwtProcessorTokenKey;
   private final ObjectMapper objectMapper;
   private final GsiConfiguration gsiConfiguration;
+  private final ResourceLoader resourceLoader;
 
   @Autowired FederationPrivKey entityStatementSigKey;
+  @Autowired FederationPrivKey tokenSigKey;
 
   // TODO: delete oldest entry
   private final List<FedIdpAuthSession> fedIdpAuthSessions =
@@ -113,6 +121,7 @@ public class FedIdpController {
     response.setHeader("Pragma", "no-cache");
   }
 
+  @ResponseBody
   @GetMapping(
       value = ENTITY_STATEMENT_ENDPOINT,
       produces = "application/entity-statement+jwt;charset=UTF-8")
@@ -125,10 +134,14 @@ public class FedIdpController {
         ENTITY_STATEMENT_TYP);
   }
 
+  @ResponseBody
   @GetMapping(value = FED_SIGNED_JWKS_ENDPOINT, produces = "application/jwk-set+json;charset=UTF-8")
   public String getSignedJwks() {
     return JwtHelper.signJson(
-        jwtProcessorSigKey, objectMapper, JwtHelper.getJwks(entityStatementSigKey), "jwk-set+json");
+        jwtProcessorSigKey,
+        objectMapper,
+        JwtHelper.getJwks(entityStatementSigKey, tokenSigKey),
+        "jwk-set+json");
   }
 
   /* Federation App2App flow
@@ -137,6 +150,7 @@ public class FedIdpController {
    * Response(out)== message nr.3
    * Parameter "params" is used to filter by HTTP parameters and let spring decide which (multiple mappings of same endpoint) mapping matches.
    */
+  @ResponseBody
   @PostMapping(
       value = FEDIDP_PAR_AUTH_ENDPOINT,
       params = "acr_values",
@@ -206,43 +220,37 @@ public class FedIdpController {
 
   /* Federation App2App/Web2App flow
    * Request(in)  == message nr.6 request_uri, client_id
-   * Response(out)== landing page
+   * Response(out)== landing page, with submit button: will send messages 6b/6d in one piece
    */
-
-  @GetMapping(value = FED_AUTH_ENDPOINT, produces = MediaType.TEXT_HTML_VALUE)
-  @ResponseBody
-  public void getLandingPage(
+  @GetMapping(value = FED_AUTH_ENDPOINT)
+  public String getLandingPage(
       @RequestParam(name = "request_uri") @NotEmpty final String requestUri,
       @RequestParam(name = "client_id") @NotEmpty final String clientId,
-      final HttpServletResponse resp)
-      throws URISyntaxException {
+      final Model model) {
+    final String thisEndpointUrl = serverUrlService.determineServerUrl() + FED_AUTH_ENDPOINT;
+    log.info("App2App-Flow: RX message nr 6 (Authorization Request) at {}", thisEndpointUrl);
 
-    log.info(
-        "App2App-Flow: RX message nr 6 (Authorization Request) at {}",
-        serverUrlService.determineServerUrl());
-    final int sessionIdx = getSessionIndex(URLDecoder.decode(requestUri, StandardCharsets.UTF_8));
-    final FedIdpAuthSession session = fedIdpAuthSessions.get(sessionIdx);
-    verifyClientId(clientId, session.getFachdienstClientId());
-
-    setNoCacheHeader(resp);
-    resp.setStatus(HttpStatus.FOUND.value());
-
-    final URIBuilder redirectUriBuilder =
-        new URIBuilder(serverUrlService.determineServerUrl() + "/landing.html");
-    final String location = redirectUriBuilder.build().toString();
-    resp.setHeader(HttpHeaders.LOCATION, location);
+    model.addAttribute("requestUri", requestUri);
+    model.addAttribute("clientId", clientId);
+    model.addAttribute("fedAuthEndpointUrl", thisEndpointUrl);
+    final String dataUri = QRCodeGenerator.generate("https://tbd/tbd?tbd=tbd&tbd=tbd");
+    model.addAttribute("dynamicImageDataUri", dataUri);
+    return "landingTemplate";
   }
 
+  @ResponseBody
   @GetMapping(
       value = FED_AUTH_ENDPOINT,
       params = {"user_id"})
   public void authorizationCode_userConsent(
       @RequestParam(name = "request_uri") @NotEmpty final String requestUri,
-      @RequestParam(name = "user_id") @NotEmpty final String userId,
+      // numbers only, 1-10 characters
+      @RequestParam(name = "user_id") @Pattern(regexp = "^[0-9]{1,10}$") final String userId,
       final HttpServletResponse respMsgNr7) {
     log.info(
-        "App2App-Flow: RX message nr 6b (user consent) at {}",
+        "App2App-Flow: RX message nr 6b/6d (user consent) at {}",
         serverUrlService.determineServerUrl());
+    // TODO: catch exception and rethrow with better error message "no session available"
     final int sessionIdx = getSessionIndex(URLDecoder.decode(requestUri, StandardCharsets.UTF_8));
     final FedIdpAuthSession session = fedIdpAuthSessions.get(sessionIdx);
 
@@ -265,6 +273,7 @@ public class FedIdpController {
    * Request(in)  == message nr.10 AUTH_CODE
    * Response(out)== message nr.11 ID_TOKEN (ACCESS_TOKEN)
    */
+  @ResponseBody
   @PostMapping(
       value = TOKEN_ENDPOINT,
       params = {"code"},
@@ -290,12 +299,18 @@ public class FedIdpController {
     respMsgNr11.setStatus(HttpStatus.OK.value());
 
     final IdTokenBuilder idTokenBuilder =
-        new IdTokenBuilder(jwtProcessorTokenKey, serverUrlService.determineServerUrl());
+        new IdTokenBuilder(
+            jwtProcessorTokenKey,
+            serverUrlService.determineServerUrl(),
+            session.getRequestedScopes(),
+            session.getFachdienstNonce(),
+            clientId,
+            getUserDataClaims());
     final String idToken;
     try {
       idToken =
           idTokenBuilder
-              .buildIdToken(clientId, getUserDataClaims(), session.getFachdienstNonce())
+              .buildIdToken()
               .encryptAsJwt(entityStatementRpService.getRpEncKey(clientId))
               .getRawString();
     } catch (final JoseException e) {
@@ -340,7 +355,12 @@ public class FedIdpController {
         // scope urn:telematik:versicherter
         Map.entry(TELEMATIK_PROFESSION.getJoseName(), "1.2.276.0.76.4.49"),
         Map.entry(TELEMATIK_ID.getJoseName(), "X110411675"),
-        Map.entry(TELEMATIK_ORGANIZATION.getJoseName(), "109500969"));
+        Map.entry(TELEMATIK_ORGANIZATION.getJoseName(), "109500969"),
+        Map.entry(TELEMATIK_EMAIL.getJoseName(), "darius_michael@mail.boedefeld.de"),
+        Map.entry(TELEMATIK_GESCHLECHT.getJoseName(), "M"),
+        Map.entry(BIRTHDATE.getJoseName(), "1973-09-01"),
+        Map.entry(TELEMATIK_GIVEN_NAME.getJoseName(), "Darius Michael Brian Ubbo"),
+        Map.entry(TELEMATIK_ALTER.getJoseName(), "50"));
   }
 
   private int getSessionIndex(final String requestUri) {

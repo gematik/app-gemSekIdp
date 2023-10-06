@@ -1,3 +1,13 @@
+# Release 3.0.1
+
+- add key for idToken signature to JWKS
+- read key from entity statement by keyId
+- update dependencies
+- fix expected location of jwks in entity statements of relying parties
+- set claims depending on requested scopes
+- in testsuite ignore charset of entity statement
+- add Web-App Flow (2 devices), landing page template with thymeleaf
+
 # Release 2.0.2
 
 - fix entity statement for gsi.dev.gematik.solutions

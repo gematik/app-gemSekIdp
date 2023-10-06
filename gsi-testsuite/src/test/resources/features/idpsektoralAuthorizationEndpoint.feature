@@ -35,7 +35,7 @@ Feature: Test IdpSektoral's Auth Endpoint
 
   Die HTTP Response muss:
 
-  - den Code 302 enthalten
+  - den Code 200 enthalten
 
     Given TGR clear recorded messages
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
@@ -49,7 +49,7 @@ Feature: Test IdpSektoral's Auth Endpoint
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
     And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "302"
+    Then TGR current response with attribute "$.responseCode" matches "200"
 
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_002
@@ -61,7 +61,7 @@ Feature: Test IdpSektoral's Auth Endpoint
   ```
   Wir senden einen invaliden Request an den Authorization Endpoint
 
-  Die Response muss als Body eine passende Fehlermeldung enthalten:
+  Die Response entspricht der Landingpage. Die Parameter werden im Server inhaltlich nicht geprüft, es wird also keine Fehlermeldung erwartet:
 
     Given TGR clear recorded messages
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
@@ -76,20 +76,11 @@ Feature: Test IdpSektoral's Auth Endpoint
       | <request_uri> | <client_id> |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
-    And TGR current response at "$.body" matches as JSON:
-        """
-          {
-            "error":                        '.*',
-            "____error_description":        '.*',
-            "____error_uri":                '.*'
-          }
-        """
-    And TGR current response at "$.body.error" matches "<error>"
 
     Examples:
       | client_id          | request_uri                                                    | error           | responseCode |
-      | gsi.clientid.valid | urn:ietf:params:oauth:request_uri:ZoWuCxe9C8-uW8T3ngvqoYN-stzw | invalid_request | 400          |
-      | invalidClient      | ${requestUri}                                                  | invalid_request | 400          |
+      | gsi.clientid.valid | urn:ietf:params:oauth:request_uri:ZoWuCxe9C8-uW8T3ngvqoYN-stzw | invalid_request | 200          |
+      | invalidClient      | ${requestUri}                                                  | invalid_request | 200          |
 
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_003

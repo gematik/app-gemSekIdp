@@ -45,12 +45,12 @@ public class AuthenticationService {
    */
   public void doAuthentication(final Map<String, Object> userData, final String userId) {
 
-    if (userId.equals(user12345678.getKvnr())) {
+    if (userId.equals(user12345678.kvnr())) {
       // user found in database ;-)
       userData.put(TELEMATIK_PROFESSION.getJoseName(), "TODO PROFESSION");
-      userData.put(TELEMATIK_GIVEN_NAME.getJoseName(), user12345678.getGivenName());
+      userData.put(TELEMATIK_GIVEN_NAME.getJoseName(), user12345678.givenName());
       userData.put(TELEMATIK_ORGANIZATION.getJoseName(), "TODO ORGANIZATION_NAME");
-      userData.put(TELEMATIK_ID.getJoseName(), user12345678.getKvnr());
+      userData.put(TELEMATIK_ID.getJoseName(), user12345678.kvnr());
 
       userData.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
       userData.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "TODO amr");

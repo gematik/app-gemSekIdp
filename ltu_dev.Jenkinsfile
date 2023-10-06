@@ -8,7 +8,7 @@ pipeline {
             steps {
                 dockerLoginGematikRegistry()
                 sh("""
-                    export appVersion=2.0.2
+                    export appVersion=3.0.1
                     export serverLoglevel=debug
                     echo '### Stopping services'
                     docker compose -f docker-compose-base.yml -f docker-compose-deployLTU_DEV.yml down -v
