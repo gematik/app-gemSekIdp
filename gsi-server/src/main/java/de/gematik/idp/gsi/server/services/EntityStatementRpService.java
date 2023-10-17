@@ -65,8 +65,10 @@ public class EntityStatementRpService {
   public void doAutoregistration(final String clientId, final String redirectUri) {
     // Msg 2a and 2b
     // Msg 2c and 2d
+    log.debug("Autoregistration started...");
     getEntityStatementRp(clientId);
     verifyRedirectUriExistsInEntityStmnt(clientId, redirectUri);
+    log.debug("Autoregistration done.");
   }
 
   /**
@@ -74,8 +76,12 @@ public class EntityStatementRpService {
    * @return the entity statement issued by the fachdienst/relying party
    */
   public JsonWebToken getEntityStatementRp(final String issuerRp) {
-    log.info("Entitystatement for RP [{}] requested.", issuerRp);
+    log.debug("Entitystatement of RP [{}] requested.", issuerRp);
     updateStatementRpIfExpiredAndNewIsAvailable(issuerRp);
+    log.debug(
+        "Entitystatement of RP [{}] stored. JWT: {}",
+        issuerRp,
+        entityStatementsOfFachdienst.get(issuerRp).getRawString());
     return entityStatementsOfFachdienst.get(issuerRp);
   }
 
@@ -94,6 +100,7 @@ public class EntityStatementRpService {
     final Optional<PublicJsonWebKey> encKeyFromEntityStatement =
         getRpEncKeyFromEntityStatement(sub);
     if (encKeyFromEntityStatement.isPresent()) {
+      log.debug("Found encryption key in Entitystatement of [{}].", sub);
       return encKeyFromEntityStatement.get();
     }
     return getRpEncKeyFromSignedJwks(sub)
@@ -113,7 +120,11 @@ public class EntityStatementRpService {
             (Map<String, Object>) metadata.get("openid_relying_party"),
             "missing claim: openid_relying_party");
 
+    log.debug(
+        "Search encryption key in openid_relying_party (inside Entitystatement of RP [{}]).", sub);
     if (openidRelyingParty.containsKey("jwks")) {
+      log.debug(
+          "Key [jwks] found in openid_relying_party (inside Entitystatement of RP [{}]).", sub);
       final Map<String, Object> jwksMap = (Map<String, Object>) openidRelyingParty.get("jwks");
       final List<Map<String, Object>> keyList = (List<Map<String, Object>>) jwksMap.get("keys");
       final Optional<Map<String, Object>> encKeyAsMap =
@@ -127,14 +138,15 @@ public class EntityStatementRpService {
 
   private Optional<PublicJsonWebKey> getRpEncKeyFromSignedJwks(final String sub)
       throws JoseException {
+    log.debug("Search encryption key in signed JWKS of RP [{}]).", sub);
     final Optional<JsonWebToken> signedJwks = getSignedJwks(sub);
     if (signedJwks.isPresent()) {
-      final Map<String, Object> jwksMap =
-          (Map<String, Object>) signedJwks.get().getBodyClaims().get("jwks");
-      final List<Map<String, Object>> keyList = (List<Map<String, Object>>) jwksMap.get("keys");
+      final List<Map<String, Object>> keyList =
+          (List<Map<String, Object>>) signedJwks.get().getBodyClaims().get("keys");
       final Optional<Map<String, Object>> encKeyAsMap =
           keyList.stream().filter(key -> key.get("use").equals("enc")).findFirst();
       if (encKeyAsMap.isPresent()) {
+        log.debug("Found encryption key in signed JWKS of RP [{}]).", sub);
         return Optional.of(PublicJsonWebKey.Factory.newPublicJwk(encKeyAsMap.get()));
       }
     }
@@ -185,20 +197,28 @@ public class EntityStatementRpService {
   private void updateStatementRpIfExpiredAndNewIsAvailable(final String issuer) {
     if (entityStatementsOfFachdienst.containsKey(issuer)) {
       if (stmntIsEpired(entityStatementsOfFachdienst.get(issuer))) {
+        log.debug("Entitystatement of RP [{}] is in storage but expired. Fetching...", issuer);
         fetchEntityStatementRp(issuer);
+      } else {
+        log.debug("Entitystatement of RP [{}] is in storage and not expired.", issuer);
       }
       return;
     }
+    log.debug("Entitystatement of RP [{}] not found in storage. Fetching...", issuer);
     fetchEntityStatementRp(issuer);
   }
 
   private void updateStatementAboutRpIfExpiredAndNewIsAvailable(final String sub) {
     if (entityStatementsFedmasterAboutFachdienst.containsKey(sub)) {
       if (stmntIsEpired(entityStatementsFedmasterAboutFachdienst.get(sub))) {
+        log.debug("Entitystatement about RP [{}] is in storage but expired. Fetching...", sub);
         fetchEntityStatementAboutRp(sub);
+      } else {
+        log.debug("Entitystatement about RP [{}] is in storage and not expired.", sub);
       }
       return;
     }
+    log.debug("Entitystatement about RP [{}] not found in storage. Fetching...", sub);
     fetchEntityStatementAboutRp(sub);
   }
 
@@ -223,11 +243,15 @@ public class EntityStatementRpService {
       verifyEntityStmntRp(entityStmnt, issuer);
       entityStatementsOfFachdienst.put(
           issuer, entityStmnt); // TODO: hier nicht als string sondern als entityStatementObjekt
+      log.debug(
+          "Entitystatement of RP [{}] stored. JWT: {}",
+          issuer,
+          entityStatementsOfFachdienst.get(issuer).getRawString());
     } else {
       log.info(resp.getBody());
       throw new GsiException(
           INVALID_REQUEST,
-          "No entity statement from relying party ["
+          "No entity statement of relying party ["
               + issuer
               + "] available. Reason: "
               + resp.getBody()
@@ -255,11 +279,15 @@ public class EntityStatementRpService {
       final JsonWebToken entityStatementAboutRp = new JsonWebToken(resp.getBody());
       entityStatementAboutRp.verify(getFedmasterSigKey());
       entityStatementsFedmasterAboutFachdienst.put(sub, entityStatementAboutRp);
+      log.debug(
+          "Entitystatement about RP [{}] stored. JWT: {}",
+          sub,
+          entityStatementsFedmasterAboutFachdienst.get(sub).getRawString());
     } else {
       log.info(resp.getBody());
       throw new GsiException(
           INVALID_REQUEST,
-          "No entity statement for relying party ["
+          "No entity statement about relying party ["
               + sub
               + "] at Fedmaster iss: "
               + entityIdentifierFedmaster

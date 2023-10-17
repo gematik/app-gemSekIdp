@@ -320,10 +320,6 @@ class FedIdpControllerTest {
             .field("nonce", "42")
             .field("scope", "urn:telematik:given_name openid")
             .field("acr_values", acr_value)
-            .field(
-                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-            .field("client_assertion", "TODO")
-            .field("max_age", "0")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
     assertThat(resp.getStatus()).isEqualTo(HttpStatus.CREATED);
@@ -351,10 +347,6 @@ class FedIdpControllerTest {
             .field("nonce", "42")
             .field("scope", "urn:telematik:given_name openid")
             .field("acr_values", "gematik-ehealth-loa-high")
-            .field(
-                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-            .field("client_assertion", "TODO")
-            .field("max_age", "0")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
     assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
@@ -392,10 +384,6 @@ class FedIdpControllerTest {
             .field("nonce", "42")
             .field("scope", scope)
             .field("acr_values", "gematik-ehealth-loa-high")
-            .field(
-                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-            .field("client_assertion", "TODO")
-            .field("max_age", "0")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
     assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -414,10 +402,6 @@ class FedIdpControllerTest {
             .field("nonce", "42")
             .field("scope", "urn:telematik:given_name openid")
             .field("acr_values", "gematik-ehealth-loa-high")
-            .field(
-                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-            .field("client_assertion", "TODO")
-            .field("max_age", "0")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
     assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -541,10 +525,6 @@ class FedIdpControllerTest {
             .field("nonce", "42")
             .field("scope", "urn:telematik:given_name openid")
             .field("acr_values", "gematik-ehealth-loa-high")
-            .field(
-                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-            .field("client_assertion", "TODO")
-            .field("max_age", "0")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
     assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
@@ -604,10 +584,6 @@ class FedIdpControllerTest {
             .field("nonce", "42")
             .field("scope", "urn:telematik:given_name openid")
             .field("acr_values", "gematik-ehealth-loa-high")
-            .field(
-                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-            .field("client_assertion", "TODO")
-            .field("max_age", "0")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
     assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -636,10 +612,6 @@ class FedIdpControllerTest {
             .field("nonce", "42")
             .field("scope", "urn:telematik:given_name openid")
             .field("acr_values", "gematik-ehealth-loa-high")
-            .field(
-                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer")
-            .field("client_assertion", "TODO")
-            .field("max_age", "0")
             .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
     assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
