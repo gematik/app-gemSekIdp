@@ -1,3 +1,9 @@
+# Release 3.0.2
+
+- structure of signed Jwks of relying party fixed
+- add debug logging
+- update dependencies
+
 # Release 3.0.1
 
 - add key for idToken signature to JWKS
