@@ -54,6 +54,7 @@ import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.gsi.server.services.AuthenticationService;
 import de.gematik.idp.gsi.server.services.EntityStatementBuilder;
 import de.gematik.idp.gsi.server.services.EntityStatementRpService;
+import de.gematik.idp.gsi.server.services.JwksBuilder;
 import de.gematik.idp.gsi.server.services.SektoralIdpAuthenticator;
 import de.gematik.idp.gsi.server.services.ServerUrlService;
 import de.gematik.idp.gsi.server.token.IdTokenBuilder;
@@ -75,7 +76,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -103,13 +103,13 @@ public class FedIdpController {
   private final SektoralIdpAuthenticator sektoralIdpAuthenticator;
   private final AuthenticationService authenticationService;
   private final ServerUrlService serverUrlService;
-  private final IdpJwtProcessor jwtProcessorSigKey;
-  private final IdpJwtProcessor jwtProcessorTokenKey;
+  private final IdpJwtProcessor jwtProcessorEsSigKey;
+  private final IdpJwtProcessor jwtProcessorTokenSigKey;
   private final ObjectMapper objectMapper;
   private final GsiConfiguration gsiConfiguration;
-  private final ResourceLoader resourceLoader;
+  private final JwksBuilder jwksBuilder;
 
-  @Autowired FederationPrivKey entityStatementSigKey;
+  @Autowired FederationPrivKey esSigKey;
   @Autowired FederationPrivKey tokenSigKey;
 
   // TODO: delete oldest entry
@@ -127,7 +127,7 @@ public class FedIdpController {
       produces = "application/entity-statement+jwt;charset=UTF-8")
   public String getEntityStatement() {
     return JwtHelper.signJson(
-        jwtProcessorSigKey,
+        jwtProcessorEsSigKey,
         objectMapper,
         entityStatementBuilder.buildEntityStatement(
             serverUrlService.determineServerUrl(), gsiConfiguration.getFedmasterUrl()),
@@ -138,9 +138,9 @@ public class FedIdpController {
   @GetMapping(value = FED_SIGNED_JWKS_ENDPOINT, produces = "application/jwk-set+json;charset=UTF-8")
   public String getSignedJwks() {
     return JwtHelper.signJson(
-        jwtProcessorSigKey,
+        jwtProcessorEsSigKey,
         objectMapper,
-        JwtHelper.getJwks(entityStatementSigKey, tokenSigKey),
+        jwksBuilder.build(serverUrlService.determineServerUrl()),
         "jwk-set+json");
   }
 
@@ -300,7 +300,7 @@ public class FedIdpController {
 
     final IdTokenBuilder idTokenBuilder =
         new IdTokenBuilder(
-            jwtProcessorTokenKey,
+            jwtProcessorTokenSigKey,
             serverUrlService.determineServerUrl(),
             session.getRequestedScopes(),
             session.getFachdienstNonce(),

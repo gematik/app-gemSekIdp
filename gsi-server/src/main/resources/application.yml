@@ -1,9 +1,9 @@
 gsi:
-  sigKeyConfig:
+  esSigKeyConfig:
     fileName: classpath:cert/ref-es-sig.p12
     keyId: puk_idp_sig
     use: sig
-  tokenKeyConfig:
+  tokenSigKeyConfig:
     fileName: classpath:cert/ref-es-sig.p12
     keyId: puk_fed_idp_token
     use: sig

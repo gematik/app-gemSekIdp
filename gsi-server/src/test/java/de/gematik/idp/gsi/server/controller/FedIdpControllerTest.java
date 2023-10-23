@@ -248,7 +248,7 @@ class FedIdpControllerTest {
 
   @Test
   void signedJwksResponse_BodyClaims() {
-    assertThat(sigendJwks.extractBodyClaims()).containsOnlyKeys("keys");
+    assertThat(sigendJwks.extractBodyClaims()).containsOnlyKeys("keys", "iss", "iat");
   }
 
   @Test

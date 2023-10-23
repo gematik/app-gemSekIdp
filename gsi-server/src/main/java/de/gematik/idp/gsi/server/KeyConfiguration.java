@@ -41,23 +41,22 @@ public class KeyConfiguration implements KeyConfigurationBase {
   private final GsiConfiguration gsiConfiguration;
 
   @Bean
-  public FederationPrivKey entityStatementSigKey() {
-    return getFederationPrivKey(gsiConfiguration.getSigKeyConfig());
+  public FederationPrivKey esSigKey() {
+    return getFederationPrivKey(gsiConfiguration.getEsSigKeyConfig());
   }
 
   @Bean
   public FederationPrivKey tokenSigKey() {
-    return getFederationPrivKey(gsiConfiguration.getTokenKeyConfig());
+    return getFederationPrivKey(gsiConfiguration.getTokenSigKeyConfig());
   }
 
   @Bean
-  public IdpJwtProcessor jwtProcessorSigKey() {
-    return new IdpJwtProcessor(
-        entityStatementSigKey().getIdentity(), entityStatementSigKey().getKeyId());
+  public IdpJwtProcessor jwtProcessorEsSigKey() {
+    return new IdpJwtProcessor(esSigKey().getIdentity(), esSigKey().getKeyId());
   }
 
   @Bean
-  public IdpJwtProcessor jwtProcessorTokenKey() {
+  public IdpJwtProcessor jwtProcessorTokenSigKey() {
     return new IdpJwtProcessor(tokenSigKey().getIdentity(), tokenSigKey().getKeyId());
   }
 

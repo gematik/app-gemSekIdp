@@ -84,6 +84,14 @@ Feature: Test signed Jwks of IdpSektoral
     Given TGR clear recorded messages
     And Send Get Request to "${signed_jwks_uri}"
     And TGR find request to path ".*"
+    Then TGR current response at "$.body.body" matches as JSON:
+    """
+      {
+        iss:                           '.*',
+        iat:                           "${json-unit.ignore}",
+        keys:                          "${json-unit.ignore}"
+      }
+    """
     Then TGR current response at "$.body.body.keys.0" matches as JSON:
         """
           {
