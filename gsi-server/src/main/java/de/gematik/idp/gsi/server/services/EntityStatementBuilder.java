@@ -37,7 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EntityStatementBuilder {
 
   private static final int ENTITY_STATEMENT_TTL_DAYS = 7;
-  @Autowired FederationPrivKey entityStatementSigKey;
+  @Autowired FederationPrivKey esSigKey;
   @Autowired FederationPrivKey tokenSigKey;
 
   public EntityStatement buildEntityStatement(final String serverUrl, final String fedmasterUrl) {
@@ -47,7 +47,7 @@ public class EntityStatementBuilder {
         .iat(currentTime.toEpochSecond())
         .iss(serverUrl)
         .sub(serverUrl)
-        .jwks(JwtHelper.getJwks(entityStatementSigKey, tokenSigKey))
+        .jwks(JwtHelper.getJwks(esSigKey, tokenSigKey))
         .authorityHints(new String[] {fedmasterUrl})
         .metadata(getMetadata(serverUrl))
         .build();

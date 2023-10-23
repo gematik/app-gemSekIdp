@@ -14,29 +14,25 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.gsi.server.configuration;
+package de.gematik.idp.gsi.server.data;
 
-import de.gematik.idp.data.KeyConfig;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import de.gematik.idp.data.IdpKeyDescriptor;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
-@ConfigurationProperties("gsi")
 @Getter
-@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class GsiConfiguration {
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class SignedJwksBody {
 
-  private String serverUrl;
-  private String fedmasterUrl;
-  private KeyConfig esSigKeyConfig;
-  private KeyConfig tokenSigKeyConfig;
-  private String loglevel;
+  private String iss;
+  private long iat;
+  private List<IdpKeyDescriptor> keys;
 }

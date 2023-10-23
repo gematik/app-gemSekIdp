@@ -1,3 +1,7 @@
+# Release 3.0.4
+
+- fix missing iat and iss in signedJwks structure
+
 # Release 3.0.2
 
 - structure of signed Jwks of relying party fixed

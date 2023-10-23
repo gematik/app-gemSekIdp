@@ -12,7 +12,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gemSekIdp-global</artifactId>
-  <version>3.0.2</version>
+  <version>3.0.4</version>
   <packaging>pom</packaging>
 
   <description>gsi - gematik sektoraler IDP</description>

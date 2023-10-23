@@ -36,27 +36,26 @@ class GsiConfigurationTest {
   @Test
   void fullIntTestComponent() {
     assertThat(gsiConfiguration).isNotNull();
-    assertThat(gsiConfiguration.getSigKeyConfig()).isNotNull();
-    assertThat(gsiConfiguration.getTokenKeyConfig()).isNotNull();
+    assertThat(gsiConfiguration.getEsSigKeyConfig()).isNotNull();
+    assertThat(gsiConfiguration.getTokenSigKeyConfig()).isNotNull();
   }
 
   @Test
   void testBuildComponent() {
     final GsiConfiguration gsiConfig =
         GsiConfiguration.builder()
-            .sigKeyConfig(new KeyConfig("a", "b", "c", false))
-            .tokenKeyConfig(new KeyConfig("d", "e", "f", false))
+            .esSigKeyConfig(new KeyConfig("a", "b", "c", false))
+            .tokenSigKeyConfig(new KeyConfig("d", "e", "f", false))
             .serverUrl("serverurl")
             .build();
     gsiConfig.setServerUrl("newUrl");
     assertThat(gsiConfig).isNotNull();
     assertThat(gsiConfig.getServerUrl()).isEqualTo("newUrl");
-    assertThat(gsiConfig.getSigKeyConfig()).isNotNull();
-    assertThat(gsiConfig.getTokenKeyConfig()).isNotNull();
+    assertThat(gsiConfig.getEsSigKeyConfig()).isNotNull();
+    assertThat(gsiConfig.getTokenSigKeyConfig()).isNotNull();
     assertThat(GsiConfiguration.builder().toString()).hasSizeGreaterThan(0);
 
-    assertThatThrownBy(
-            () -> new KeyConfiguration(resourceLoader, gsiConfig).entityStatementSigKey())
+    assertThatThrownBy(() -> new KeyConfiguration(resourceLoader, gsiConfig).esSigKey())
         .isInstanceOf(GsiException.class);
   }
 }
