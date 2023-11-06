@@ -19,8 +19,8 @@
 Feature: Test GSI specific authentication
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
-    Given Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
     Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$..authorization_endpoint')}"
 

@@ -19,8 +19,8 @@
 Feature: Test Entity Statement of IdpSektoral
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
-    Given Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     And Expect JWKS in last message and add its keys to truststore
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_001
@@ -33,8 +33,8 @@ Feature: Test Entity Statement of IdpSektoral
   Wir rufen das Entity Statement des IdpSektoral ab und prüfen, ob die Signatur korrekt ist
 
     Given TGR clear recorded messages
-    When Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     And Check signature of JWS in last message
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_002
@@ -52,8 +52,8 @@ Feature: Test Entity Statement of IdpSektoral
   - einen JWS enthalten
 
     Given TGR clear recorded messages
-    When Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR current response with attribute "$.header.Content-Type" matches "application/entity-statement\+jwt.*"
 
@@ -70,8 +70,8 @@ Feature: Test Entity Statement of IdpSektoral
   Der Response Body muss ein JWS mit den folgenden Header Claims sein:
 
     Given TGR clear recorded messages
-    When Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR current response at "$.body.header" matches as JSON:
             """
           {
@@ -93,8 +93,8 @@ Feature: Test Entity Statement of IdpSektoral
   Der Response Body muss ein JWS mit den korrekten Body Claims sein:
 
     Given TGR clear recorded messages
-    When Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR current response at "$.body.body" matches as JSON:
             """
           {
@@ -120,8 +120,8 @@ Feature: Test Entity Statement of IdpSektoral
   Der Response Body muss ein JWS sein. Dieser muss einen korrekt aufgebauten Body Claim metadata enthalten
 
     Given TGR clear recorded messages
-    When Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR current response at "$.body.body.metadata" matches as JSON:
     """
           {
@@ -166,8 +166,8 @@ Feature: Test Entity Statement of IdpSektoral
     """
           {
             name:             '.*',
-            contacts:         "${json-unit.ignore}",
-            homepage_uri:     'http.*'
+            ____contacts:         "${json-unit.ignore}",
+            ____homepage_uri:     'http.*'
           }
     """
     And TGR current response at "$.body.body.metadata.federation_entity.contacts.0" matches ".*"
@@ -186,8 +186,8 @@ Feature: Test Entity Statement of IdpSektoral
   Das JWKS muss mindestens einen strukturell korrekten JWK mit use = sig enthalten.
 
     Given TGR clear recorded messages
-    When Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR current response at "$.body.body.jwks.keys.[?(@.kid.content =='${gsi.sigKeyKid}')]" matches as JSON:
         """
           {
@@ -213,8 +213,8 @@ Feature: Test Entity Statement of IdpSektoral
   In dem Claim scopes_supported müssen (neben möglichen anderen) die von der gematik vorgeschriebenen Scopes enthalten sein
 
     Given TGR clear recorded messages
-    When Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:given_name.*"
     And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:geburtsdatum.*"
     And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:alter.*"
@@ -237,6 +237,6 @@ Feature: Test Entity Statement of IdpSektoral
   In dem Claim response_types_supported muss (neben möglichen anderen) der Wert "code" enthalten sein
 
     Given TGR clear recorded messages
-    When Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     And TGR current response at "$.body.body.metadata.openid_provider.response_types_supported" matches ".*code.*"

@@ -35,8 +35,8 @@ Feature: Test Fed Master's Entity Statement about IdpSektoral
   Wir rufen das Entity Statement des Fed Masters über den IdpSektoral ab und prüfen, ob im jwks ein passender Schlüssel steht
 
     Given TGR clear recorded messages
-    And Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "idpSigKid" to "!{rbel:currentResponseAsString('$.body.header.kid')}"
     Given TGR clear recorded messages
     When Send Get Request to "${fedmasterFederationFetchEndpoint}" with

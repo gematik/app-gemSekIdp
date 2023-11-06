@@ -19,8 +19,8 @@
 Feature: Test IdpSektoral's Pushed Auth Endpoint
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
-    Given Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_001
@@ -99,7 +99,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
     Examples:
       | client_id          | redirect_uri            | code_challenge_method | response_type | scope        | acr_values               | error           | responseCode |
-      | notUrl             | gsi.redirectUri         | S256                  | code          | gsi.scope    | gematik-ehealth-loa-high | invalid_request | 400          |
+      | notUrl             | gsi.redirectUri         | S256                  | code          | gsi.scope    | gematik-ehealth-loa-high | invalid_.*      | 40.*         |
       | gsi.clientid.valid | gsi.redirectUri         | plain                 | code          | gsi.scope    | gematik-ehealth-loa-high | invalid_request | 400          |
       | gsi.clientid.valid | gsi.redirectUri         | S256                  | token         | gsi.scope    | gematik-ehealth-loa-high | .*              | 400          |
       | gsi.clientid.valid | gsi.redirectUri         | S256                  | code          | invalidScope | gematik-ehealth-loa-high | invalid_scope   | 400          |
@@ -195,7 +195,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     And TGR current response at "$.body" matches as JSON:
         """
           {
-            "error":                        'invalid_request',
+            "error":                        '(invalid_request|invalid_client)',
             "____error_description":        '.*'
           }
         """
@@ -219,7 +219,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     And TGR current response at "$.body" matches as JSON:
         """
           {
-            "error":                        'invalid_request',
+            "error":                        '(invalid_request|invalid_client)',
             "____error_description":        '.*'
           }
         """

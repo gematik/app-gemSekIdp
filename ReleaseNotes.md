@@ -1,3 +1,7 @@
+# Release 3.0.5
+
+- minor refactoring/some bug fixes in testsuite
+
 # Release 3.0.4
 
 - fix missing iat and iss in signedJwks structure

@@ -19,8 +19,8 @@
 Feature: Test signed Jwks of IdpSektoral
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
-    Given Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     And Expect JWKS in last message and add its keys to truststore
     Then TGR set local variable "signed_jwks_uri" to "!{rbel:currentResponseAsString('$..signed_jwks_uri')}"
     And TGR set local variable "entity_statement_sig_kid" to "!{rbel:currentResponseAsString('$.body.header.kid')}"
