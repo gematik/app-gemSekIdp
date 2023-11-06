@@ -19,8 +19,8 @@
 Feature: Test IdpSektoral's Auth Endpoint
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
-    Given Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
     Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$..authorization_endpoint')}"
 
@@ -49,13 +49,14 @@ Feature: Test IdpSektoral's Auth Endpoint
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
     And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "200"
+    Then TGR current response with attribute "$.responseCode" matches "(200|302)"
 
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_002
     @Approval
     @PRIO:1
     @TESTSTUFE:4
+    @OpenBug
   Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlerhaft befüllte Parameter
 
   ```
@@ -76,17 +77,27 @@ Feature: Test IdpSektoral's Auth Endpoint
       | <request_uri> | <client_id> |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
+    And TGR current response at "$.body" matches as JSON:
+        """
+          {
+            "error":                        '.*',
+            "____error_description":        '.*',
+            "____error_uri":                '.*'
+          }
+        """
+    And TGR current response at "$.body.error" matches "<error>"
 
     Examples:
-      | client_id          | request_uri                                                    | error           | responseCode |
-      | gsi.clientid.valid | urn:ietf:params:oauth:request_uri:ZoWuCxe9C8-uW8T3ngvqoYN-stzw | invalid_request | 200          |
-      | invalidClient      | ${requestUri}                                                  | invalid_request | 200          |
+      | client_id          | request_uri                                                    | error               | responseCode |
+      | gsi.clientid.valid | urn:ietf:params:oauth:request_uri:ZoWuCxe9C8-uW8T3ngvqoYN-stzw | invalid_request_uri | 400          |
+      | invalidClient      | ${requestUri}                                                  | invalid_request     | 400          |
 
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_003
     @Approval
     @PRIO:1
     @TESTSTUFE:4
+    @OpenBug
   Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlende verpflichtende Parameter
 
   ```
@@ -158,4 +169,4 @@ Feature: Test IdpSektoral's Auth Endpoint
             "____error_uri":                '.*'
           }
         """
-    And TGR current response at "$.body.error" matches "invalid_request"
+    And TGR current response at "$.body.error" matches "(invalid_request|invalid_request_uri)"

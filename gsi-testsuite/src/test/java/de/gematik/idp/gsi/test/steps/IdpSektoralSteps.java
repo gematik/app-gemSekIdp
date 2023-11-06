@@ -34,10 +34,6 @@ public class IdpSektoralSteps {
   static final String FED_MASTER_URL = "fedmaster";
   static final String ENTITY_STATEMENT_ENDPOINT = "/.well-known/openid-federation";
 
-  public void fetchEntStmnt() {
-    sendRequestTo("http://" + IDP_SEKTORAL_URL + ENTITY_STATEMENT_ENDPOINT, "GET", null);
-  }
-
   public void sendRequestTo(final String url, final String httpMethod, final DataTable params) {
     SerenityRest.useRelaxedHTTPSValidation();
     final RequestSpecification reqSpec = SerenityRest.rest();

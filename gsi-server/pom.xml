@@ -7,13 +7,13 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>gemSekIdp-global</artifactId>
-    <version>3.0.4</version>
+    <version>3.0.5</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
 
   <artifactId>gsi-server</artifactId>
-  <version>3.0.4</version>
+  <version>3.0.5</version>
   <packaging>jar</packaging>
 
   <name>gsi-server</name>

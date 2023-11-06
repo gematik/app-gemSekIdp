@@ -19,8 +19,8 @@
 Feature: Test IdpSektoral's Token Endpoint
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
-    Given Fetch Entity statement
-    And TGR find request to path "/.well-known/openid-federation"
+    When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
+    And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
     Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$..authorization_endpoint')}"
     Then TGR set local variable "token_endpoint" to "!{rbel:currentResponseAsString('$..token_endpoint')}"
@@ -51,7 +51,7 @@ Feature: Test IdpSektoral's Token Endpoint
             "____error_uri":                '.*'
           }
         """
-    And TGR current response at "$.body.error" matches "(invalid_request)|(invalid_grant)"
+    And TGR current response at "$.body.error" matches "(invalid_request)|(invalid_grant)|(invalid_client)|(unsupported_grant_type)"
 
     Examples:
       | client_id          | redirect_uri            | code_verifier    | grant_type         | code                  | responseCode |

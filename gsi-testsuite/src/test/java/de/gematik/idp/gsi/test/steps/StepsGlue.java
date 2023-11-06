@@ -61,11 +61,6 @@ public class StepsGlue {
 
   @Steps IdpSektoralSteps idpSektoralSteps;
 
-  @And("Fetch Entity statement")
-  public void ifetchEntStmnt() {
-    idpSektoralSteps.fetchEntStmnt();
-  }
-
   @Given("Fetch Fed Master's Entity Statement")
   public void fetchFedMasterSEntityStatement() {
     idpSektoralSteps.sendRequestTo(
