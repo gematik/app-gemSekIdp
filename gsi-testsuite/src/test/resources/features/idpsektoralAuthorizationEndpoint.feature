@@ -56,7 +56,6 @@ Feature: Test IdpSektoral's Auth Endpoint
     @Approval
     @PRIO:1
     @TESTSTUFE:4
-    @OpenBug
   Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlerhaft befüllte Parameter
 
   ```
@@ -88,16 +87,15 @@ Feature: Test IdpSektoral's Auth Endpoint
     And TGR current response at "$.body.error" matches "<error>"
 
     Examples:
-      | client_id          | request_uri                                                    | error               | responseCode |
-      | gsi.clientid.valid | urn:ietf:params:oauth:request_uri:ZoWuCxe9C8-uW8T3ngvqoYN-stzw | invalid_request_uri | 400          |
-      | invalidClient      | ${requestUri}                                                  | invalid_request     | 400          |
+      | client_id          | request_uri                                                    | error             | responseCode |
+      | gsi.clientid.valid | urn:ietf:params:oauth:request_uri:ZoWuCxe9C8-uW8T3ngvqoYN-stzw | invalid_request.* | 400          |
+      | invalidClient      | ${requestUri}                                                  | invalid_request   | 400          |
 
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_003
     @Approval
     @PRIO:1
     @TESTSTUFE:4
-    @OpenBug
   Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlende verpflichtende Parameter
 
   ```

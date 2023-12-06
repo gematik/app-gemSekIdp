@@ -24,15 +24,15 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import lombok.SneakyThrows;
 
-public abstract class QRCodeGenerator {
+public interface QRCodeGenerator {
 
   @SneakyThrows
-  public static String generate(final String content) {
-    final Map<EncodeHintType, Object> hints = new HashMap<>();
+  static String generate(final String content) {
+    final Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
     hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
     hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
 

@@ -23,6 +23,7 @@ import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 import de.gematik.idp.IdpConstants;
+import de.gematik.idp.gsi.server.GsiServer;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -35,15 +36,13 @@ import org.mockserver.springtest.MockServerTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.context.ActiveProfiles;
 
 @Slf4j
 @ActiveProfiles("test-entityservice")
 @MockServerTest("server.url=http://localhost:${mockServerPort}")
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-@SpringBootTest
+@SpringBootTest(classes = GsiServer.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 class EntityStatementRpServiceJwksTest {
 
   @Value("${server.url}")

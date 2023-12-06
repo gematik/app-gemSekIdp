@@ -65,10 +65,10 @@ public class IdTokenBuilder {
         new JwtBuilder().addAllBodyClaims(claimsMap).addAllHeaderClaims(headerClaims));
   }
 
-  private Map<String, Object> filterUserDataClaimsWithRespectToScope(
+  private static Map<String, Object> filterUserDataClaimsWithRespectToScope(
       final Map<String, Object> userDataClaims, final Set<String> requestedScopes) {
     final Stream<String> requestedClaims =
-        requestedScopes.stream().flatMap(this::getClaimsForScope);
+        requestedScopes.stream().flatMap(IdTokenBuilder::getClaimsForScope);
     final Stream<String> claimsForAuthenticationDetails =
         Stream.of(
             AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
@@ -77,7 +77,7 @@ public class IdTokenBuilder {
         .collect(Collectors.toMap(claim -> claim, userDataClaims::get));
   }
 
-  private Stream<String> getClaimsForScope(final String scope) {
+  private static Stream<String> getClaimsForScope(final String scope) {
     return SCOPES_TO_CLAIM_MAP.get(scope).stream().map(ClaimName::getJoseName);
   }
 }
