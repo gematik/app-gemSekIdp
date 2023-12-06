@@ -42,24 +42,30 @@ import kong.unirest.HttpStatus;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
 
+@Slf4j
 @ActiveProfiles("test-controller")
-@SpringBootTest(
-    classes = GsiServer.class,
-    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(classes = GsiServer.class, webEnvironment = WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FedIdpControllerTest {
 
@@ -87,9 +93,9 @@ class FedIdpControllerTest {
           "id_token_encryption_enc_values_supported",
           "user_type_supported");
 
-  @Value("${server.port}")
-  private int serverPort;
+  @LocalServerPort private int serverPort;
 
+  private TestInfo testInfo;
   private String testHostUrl;
   private HttpResponse<String> entityStatementResponseGood;
   private JsonWebToken entityStatement;
@@ -107,6 +113,12 @@ class FedIdpControllerTest {
     entityStatement = new JsonWebToken(entityStatementResponseGood.getBody());
     sigendJwks = new JsonWebToken(sigendJwksResponseGood.getBody());
     entityStatementbodyClaims = entityStatement.extractBodyClaims();
+  }
+
+  @BeforeEach
+  void init(final TestInfo testInfo) {
+    this.testInfo = testInfo;
+    log.info("START UNIT TEST: {}", testInfo.getDisplayName());
   }
 
   /************************** ENTITY_STATEMENT_ENDPOINT *****************/
@@ -256,14 +268,14 @@ class FedIdpControllerTest {
     final List<Map<String, Object>> keyList =
         (List<Map<String, Object>>) sigendJwks.getBodyClaims().get("keys");
     assertThat(keyList.get(0).keySet())
-        .containsExactlyInAnyOrder("use", "kid", "kty", "crv", "x", "y");
+        .containsExactlyInAnyOrder("use", "kid", "kty", "crv", "x", "y", "alg");
   }
 
   @Test
   void signedJwksResponse_NumberOfKeys() {
     final List<Map<String, Object>> keyList =
         (List<Map<String, Object>>) sigendJwks.getBodyClaims().get("keys");
-    assertThat(keyList.size()).isEqualTo(2);
+    assertThat(keyList).hasSize(2);
   }
 
   private HttpResponse<String> retrieveSignedJwks() {
@@ -278,7 +290,7 @@ class FedIdpControllerTest {
         "urn:telematik:given_name openid",
         "urn:telematik:geschlecht urn:telematik:versicherter urn:telematik:email"
       })
-  @ParameterizedTest
+  @ParameterizedTest(name = "parRequest_validScope_ResponseStatus_CREATED scope: {0}")
   void parRequest_validScope_ResponseStatus_CREATED(final String scope) {
 
     Mockito.doNothing()
@@ -302,7 +314,7 @@ class FedIdpControllerTest {
   }
 
   @ValueSource(strings = {"gematik-ehealth-loa-high", "gematik-ehealth-loa-substantial"})
-  @ParameterizedTest
+  @ParameterizedTest(name = "parRequest_validAcrValue_ResponseStatus_CREATED acr: {0}")
   void parRequest_validAcrValue_ResponseStatus_CREATED(final String acr_value) {
 
     Mockito.doNothing()
@@ -364,6 +376,54 @@ class FedIdpControllerTest {
     assertThat(respMsg7.getStatus()).isEqualTo(HttpStatus.OK);
   }
 
+  /*
+   *  message nr.2 ... message nr.7
+   * do auto registration and send invalid authorization request
+   */
+  @Test
+  void authRequest_invalidParameter() {
+
+    Mockito.doNothing()
+        .when(entityStatementRpService)
+        .doAutoregistration(testHostUrl, testHostUrl + "/AS");
+
+    final HttpResponse<String> respMsg3 =
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
+            .field("client_id", testHostUrl)
+            .field("state", "state_Fachdienst")
+            .field("redirect_uri", testHostUrl + "/AS")
+            .field("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
+            .field("code_challenge_method", CodeChallengeMethod.S256.toString())
+            .field("response_type", "code")
+            .field("nonce", "42")
+            .field("scope", "urn:telematik:given_name openid")
+            .field("acr_values", "gematik-ehealth-loa-high")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .asString();
+    assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
+
+    final String requestUri =
+        ((JsonObject) JsonParser.parseString(respMsg3.getBody())).get("request_uri").getAsString();
+
+    Unirest.config().reset().followRedirects(false);
+
+    // variant invalid request_uri
+    final HttpResponse<String> respMsg7_a =
+        Unirest.get(testHostUrl + FED_AUTH_ENDPOINT)
+            .queryString("request_uri", "InvalidRequestUri")
+            .queryString("client_id", testHostUrl)
+            .asString();
+    assertThat(respMsg7_a.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+    // variant invalid client_id
+    final HttpResponse<String> respMsg7_b =
+        Unirest.get(testHostUrl + FED_AUTH_ENDPOINT)
+            .queryString("request_uri", requestUri)
+            .queryString("client_id", "InvalidClientId")
+            .asString();
+    assertThat(respMsg7_b.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+  }
+
   @ValueSource(
       strings = {
         "urn:telematik:geburtsdatumurn:telematik:alter openid",
@@ -371,7 +431,7 @@ class FedIdpControllerTest {
         "urn:telematik:given_name+openid",
         "urn:telematik:schlecht openid"
       })
-  @ParameterizedTest
+  @ParameterizedTest(name = "parRequest_invalidScope_ResponseStatus_BAD_REQUEST scope: {0}")
   void parRequest_invalidScope_ResponseStatus_BAD_REQUEST(final String scope) {
     final HttpResponse<String> resp =
         Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
@@ -426,13 +486,13 @@ class FedIdpControllerTest {
 
   /************************** FEDIDP AUTH_ENDPOINT *****************/
   @Test
-  void authRequest_invalidRequestUri_ResponseStatus_OK() {
+  void authRequest_invalidRequestUri_ResponseStatus_BAD_REQUEST() {
     final HttpResponse<String> resp =
         Unirest.get(testHostUrl + FED_AUTH_ENDPOINT)
             .queryString("request_uri", "myInvalidRequestUri")
             .queryString("client_id", testHostUrl)
             .asString();
-    assertThat(resp.getStatus()).isEqualTo(HttpStatus.OK);
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
   @Test
@@ -446,7 +506,7 @@ class FedIdpControllerTest {
 
   /************************** FEDIDP_TOKEN_ENDPOINT *****************/
   @Test
-  void tokenResponse_contains_httpStatus_BAD_REQUEST() {
+  void tokenRequest_invalidCode_ResponseStatus_BAD_REQUEST() {
     final HttpResponse<JsonNode> httpResponse =
         Unirest.post(testHostUrl + TOKEN_ENDPOINT)
             .field("grant_type", "authorization_code")
@@ -560,7 +620,7 @@ class FedIdpControllerTest {
     final IdpJwe idpJwe = new IdpJwe(idTokenEncrypted);
 
     // verify that token is encrypted and check kid
-    assertThat(idpJwe.extractHeaderClaims().get("kid")).isEqualTo(KEY_ID);
+    assertThat(idpJwe.extractHeaderClaims()).containsEntry("kid", KEY_ID);
   }
 
   /** Increase Test coverage of Landing page endpoint */

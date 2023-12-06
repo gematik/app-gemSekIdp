@@ -29,6 +29,7 @@ Feature: Test Fed Master's Entity Statement about IdpSektoral
   @PRIO:1
   @TESTSTUFE:4
   @Approval
+  @OpenBug
   Scenario: IdpSektoral - Check Registration in Fed Master's Entity Statement
 
   ```

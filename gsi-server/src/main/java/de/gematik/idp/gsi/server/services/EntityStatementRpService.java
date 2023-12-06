@@ -110,47 +110,54 @@ public class EntityStatementRpService {
                     INVALID_REQUEST, "No Relying Party Enc Key found", HttpStatus.BAD_REQUEST));
   }
 
-  private Optional<PublicJsonWebKey> getRpEncKeyFromEntityStatement(final String sub)
-      throws JoseException {
-    final JsonWebToken entityStmntRp = getEntityStatementRp(sub);
-    final Map<String, Object> metadata =
-        (Map<String, Object>) entityStmntRp.getBodyClaims().get("metadata");
-    final Map<String, Object> openidRelyingParty =
-        Objects.requireNonNull(
-            (Map<String, Object>) metadata.get("openid_relying_party"),
-            "missing claim: openid_relying_party");
-
-    log.debug(
-        "Search encryption key in openid_relying_party (inside Entitystatement of RP [{}]).", sub);
-    if (openidRelyingParty.containsKey("jwks")) {
-      log.debug(
-          "Key [jwks] found in openid_relying_party (inside Entitystatement of RP [{}]).", sub);
-      final Map<String, Object> jwksMap = (Map<String, Object>) openidRelyingParty.get("jwks");
-      final List<Map<String, Object>> keyList = (List<Map<String, Object>>) jwksMap.get("keys");
-      final Optional<Map<String, Object>> encKeyAsMap =
-          keyList.stream().filter(key -> key.get("use").equals("enc")).findFirst();
-      if (encKeyAsMap.isPresent()) {
-        return Optional.of(PublicJsonWebKey.Factory.newPublicJwk(encKeyAsMap.get()));
+  private Optional<PublicJsonWebKey> getRpEncKeyFromEntityStatement(final String sub) {
+    try {
+      final JsonWebToken entityStmntRp = getEntityStatementRp(sub);
+      final Map<String, Object> metadata =
+          (Map<String, Object>) entityStmntRp.getBodyClaims().get("metadata");
+      final Map<String, Object> openidRelyingParty =
+          (Map<String, Object>) metadata.get("openid_relying_party");
+      if (openidRelyingParty.containsKey("jwks")) {
+        log.debug(
+            "Key [jwks] found in openid_relying_party (inside Entitystatement of RP [{}]).", sub);
+        final Map<String, Object> jwksMap = (Map<String, Object>) openidRelyingParty.get("jwks");
+        final List<Map<String, Object>> keyList = (List<Map<String, Object>>) jwksMap.get("keys");
+        final Optional<Map<String, Object>> encKeyAsMap =
+            keyList.stream()
+                .filter(key -> key.containsKey("use"))
+                .filter(key -> key.get("use").equals("enc"))
+                .findFirst();
+        if (encKeyAsMap.isPresent()) {
+          return Optional.of(PublicJsonWebKey.Factory.newPublicJwk(encKeyAsMap.get()));
+        }
       }
+      return Optional.empty();
+    } catch (final JoseException | NullPointerException | ClassCastException e) {
+      return Optional.empty();
     }
-    return Optional.empty();
   }
 
-  private Optional<PublicJsonWebKey> getRpEncKeyFromSignedJwks(final String sub)
-      throws JoseException {
-    log.debug("Search encryption key in signed JWKS of RP [{}]).", sub);
-    final Optional<JsonWebToken> signedJwks = getSignedJwks(sub);
-    if (signedJwks.isPresent()) {
-      final List<Map<String, Object>> keyList =
-          (List<Map<String, Object>>) signedJwks.get().getBodyClaims().get("keys");
-      final Optional<Map<String, Object>> encKeyAsMap =
-          keyList.stream().filter(key -> key.get("use").equals("enc")).findFirst();
-      if (encKeyAsMap.isPresent()) {
-        log.debug("Found encryption key in signed JWKS of RP [{}]).", sub);
-        return Optional.of(PublicJsonWebKey.Factory.newPublicJwk(encKeyAsMap.get()));
+  private Optional<PublicJsonWebKey> getRpEncKeyFromSignedJwks(final String sub) {
+    try {
+      log.debug("Search encryption key in signed JWKS of RP [{}]).", sub);
+      final Optional<JsonWebToken> signedJwks = getSignedJwks(sub);
+      if (signedJwks.isPresent()) {
+        final List<Map<String, Object>> keyList =
+            (List<Map<String, Object>>) signedJwks.get().getBodyClaims().get("keys");
+        final Optional<Map<String, Object>> encKeyAsMap =
+            keyList.stream()
+                .filter(key -> key.containsKey("use"))
+                .filter(key -> key.get("use").equals("enc"))
+                .findFirst();
+        if (encKeyAsMap.isPresent()) {
+          log.debug("Found encryption key in signed JWKS of RP [{}]).", sub);
+          return Optional.of(PublicJsonWebKey.Factory.newPublicJwk(encKeyAsMap.get()));
+        }
       }
+      return Optional.empty();
+    } catch (final JoseException | NullPointerException | ClassCastException e) {
+      return Optional.empty();
     }
-    return Optional.empty();
   }
 
   private Optional<JsonWebToken> getSignedJwks(final String sub) {

@@ -35,4 +35,9 @@ public class FlowBeanCreation {
   public JwksBuilder jwksBuilder() {
     return new JwksBuilder();
   }
+
+  @Bean
+  public String insuredPersonsJsonFilePath() {
+    return "versicherte.gesundheitsid.json";
+  }
 }

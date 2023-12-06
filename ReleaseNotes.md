@@ -1,3 +1,11 @@
+# Release 4.0.0
+
+- add controllers for assetlinks files
+- AuthenticationService binds user to session, reads userData from file selected by KVNR
+- refactor session storage (from list 2 map), delete sessions after token delivery, limit session amount
+- add key to decrypt id_token in testsuite
+- update dependencies
+
 # Release 3.0.5
 
 - minor refactoring/some bug fixes in testsuite

@@ -18,26 +18,19 @@ package de.gematik.idp.gsi.server.data;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class QRCodeGeneratorTest {
 
-  @Test
-  void generate() {
-    final String qrcodeContent = "inside the qrcode";
-    assertDoesNotThrow(() -> QRCodeGenerator.generate(qrcodeContent));
-  }
-
-  @Test
-  void generatePlaystoreAuthenticator() {
-    final String qrcodeContent =
-        "https://play.google.com/store/apps/details?id=com.azure.authenticator";
-    assertDoesNotThrow(() -> QRCodeGenerator.generate(qrcodeContent));
-  }
-
-  @Test
-  void generateSlack() {
-    final String qrcodeContent = "slack://";
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        "inside the qrcode",
+        "https://play.google.com/store/apps/details?id=com.azure.authenticator",
+        "slack://"
+      })
+  void generate(final String qrcodeContent) {
     assertDoesNotThrow(() -> QRCodeGenerator.generate(qrcodeContent));
   }
 }

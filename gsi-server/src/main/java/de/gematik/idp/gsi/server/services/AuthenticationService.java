@@ -16,46 +16,49 @@
 
 package de.gematik.idp.gsi.server.services;
 
-import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.BIRTHDATE;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_ALTER;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_DISPLAY_NAME;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_EMAIL;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_GESCHLECHT;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_GIVEN_NAME;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_ORGANIZATION;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_PROFESSION;
 
 import de.gematik.idp.IdpConstants;
-import de.gematik.idp.gsi.server.data.TiUser;
-import de.gematik.idp.gsi.server.exceptions.GsiException;
+import de.gematik.idp.gsi.server.data.InsuredPersonsService;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
+  private final InsuredPersonsService insuredPersonsService;
 
-  private static final TiUser user12345678 =
-      TiUser.builder().kvnr("12345678").givenName("Mueller").build();
   /*
   simulate user authentication
    */
   public void doAuthentication(final Map<String, Object> userData, final String userId) {
+    final Map<String, String> user = insuredPersonsService.getPerson(userId);
 
-    if (userId.equals(user12345678.kvnr())) {
-      // user found in database ;-)
-      userData.put(TELEMATIK_PROFESSION.getJoseName(), "TODO PROFESSION");
-      userData.put(TELEMATIK_GIVEN_NAME.getJoseName(), user12345678.givenName());
-      userData.put(TELEMATIK_ORGANIZATION.getJoseName(), "TODO ORGANIZATION_NAME");
-      userData.put(TELEMATIK_ID.getJoseName(), user12345678.kvnr());
-
-      userData.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
-      userData.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "TODO amr");
-    } else {
-      throw new GsiException(INVALID_REQUEST, "invalid userId", HttpStatus.BAD_REQUEST);
-    }
+    userData.put(TELEMATIK_PROFESSION.getJoseName(), user.get(TELEMATIK_PROFESSION.getJoseName()));
+    userData.put(TELEMATIK_GIVEN_NAME.getJoseName(), user.get(TELEMATIK_GIVEN_NAME.getJoseName()));
+    userData.put(
+        TELEMATIK_ORGANIZATION.getJoseName(), user.get(TELEMATIK_ORGANIZATION.getJoseName()));
+    userData.put(TELEMATIK_ID.getJoseName(), user.get(TELEMATIK_ID.getJoseName()));
+    userData.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
+    userData.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "TODO amr");
+    userData.put(TELEMATIK_ALTER.getJoseName(), user.get(TELEMATIK_ALTER.getJoseName()));
+    userData.put(
+        TELEMATIK_DISPLAY_NAME.getJoseName(), user.get(TELEMATIK_DISPLAY_NAME.getJoseName()));
+    userData.put(TELEMATIK_EMAIL.getJoseName(), user.get(TELEMATIK_EMAIL.getJoseName()));
+    userData.put(TELEMATIK_GESCHLECHT.getJoseName(), user.get(TELEMATIK_GESCHLECHT.getJoseName()));
+    userData.put(BIRTHDATE.getJoseName(), user.get(BIRTHDATE.getJoseName()));
   }
 }

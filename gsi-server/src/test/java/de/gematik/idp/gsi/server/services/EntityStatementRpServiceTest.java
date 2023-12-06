@@ -29,7 +29,9 @@ import static org.mockserver.model.HttpResponse.response;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.crypto.CryptoLoader;
+import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.exceptions.IdpJwtExpiredException;
+import de.gematik.idp.gsi.server.GsiServer;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
@@ -49,6 +51,7 @@ import org.mockserver.springtest.MockServerTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ActiveProfiles;
@@ -56,8 +59,8 @@ import org.springframework.test.context.ActiveProfiles;
 @Slf4j
 @ActiveProfiles("test-entityservice")
 @MockServerTest("server.url=http://localhost:${mockServerPort}")
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
-@SpringBootTest
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
+@SpringBootTest(classes = GsiServer.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 class EntityStatementRpServiceTest {
 
   @Value("${server.url}")
@@ -70,6 +73,9 @@ class EntityStatementRpServiceTest {
 
   @Test
   void getEntityStatementRp() {
+    Mockito.doReturn(mockServerUrl + "/federation/fetch")
+        .when(serverUrlService)
+        .determineFetchEntityStatementEndpoint();
     mockServerClient
         .when(request().withMethod("GET").withPath(IdpConstants.ENTITY_STATEMENT_ENDPOINT))
         .respond(
@@ -91,6 +97,9 @@ class EntityStatementRpServiceTest {
 
   @Test
   void getEntityStatementAboutRp_Idpfachdienst() {
+    Mockito.doReturn(mockServerUrl + "/federation/fetch")
+        .when(serverUrlService)
+        .determineFetchEntityStatementEndpoint();
     mockServerClient
         .when(request().withMethod("GET").withPath("/federation/fetch"))
         .respond(
@@ -106,32 +115,10 @@ class EntityStatementRpServiceTest {
   }
 
   @Test
-  void doAutoregistration() {
+  void verifyRedirectUriExistsInEntityStmnt() {
     Mockito.doReturn(mockServerUrl + "/federation/fetch")
         .when(serverUrlService)
         .determineFetchEntityStatementEndpoint();
-    mockServerClient
-        .when(request().withMethod("GET").withPath(IdpConstants.ENTITY_STATEMENT_ENDPOINT))
-        .respond(
-            response()
-                .withStatusCode(200)
-                .withContentType(MediaType.APPLICATION_JSON)
-                .withBody(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
-    mockServerClient
-        .when(request().withMethod("GET").withPath("/federation/fetch"))
-        .respond(
-            response()
-                .withStatusCode(200)
-                .withContentType(MediaType.APPLICATION_JSON)
-                .withBody(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
-    gsiConfiguration.setFedmasterUrl(mockServerUrl);
-    final String correctRedirectUri = "https://redirect.testsuite.gsi";
-    assertDoesNotThrow(
-        () -> entityStatementRpService.doAutoregistration(mockServerUrl, correctRedirectUri));
-  }
-
-  @Test
-  void verifyRedirectUriExistsInEntityStmnt() {
     mockServerClient
         .when(request().withMethod("GET").withPath(IdpConstants.ENTITY_STATEMENT_ENDPOINT))
         .respond(
@@ -175,10 +162,9 @@ class EntityStatementRpServiceTest {
                 FileUtils.readFileToByteArray(
                     new File("src/test/resources/cert/fachdienst-sig.pem")))
             .getPublicKey();
-    assertThatThrownBy(
-        () ->
-            new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043_SIGALG_NONE)
-                .verify(publicKey));
+    final JsonWebToken jwt =
+        new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043_SIGALG_NONE);
+    assertThatThrownBy(() -> jwt.verify(publicKey)).isInstanceOf(IdpJoseException.class);
   }
 
   @Test
@@ -209,7 +195,9 @@ class EntityStatementRpServiceTest {
   @SneakyThrows
   @Test
   void getEncKeyRpFromSignedJwks() {
-    doAutoregistration();
+    Mockito.doReturn(mockServerUrl + "/federation/fetch")
+        .when(serverUrlService)
+        .determineFetchEntityStatementEndpoint();
     Mockito.doReturn(Optional.of(mockServerUrl + "/jws.json"))
         .when(serverUrlService)
         .determineSignedJwksUri(Mockito.any());
@@ -237,5 +225,30 @@ class EntityStatementRpServiceTest {
     gsiConfiguration.setFedmasterUrl(mockServerUrl);
     final PublicJsonWebKey rpEncKey = entityStatementRpService.getRpEncKey(mockServerUrl);
     assertThat(rpEncKey).isNotNull();
+  }
+
+  @Test
+  void relyingPartyAutoregistration() {
+    Mockito.doReturn(mockServerUrl + "/federation/fetch")
+        .when(serverUrlService)
+        .determineFetchEntityStatementEndpoint();
+    mockServerClient
+        .when(request().withMethod("GET").withPath(IdpConstants.ENTITY_STATEMENT_ENDPOINT))
+        .respond(
+            response()
+                .withStatusCode(200)
+                .withContentType(MediaType.APPLICATION_JSON)
+                .withBody(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
+    mockServerClient
+        .when(request().withMethod("GET").withPath("/federation/fetch"))
+        .respond(
+            response()
+                .withStatusCode(200)
+                .withContentType(MediaType.APPLICATION_JSON)
+                .withBody(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
+    gsiConfiguration.setFedmasterUrl(mockServerUrl);
+    final String correctRedirectUri = "https://redirect.testsuite.gsi";
+    assertDoesNotThrow(
+        () -> entityStatementRpService.doAutoregistration(mockServerUrl, correctRedirectUri));
   }
 }

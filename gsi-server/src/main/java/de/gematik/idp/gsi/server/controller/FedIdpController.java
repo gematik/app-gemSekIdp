@@ -22,23 +22,11 @@ import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
 import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_SCOPE;
-import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
-import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
-import static de.gematik.idp.field.ClaimName.BIRTHDATE;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_ALTER;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_DISPLAY_NAME;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_EMAIL;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_GESCHLECHT;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_GIVEN_NAME;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_ORGANIZATION;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_PROFESSION;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.REQUEST_URI_TTL_SECS;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.crypto.Nonce;
 import de.gematik.idp.data.FederationPrivKey;
@@ -62,14 +50,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.io.Serial;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -112,9 +102,16 @@ public class FedIdpController {
   @Autowired FederationPrivKey esSigKey;
   @Autowired FederationPrivKey tokenSigKey;
 
-  // TODO: delete oldest entry
-  private final List<FedIdpAuthSession> fedIdpAuthSessions =
-      Collections.synchronizedList(new ArrayList<>());
+  private final Map<String, FedIdpAuthSession> fedIdpAuthSessions =
+      Collections.synchronizedMap(
+          new LinkedHashMap<>() {
+            @Serial private static final long serialVersionUID = -800086030628953996L;
+
+            @Override
+            protected boolean removeEldestEntry(final Entry<String, FedIdpAuthSession> eldest) {
+              return size() > MAX_AUTH_SESSION_AMOUNT;
+            }
+          });
 
   private static void setNoCacheHeader(final HttpServletResponse response) {
     response.setHeader("Cache-Control", "no-store");
@@ -186,7 +183,8 @@ public class FedIdpController {
     final String requestUri =
         "urn:" + fachdienstClientId + ":" + Nonce.getNonceAsHex(URI_NONCE_LENGTH);
 
-    fedIdpAuthSessions.add(
+    fedIdpAuthSessions.put(
+        requestUri,
         FedIdpAuthSession.builder()
             .fachdienstClientId(fachdienstClientId)
             .fachdienstState(fachdienstState)
@@ -196,12 +194,10 @@ public class FedIdpController {
             .requestedScopes(getRequestedScopes(scope))
             .fachdienstRedirectUri(fachdienstRedirectUri)
             .authorizationCode(Nonce.getNonceAsHex(AUTH_CODE_LENGTH))
-            .requestUri(requestUri)
             .expiresAt(ZonedDateTime.now().plusSeconds(REQUEST_URI_TTL_SECS).toString())
             .build());
 
-    log.info(
-        "Stored FedIdpAuthSession:\n {}", fedIdpAuthSessions.get(fedIdpAuthSessions.size() - 1));
+    log.info("Stored FedIdpAuthSession:\n {}", fedIdpAuthSessions.get(fachdienstState));
 
     setNoCacheHeader(respMsgNr3);
     respMsgNr3.setStatus(HttpStatus.CREATED.value());
@@ -229,6 +225,8 @@ public class FedIdpController {
       final Model model) {
     final String thisEndpointUrl = serverUrlService.determineServerUrl() + FED_AUTH_ENDPOINT;
     log.info("App2App-Flow: RX message nr 6 (Authorization Request) at {}", thisEndpointUrl);
+    validateAuthRequestParams(requestUri, clientId);
+    log.info("request_uri: {}, client_id: {}", requestUri, clientId);
 
     model.addAttribute("requestUri", requestUri);
     model.addAttribute("clientId", clientId);
@@ -242,19 +240,18 @@ public class FedIdpController {
   @GetMapping(
       value = FED_AUTH_ENDPOINT,
       params = {"user_id"})
-  public void authorizationCode_userConsent(
+  public void authorizationCodeUserConsent(
       @RequestParam(name = "request_uri") @NotEmpty final String requestUri,
-      // numbers only, 1-10 characters
-      @RequestParam(name = "user_id") @Pattern(regexp = "^[0-9]{1,10}$") final String userId,
+      // user_id as KVNR or fallback
+      @RequestParam(name = "user_id") @Pattern(regexp = "^[A-Z]\\d{9}$|^12345678$")
+          final String userId,
       final HttpServletResponse respMsgNr7) {
     log.info(
         "App2App-Flow: RX message nr 6b/6d (user consent) at {}",
         serverUrlService.determineServerUrl());
-    // TODO: catch exception and rethrow with better error message "no session available"
-    final int sessionIdx = getSessionIndex(URLDecoder.decode(requestUri, StandardCharsets.UTF_8));
-    final FedIdpAuthSession session = fedIdpAuthSessions.get(sessionIdx);
+    final FedIdpAuthSession session = getSessionByRequestUri(requestUri);
 
-    // bind user to session
+    // bind user to session (fill user data of session)
     authenticationService.doAuthentication(session.getUserData(), userId);
 
     setNoCacheHeader(respMsgNr7);
@@ -289,8 +286,11 @@ public class FedIdpController {
     log.info(
         "App2App-Flow: RX message nr 10 (Authorization Code) at {}",
         serverUrlService.determineServerUrl());
-    final int sessionIdx = getSessionIndexAuthCode(URLDecoder.decode(code, StandardCharsets.UTF_8));
-    final FedIdpAuthSession session = fedIdpAuthSessions.get(sessionIdx);
+
+    final String sessionKey =
+        getSessionKeyByAuthCode(URLDecoder.decode(code, StandardCharsets.UTF_8));
+    final FedIdpAuthSession session = fedIdpAuthSessions.get(sessionKey);
+
     verifyRedirectUri(redirectUri, session.getFachdienstRedirectUri());
     verifyCodeVerifier(codeVerifier, session.getFachdienstCodeChallenge());
     verifyClientId(clientId, session.getFachdienstClientId());
@@ -298,24 +298,25 @@ public class FedIdpController {
     setNoCacheHeader(respMsgNr11);
     respMsgNr11.setStatus(HttpStatus.OK.value());
 
-    final IdTokenBuilder idTokenBuilder =
-        new IdTokenBuilder(
-            jwtProcessorTokenSigKey,
-            serverUrlService.determineServerUrl(),
-            session.getRequestedScopes(),
-            session.getFachdienstNonce(),
-            clientId,
-            getUserDataClaims());
     final String idToken;
     try {
       idToken =
-          idTokenBuilder
+          new IdTokenBuilder(
+                  jwtProcessorTokenSigKey,
+                  serverUrlService.determineServerUrl(),
+                  session.getRequestedScopes(),
+                  session.getFachdienstNonce(),
+                  clientId,
+                  session.getUserData())
               .buildIdToken()
               .encryptAsJwt(entityStatementRpService.getRpEncKey(clientId))
               .getRawString();
     } catch (final JoseException e) {
       throw new GsiException(e);
     }
+    // delete session
+    fedIdpAuthSessions.remove(sessionKey);
+
     return TokenResponse.builder()
         .idToken(idToken)
         .accessToken("TODO ACCESS_TOKEN")
@@ -342,42 +343,32 @@ public class FedIdpController {
     }
   }
 
-  private Map<String, Object> getUserDataClaims() {
-    // claims hard coded for E-Rezept
-    return Map.ofEntries(
-        // acr & amr
-        Map.entry(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH),
-        Map.entry(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "urn:telematik:auth:eID"),
-        // scope   urn:telematik:display_name (usual values taken from
-        // idp\idp-testsuite\src\test\resources\certs\valid\80276883110000018680-C_CH_AUT_E256.p12)
-        Map.entry(
-            TELEMATIK_DISPLAY_NAME.getJoseName(), "Darius Michael Brian Ubbo Graf von Bödefeld"),
-        // scope urn:telematik:versicherter
-        Map.entry(TELEMATIK_PROFESSION.getJoseName(), "1.2.276.0.76.4.49"),
-        Map.entry(TELEMATIK_ID.getJoseName(), "X110411675"),
-        Map.entry(TELEMATIK_ORGANIZATION.getJoseName(), "109500969"),
-        Map.entry(TELEMATIK_EMAIL.getJoseName(), "darius_michael@mail.boedefeld.de"),
-        Map.entry(TELEMATIK_GESCHLECHT.getJoseName(), "M"),
-        Map.entry(BIRTHDATE.getJoseName(), "1973-09-01"),
-        Map.entry(TELEMATIK_GIVEN_NAME.getJoseName(), "Darius Michael Brian Ubbo"),
-        Map.entry(TELEMATIK_ALTER.getJoseName(), "50"));
+  private FedIdpAuthSession getSessionByRequestUri(final String requestUri) {
+    return Optional.ofNullable(fedIdpAuthSessions.get(requestUri))
+        .orElseThrow(
+            () ->
+                new GsiException(
+                    INVALID_REQUEST,
+                    "unknown request_uri, no session found",
+                    HttpStatus.BAD_REQUEST));
   }
 
-  private int getSessionIndex(final String requestUri) {
-    return fedIdpAuthSessions.stream()
-        .filter(entry -> entry.getRequestUri().equals(requestUri))
-        .map(fedIdpAuthSessions::indexOf)
+  private String getSessionKeyByAuthCode(final String authorizationCode) {
+    return fedIdpAuthSessions.entrySet().stream()
+        .filter((entry -> entry.getValue().getAuthorizationCode().equals(authorizationCode)))
+        .map(Entry::getKey)
         .findAny()
         .orElseThrow(
-            () -> new GsiException(INVALID_REQUEST, "invalid request_uri", HttpStatus.BAD_REQUEST));
+            () ->
+                new GsiException(
+                    INVALID_REQUEST, "unknown code, no session found", HttpStatus.BAD_REQUEST));
   }
 
-  private int getSessionIndexAuthCode(final String authorizationCode) {
-    return fedIdpAuthSessions.stream()
-        .filter(entry -> entry.getAuthorizationCode().equals(authorizationCode))
-        .map(fedIdpAuthSessions::indexOf)
-        .findAny()
-        .orElseThrow(
-            () -> new GsiException(INVALID_REQUEST, "invalid code", HttpStatus.BAD_REQUEST));
+  private void validateAuthRequestParams(final String requestUri, final String clientId) {
+    final FedIdpAuthSession session = getSessionByRequestUri(requestUri);
+    final boolean clientIdBelongsToRequestUri = session.getFachdienstClientId().equals(clientId);
+    if (!clientIdBelongsToRequestUri) {
+      throw new GsiException(INVALID_REQUEST, "unknown client_id", HttpStatus.BAD_REQUEST);
+    }
   }
 }

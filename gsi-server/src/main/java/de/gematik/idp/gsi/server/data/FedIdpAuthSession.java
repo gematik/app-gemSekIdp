@@ -43,7 +43,6 @@ public class FedIdpAuthSession {
   private final Map<String, Object> userData = new HashMap<>();
 
   // IDP-Sektoral, inner session related artifacts
-  private final String requestUri;
   private final String expiresAt;
 
   @Override
@@ -62,8 +61,6 @@ public class FedIdpAuthSession {
         + fachdienstRedirectUri
         + "\n authorizationCode: "
         + authorizationCode
-        + "\n requestUri: "
-        + requestUri
         + "\n expiresAt: "
         + expiresAt
         + "\n userData: "
