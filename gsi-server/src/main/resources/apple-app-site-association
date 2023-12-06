@@ -1,0 +1,13 @@
+{
+  "applinks": {
+      "details": [
+           {
+             "appIDs": [
+               "A9FL89PFFL.de.gematik.kk",
+               "A9FL89PFFL.de.gematik.gsia"
+             ],
+             "paths": ["*"]
+           }
+       ]
+   }
+}

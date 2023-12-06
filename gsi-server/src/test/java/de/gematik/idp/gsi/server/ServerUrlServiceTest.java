@@ -33,11 +33,13 @@ import org.mockserver.springtest.MockServerTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.annotation.DirtiesContext.MethodMode;
 
-@SpringBootTest
-@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
+@SpringBootTest(classes = GsiServer.class, webEnvironment = WebEnvironment.RANDOM_PORT)
+@DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 @MockServerTest("server.url=http://localhost:${mockServerPort}")
 class ServerUrlServiceTest {
 
@@ -59,6 +61,7 @@ class ServerUrlServiceTest {
         .isEqualTo("https://app-test.federationmaster.de");
   }
 
+  @DirtiesContext(methodMode = MethodMode.BEFORE_METHOD)
   @Test
   void testDetermineFetchEntityStatementEndpoint() {
     mockServerClient

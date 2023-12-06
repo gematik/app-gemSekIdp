@@ -42,7 +42,6 @@ class FedIdpAuthSessionTest {
             .requestedScopes(scopes)
             .fachdienstRedirectUri("fachdienstRedirectUri")
             .authorizationCode(Nonce.getNonceAsHex(AUTH_CODE_LENGTH))
-            .requestUri("requestUri")
             .expiresAt(ZonedDateTime.now().plusSeconds(REQUEST_URI_TTL_SECS).toString())
             .build();
 
@@ -54,7 +53,6 @@ class FedIdpAuthSessionTest {
     assertThat(fedIdpAuthSession.getFachdienstRedirectUri()).isEqualTo("fachdienstRedirectUri");
     assertThat(fedIdpAuthSession.getFachdienstCodeChallengeMethod())
         .isEqualTo("fachdienstCodeChallengeMethod");
-    assertThat(fedIdpAuthSession.getRequestUri()).isEqualTo("requestUri");
     assertThat(fedIdpAuthSession.getRequestedScopes()).isEqualTo(scopes);
 
     assertThat(FedIdpAuthSession.builder().toString()).hasSizeGreaterThan(0);
