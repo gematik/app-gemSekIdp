@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>gemSekIdp-global</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>gsi-testsuite</artifactId>
-  <version>4.0.0</version>
+  <version>4.0.1</version>
   <packaging>jar</packaging>
   <description>Testsuite fuer sektorale IDPs</description>
 

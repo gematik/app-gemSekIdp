@@ -1109,5 +1109,27 @@
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110411675",
     "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1974-09-07",
+    "urn:telematik:claims:alter": "21",
+    "urn:telematik:claims:display_name": "Prof. Dr. Franz Bruno J. T. VórmwinkelTEST-ONLY",
+    "urn:telematik:claims:given_name": "Franz Bruno Johann Tobias",
+    "urn:telematik:claims:geschlecht": "M",
+    "urn:telematik:claims:email": "franz@mail.tobi.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110556406",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1983-08-31",
+    "urn:telematik:claims:alter": "40",
+    "urn:telematik:claims:display_name": "Prof. Dr. Hillary A. U. Gräfin GrundnérTEST-ONLY",
+    "urn:telematik:claims:given_name": "Hillary Anastasia Ulrica Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "hill@mail.hills.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110593136",
+    "urn:telematik:claims:organization": "109500969"
   }
 ]

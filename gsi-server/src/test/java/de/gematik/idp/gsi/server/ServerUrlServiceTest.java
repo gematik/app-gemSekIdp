@@ -81,6 +81,6 @@ class ServerUrlServiceTest {
     assertThat(
             serverUrlService.determineSignedJwksUri(
                 new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043)))
-        .contains("https://idpfadi.dev.gematik.solutions/jws.json");
+        .contains("http://localhost:8084/jws.json");
   }
 }
