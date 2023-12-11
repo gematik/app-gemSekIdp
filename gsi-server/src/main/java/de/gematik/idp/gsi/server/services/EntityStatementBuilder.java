@@ -42,8 +42,13 @@ public class EntityStatementBuilder {
 
   public EntityStatement buildEntityStatement(final String serverUrl, final String fedmasterUrl) {
     final ZonedDateTime currentTime = ZonedDateTime.now();
+    return buildEntityStatement(serverUrl, fedmasterUrl,currentTime.plusDays(ENTITY_STATEMENT_TTL_DAYS).toEpochSecond());
+  }
+
+  public EntityStatement buildEntityStatement(final String serverUrl, final String fedmasterUrl, final long expSeconds) {
+    final ZonedDateTime currentTime = ZonedDateTime.now();
     return EntityStatement.builder()
-        .exp(currentTime.plusDays(ENTITY_STATEMENT_TTL_DAYS).toEpochSecond())
+        .exp(expSeconds)
         .iat(currentTime.toEpochSecond())
         .iss(serverUrl)
         .sub(serverUrl)
