@@ -21,7 +21,7 @@ import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
 
-import de.gematik.idp.data.FederationPrivKey;
+import de.gematik.idp.data.FederationPubKey;
 import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.gsi.server.data.EntityStatement;
 import de.gematik.idp.gsi.server.data.FederationEntity;
@@ -37,22 +37,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EntityStatementBuilder {
 
   private static final int ENTITY_STATEMENT_TTL_DAYS = 7;
-  @Autowired FederationPrivKey esSigKey;
-  @Autowired FederationPrivKey tokenSigKey;
+  @Autowired FederationPubKey esSigPubKey;
+  @Autowired FederationPubKey tokenSigPubKey;
 
   public EntityStatement buildEntityStatement(final String serverUrl, final String fedmasterUrl) {
     final ZonedDateTime currentTime = ZonedDateTime.now();
-    return buildEntityStatement(serverUrl, fedmasterUrl,currentTime.plusDays(ENTITY_STATEMENT_TTL_DAYS).toEpochSecond());
+    return buildEntityStatement(
+        serverUrl, fedmasterUrl, currentTime.plusDays(ENTITY_STATEMENT_TTL_DAYS).toEpochSecond());
   }
 
-  public EntityStatement buildEntityStatement(final String serverUrl, final String fedmasterUrl, final long expSeconds) {
+  public EntityStatement buildEntityStatement(
+      final String serverUrl, final String fedmasterUrl, final long expSeconds) {
     final ZonedDateTime currentTime = ZonedDateTime.now();
     return EntityStatement.builder()
         .exp(expSeconds)
         .iat(currentTime.toEpochSecond())
         .iss(serverUrl)
         .sub(serverUrl)
-        .jwks(JwtHelper.getJwks(esSigKey, tokenSigKey))
+        .jwks(JwtHelper.getJwks(esSigPubKey, tokenSigPubKey))
         .authorityHints(new String[] {fedmasterUrl})
         .metadata(getMetadata(serverUrl))
         .build();

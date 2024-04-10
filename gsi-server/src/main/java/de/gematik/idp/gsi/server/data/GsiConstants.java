@@ -16,11 +16,6 @@
 
 package de.gematik.idp.gsi.server.data;
 
-import de.gematik.idp.field.ClaimName;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -36,6 +31,7 @@ public final class GsiConstants {
           "urn:telematik:geschlecht",
           "urn:telematik:email",
           "urn:telematik:versicherter",
+          "urn:telematik:family_name",
           "openid");
 
   public static final int REQUEST_URI_TTL_SECS = 90;
@@ -45,23 +41,4 @@ public final class GsiConstants {
   public static final String FED_SIGNED_JWKS_ENDPOINT = "/jws.json";
   public static final String ASSET_LINKS_ENDPOINT_ANDROID = "/.well-known/assetlinks.json";
   public static final String ASSET_LINKS_ENDPOINT_IOS = "/.well-known/apple-app-site-association";
-  public static final Map<String, List<ClaimName>> SCOPES_TO_CLAIM_MAP;
-
-  static {
-    final Map<String, List<ClaimName>> tmpMap = new HashMap<>();
-    tmpMap.put("openid", List.of());
-    tmpMap.put("urn:telematik:geburtsdatum", List.of(ClaimName.BIRTHDATE));
-    tmpMap.put("urn:telematik:alter", List.of(ClaimName.TELEMATIK_ALTER));
-    tmpMap.put("urn:telematik:display_name", List.of(ClaimName.TELEMATIK_DISPLAY_NAME));
-    tmpMap.put("urn:telematik:given_name", List.of(ClaimName.TELEMATIK_GIVEN_NAME));
-    tmpMap.put("urn:telematik:geschlecht", List.of(ClaimName.TELEMATIK_GESCHLECHT));
-    tmpMap.put("urn:telematik:email", List.of(ClaimName.TELEMATIK_EMAIL));
-    tmpMap.put(
-        "urn:telematik:versicherter",
-        List.of(
-            ClaimName.TELEMATIK_PROFESSION,
-            ClaimName.TELEMATIK_ID,
-            ClaimName.TELEMATIK_ORGANIZATION));
-    SCOPES_TO_CLAIM_MAP = Collections.unmodifiableMap(tmpMap);
-  }
 }

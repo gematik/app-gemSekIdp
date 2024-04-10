@@ -33,32 +33,40 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.crypto.model.PkiIdentity;
+import de.gematik.idp.crypto.KeyUtility;
+import de.gematik.idp.file.ResourceReader;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
+import java.security.PrivateKey;
+import java.security.Security;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import lombok.SneakyThrows;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 @ExtendWith(PkiKeyResolver.class)
 class IdTokenBuilderTest {
+  static {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+    Security.insertProviderAt(new BouncyCastleProvider(), 1);
+  }
 
   private static final String uriIdpServer = "https://idp4711.de";
   private IdTokenBuilder idTokenBuilder;
 
-  private PkiIdentity pkiIdentity;
-
+  @SneakyThrows
   @BeforeEach
-  public void init(@PkiKeyResolver.Filename("authz_rsa") final PkiIdentity clientIdentity) {
-    pkiIdentity = clientIdentity;
+  public void init() {
+    final PrivateKey clientPrivateKey =
+        KeyUtility.readX509PrivateKeyPlain(
+            ResourceReader.getFileFromResourceAsTmpFile("keys/ref-es-sig-privkey.pem"));
+
     idTokenBuilder =
         new IdTokenBuilder(
-            new IdpJwtProcessor(pkiIdentity, Optional.of("authz_rsa")),
+            new IdpJwtProcessor(clientPrivateKey, "ref-es-sig"),
             uriIdpServer,
-            Set.of("urn:telematik:versicherter", "urn:telematik:given_name"),
             "NONCE123456",
             "http://NonSmokersFachdienst.de",
             Map.ofEntries(

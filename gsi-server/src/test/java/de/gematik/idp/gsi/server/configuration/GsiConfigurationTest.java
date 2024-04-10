@@ -21,7 +21,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 import de.gematik.idp.data.KeyConfig;
 import de.gematik.idp.gsi.server.KeyConfiguration;
-import de.gematik.idp.gsi.server.exceptions.GsiException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,26 +38,28 @@ class GsiConfigurationTest {
   @Test
   void fullIntTestComponent() {
     assertThat(gsiConfiguration).isNotNull();
-    assertThat(gsiConfiguration.getEsSigKeyConfig()).isNotNull();
-    assertThat(gsiConfiguration.getTokenSigKeyConfig()).isNotNull();
+    assertThat(gsiConfiguration.getEsSigPrivKeyConfig()).isNotNull();
+    assertThat(gsiConfiguration.getTokenSigPrivKeyConfig()).isNotNull();
   }
 
   @Test
   void testBuildComponent() {
     final GsiConfiguration gsiConfig =
         GsiConfiguration.builder()
-            .esSigKeyConfig(new KeyConfig("a", "b", "c", false))
-            .tokenSigKeyConfig(new KeyConfig("d", "e", "f", false))
+            .esSigPrivKeyConfig(new KeyConfig("a", "b", "c", false))
+            .tokenSigPrivKeyConfig(new KeyConfig("d", "e", "f", false))
             .serverUrl("serverurl")
+            .fedmasterSigPubKeyFilePath("anyCerts/myFedmasterSigCert.pem")
             .build();
     gsiConfig.setServerUrl("newUrl");
     assertThat(gsiConfig).isNotNull();
     assertThat(gsiConfig.getServerUrl()).isEqualTo("newUrl");
-    assertThat(gsiConfig.getEsSigKeyConfig()).isNotNull();
-    assertThat(gsiConfig.getTokenSigKeyConfig()).isNotNull();
+    assertThat(gsiConfig.getFedmasterSigPubKeyFilePath()).isNotNull();
+    assertThat(gsiConfig.getEsSigPrivKeyConfig()).isNotNull();
+    assertThat(gsiConfig.getTokenSigPrivKeyConfig()).isNotNull();
     assertThat(GsiConfiguration.builder().toString()).hasSizeGreaterThan(0);
 
-    assertThatThrownBy(() -> new KeyConfiguration(resourceLoader, gsiConfig).esSigKey())
-        .isInstanceOf(GsiException.class);
+    assertThatThrownBy(() -> new KeyConfiguration(resourceLoader, gsiConfig).esSigPrivKey())
+        .isInstanceOf(NullPointerException.class);
   }
 }
