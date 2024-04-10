@@ -21,7 +21,7 @@ servers:
   tigerProxyInvalidCert:
     type: tigerProxy
     active: true
-    tigerProxyCfg:
+    tigerProxyConfiguration:
       rewriteHostHeader: true
       proxyPort: ${tiger.ports.invalidCertPort}
       adminPort: ${tiger.ports.invalidCertAdminPort}

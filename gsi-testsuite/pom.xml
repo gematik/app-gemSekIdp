@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>gemSekIdp-global</artifactId>
-    <version>4.0.1</version>
+    <version>5.0.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>gsi-testsuite</artifactId>
-  <version>4.0.1</version>
+  <version>5.0.1</version>
   <packaging>jar</packaging>
   <description>Testsuite fuer sektorale IDPs</description>
 
@@ -36,13 +36,17 @@
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>5.10.1</version>
+      <version>5.10.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>de.gematik.idp</groupId>
       <artifactId>idp-commons</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
     </dependency>
   </dependencies>
 

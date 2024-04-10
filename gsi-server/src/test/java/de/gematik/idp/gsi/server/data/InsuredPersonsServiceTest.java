@@ -21,14 +21,17 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 
+@Slf4j
 @SpringBootTest
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
 class InsuredPersonsServiceTest {
@@ -49,6 +52,30 @@ class InsuredPersonsServiceTest {
   void getPersonX110411675() {
     final InsuredPersonsService iPr = new InsuredPersonsService("versicherte.gesundheitsid.json");
     assertThat(iPr.getPersons().get("X110411675")).isNotNull();
+  }
+
+  @Test
+  void getFamilyNameOfPersonX110411675() {
+    final InsuredPersonsService iPr = new InsuredPersonsService("versicherte.gesundheitsid.json");
+    assertThat(
+            iPr.getPersons().get("X110411675").get(ClaimName.TELEMATIK_FAMILY_NAME.getJoseName()))
+        .isEqualTo("Bödefeld");
+  }
+
+  @Test
+  void checkInsuredPersonsList() {
+    final InsuredPersonsService iPr = new InsuredPersonsService("versicherte.gesundheitsid.json");
+    iPr.getPersons()
+        .values()
+        .forEach(
+            person -> {
+              try {
+                assertThat(person.size()).isEqualTo(10);
+              } catch (final AssertionError e) {
+                log.error("Assertion failed for person: " + person);
+                throw e; // rethrow the AssertionError to fail the test
+              }
+            });
   }
 
   @Test

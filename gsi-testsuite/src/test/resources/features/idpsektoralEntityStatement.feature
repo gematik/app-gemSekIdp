@@ -27,6 +27,7 @@ Feature: Test Entity Statement of IdpSektoral
   @Approval
   @PRIO:1
   @TESTSTUFE:4
+  @CT
   Scenario: IdpSektoral Signature - Check Entity Statement
 
   ```
@@ -170,7 +171,7 @@ Feature: Test Entity Statement of IdpSektoral
             ____homepage_uri:     'http.*'
           }
     """
-    And TGR current response at "$.body.body.metadata.federation_entity.contacts.0" matches ".*"
+    And TGR current response with attribute "$.body.body.metadata.federation_entity.contacts.0" matches ".*"
 
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_006
@@ -215,14 +216,14 @@ Feature: Test Entity Statement of IdpSektoral
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
     And TGR find request to path ".*/.well-known/openid-federation"
-    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:given_name.*"
-    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:geburtsdatum.*"
-    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:alter.*"
-    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:display_name.*"
-    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:geschlecht.*"
-    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:email.*"
-    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:versicherter.*"
-    And TGR current response at "$.body.body.metadata.openid_provider.scopes_supported" matches ".*openid.*"
+    And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:given_name.*"
+    And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:geburtsdatum.*"
+    And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:alter.*"
+    And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:display_name.*"
+    And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:geschlecht.*"
+    And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:email.*"
+    And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:versicherter.*"
+    And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*openid.*"
 
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_008
@@ -239,4 +240,4 @@ Feature: Test Entity Statement of IdpSektoral
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
     And TGR find request to path ".*/.well-known/openid-federation"
-    And TGR current response at "$.body.body.metadata.openid_provider.response_types_supported" matches ".*code.*"
+    And TGR current response with attribute "$.body.body.metadata.openid_provider.response_types_supported" matches ".*code.*"

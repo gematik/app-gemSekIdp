@@ -1,3 +1,11 @@
+# Release 5.0.1
+
+- refactor key handling, use PrivateKey instead of p12 container when certificate is not required
+- add testcase
+- switch to docker base image eclipse-temurin:17-jre
+- rename docker image
+- update dependencies
+
 # Release 4.0.1
 
 -add test identities

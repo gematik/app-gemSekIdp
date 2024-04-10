@@ -20,9 +20,11 @@ import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.REQUEST_URI_TTL_SECS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.gematik.idp.IdpConstants;
@@ -30,6 +32,7 @@ import de.gematik.idp.authentication.UriUtils;
 import de.gematik.idp.field.ClientUtilities;
 import de.gematik.idp.field.CodeChallengeMethod;
 import de.gematik.idp.gsi.server.GsiServer;
+import de.gematik.idp.gsi.server.data.ClaimsResponse;
 import de.gematik.idp.gsi.server.services.EntityStatementRpService;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
@@ -37,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import kong.unirest.HttpResponse;
 import kong.unirest.HttpStatus;
 import kong.unirest.JsonNode;
@@ -44,6 +48,7 @@ import kong.unirest.Unirest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
+import org.awaitility.Awaitility;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -191,6 +196,7 @@ class FedIdpControllerTest {
         .containsExactlyInAnyOrder("code");
     assertThat((List) openidProvider.get("scopes_supported"))
         .containsExactlyInAnyOrder(
+            "urn:telematik:family_name",
             "urn:telematik:geburtsdatum",
             "urn:telematik:alter",
             "urn:telematik:display_name",
@@ -295,7 +301,7 @@ class FedIdpControllerTest {
 
     Mockito.doNothing()
         .when(entityStatementRpService)
-        .doAutoregistration(testHostUrl, testHostUrl + "/AS");
+        .doAutoregistration(testHostUrl, testHostUrl + "/AS", scope);
 
     final HttpResponse<String> resp =
         Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
@@ -319,7 +325,7 @@ class FedIdpControllerTest {
 
     Mockito.doNothing()
         .when(entityStatementRpService)
-        .doAutoregistration(testHostUrl, testHostUrl + "/AS");
+        .doAutoregistration(testHostUrl, testHostUrl + "/AS", "urn:telematik:given_name openid");
 
     final HttpResponse<String> resp =
         Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
@@ -346,7 +352,7 @@ class FedIdpControllerTest {
 
     Mockito.doNothing()
         .when(entityStatementRpService)
-        .doAutoregistration(testHostUrl, testHostUrl + "/AS");
+        .doAutoregistration(testHostUrl, testHostUrl + "/AS", "urn:telematik:given_name openid");
 
     final HttpResponse<String> respMsg3 =
         Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
@@ -385,7 +391,7 @@ class FedIdpControllerTest {
 
     Mockito.doNothing()
         .when(entityStatementRpService)
-        .doAutoregistration(testHostUrl, testHostUrl + "/AS");
+        .doAutoregistration(testHostUrl, testHostUrl + "/AS", "urn:telematik:given_name openid");
 
     final HttpResponse<String> respMsg3 =
         Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
@@ -422,31 +428,6 @@ class FedIdpControllerTest {
             .queryString("client_id", "InvalidClientId")
             .asString();
     assertThat(respMsg7_b.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
-  }
-
-  @ValueSource(
-      strings = {
-        "urn:telematik:geburtsdatumurn:telematik:alter openid",
-        "urn%3Atelematik%3Adisplay_name",
-        "urn:telematik:given_name+openid",
-        "urn:telematik:schlecht openid"
-      })
-  @ParameterizedTest(name = "parRequest_invalidScope_ResponseStatus_BAD_REQUEST scope: {0}")
-  void parRequest_invalidScope_ResponseStatus_BAD_REQUEST(final String scope) {
-    final HttpResponse<String> resp =
-        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
-            .field("client_id", testHostUrl)
-            .field("state", "state_Fachdienst")
-            .field("redirect_uri", testHostUrl + "/AS")
-            .field("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
-            .field("code_challenge_method", CodeChallengeMethod.S256.toString())
-            .field("response_type", "code")
-            .field("nonce", "42")
-            .field("scope", scope)
-            .field("acr_values", "gematik-ehealth-loa-high")
-            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            .asString();
-    assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
   @Test
@@ -495,13 +476,125 @@ class FedIdpControllerTest {
     assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
+  @SneakyThrows
   @Test
-  void authRequest_missingClientId_ResponseStatus_BAD_REQUEST() {
-    final HttpResponse<String> resp =
-        Unirest.get(testHostUrl + FED_AUTH_ENDPOINT)
-            .queryString("request_uri", "myInvalidRequestUri")
+  void parRequest_authRequestUriPar_claimsResponse_contains_httpStatus_200() {
+
+    final String KEY_ID = "puk_fd_enc";
+    // key from gra-server/src/main/resources/keys/gras-enc-pubkey.pem
+    final String JWK_AS_STRING_PUK_FED_ENC =
+        "{\"use\": \"enc\",\"kid\": \""
+            + KEY_ID
+            + "\",\"kty\": \"EC\",\"crv\": \"P-256\",\"x\":"
+            + " \"NQLaWbuQDHgSHahqb9zxlDdiMCHXSgY0L9ql1k7BVUE\",\"y\":"
+            + " \"_USgmqhlM3pvabkZ2SS_YE2Q57tTs6pK9cE_uZB-u3c\"}";
+
+    Mockito.doNothing()
+        .when(entityStatementRpService)
+        .doAutoregistration(
+            testHostUrl,
+            testHostUrl + "/AS",
+            "urn:telematik:given_name urn:telematik:versicherter openid");
+
+    Mockito.doReturn(PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING_PUK_FED_ENC))
+        .when(entityStatementRpService)
+        .getRpEncKey(any());
+
+    final String codeVerifier = ClientUtilities.generateCodeVerifier();
+    final String redirectUri = testHostUrl + "/AS";
+    final String fachdienstClientId = testHostUrl;
+
+    final HttpResponse<String> respMsg3 =
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
+            .field("client_id", fachdienstClientId)
+            .field("state", "state_Fachdienst")
+            .field("redirect_uri", redirectUri)
+            .field("code_challenge", ClientUtilities.generateCodeChallenge(codeVerifier))
+            .field("code_challenge_method", CodeChallengeMethod.S256.toString())
+            .field("response_type", "code")
+            .field("nonce", "42")
+            .field("scope", "urn:telematik:given_name urn:telematik:versicherter openid")
+            .field("acr_values", "gematik-ehealth-loa-high")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
             .asString();
-    assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+
+    final String requestUri =
+        ((JsonObject) JsonParser.parseString(respMsg3.getBody())).get("request_uri").getAsString();
+
+    Unirest.config().reset().followRedirects(false);
+    final HttpResponse<String> respMsg6a =
+        Unirest.get(testHostUrl + FED_AUTH_ENDPOINT)
+            .queryString("request_uri", requestUri)
+            .queryString("device_type", "unittest")
+            .asString();
+
+    assertThat(respMsg6a.getStatus()).isEqualTo(HttpStatus.OK);
+    final ClaimsResponse claimsResponse =
+        new ObjectMapper().readValue(respMsg6a.getBody(), ClaimsResponse.class);
+    assertThat(claimsResponse).isNotNull();
+    assertThat(claimsResponse.getRequestedClaims())
+        .containsExactlyInAnyOrder(
+            "urn:telematik:claims:profession",
+            "urn:telematik:claims:id",
+            "urn:telematik:claims:organization",
+            "urn:telematik:claims:given_name");
+  }
+
+  @SneakyThrows
+  @Test
+  void request_uri_expired_httpStatus_400() {
+
+    final String KEY_ID = "puk_fd_enc";
+    // key from gra-server/src/main/resources/keys/gras-enc-pubkey.pem
+    final String JWK_AS_STRING_PUK_FED_ENC =
+        "{\"use\": \"enc\",\"kid\": \""
+            + KEY_ID
+            + "\",\"kty\": \"EC\",\"crv\": \"P-256\",\"x\":"
+            + " \"NQLaWbuQDHgSHahqb9zxlDdiMCHXSgY0L9ql1k7BVUE\",\"y\":"
+            + " \"_USgmqhlM3pvabkZ2SS_YE2Q57tTs6pK9cE_uZB-u3c\"}";
+
+    Mockito.doNothing()
+        .when(entityStatementRpService)
+        .doAutoregistration(
+            testHostUrl,
+            testHostUrl + "/AS",
+            "urn:telematik:given_name urn:telematik:versicherter openid");
+
+    Mockito.doReturn(PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING_PUK_FED_ENC))
+        .when(entityStatementRpService)
+        .getRpEncKey(any());
+
+    final String codeVerifier = ClientUtilities.generateCodeVerifier();
+    final String redirectUri = testHostUrl + "/AS";
+    final String fachdienstClientId = testHostUrl;
+
+    final HttpResponse<String> respMsg3 =
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
+            .field("client_id", fachdienstClientId)
+            .field("state", "state_Fachdienst")
+            .field("redirect_uri", redirectUri)
+            .field("code_challenge", ClientUtilities.generateCodeChallenge(codeVerifier))
+            .field("code_challenge_method", CodeChallengeMethod.S256.toString())
+            .field("response_type", "code")
+            .field("nonce", "42")
+            .field("scope", "urn:telematik:given_name urn:telematik:versicherter openid")
+            .field("acr_values", "gematik-ehealth-loa-high")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .asString();
+
+    final String requestUri =
+        ((JsonObject) JsonParser.parseString(respMsg3.getBody())).get("request_uri").getAsString();
+
+    waitForSeconds(REQUEST_URI_TTL_SECS + 2);
+
+    Unirest.config().reset().followRedirects(false);
+    final HttpResponse<String> respMsg6a =
+        Unirest.get(testHostUrl + FED_AUTH_ENDPOINT)
+            .queryString("request_uri", requestUri)
+            .queryString("device_type", "unittest")
+            .asString();
+
+    assertThat(respMsg6a.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
   }
 
   /************************** FEDIDP_TOKEN_ENDPOINT *****************/
@@ -554,7 +647,7 @@ class FedIdpControllerTest {
   void parRequest_authRequestUriPar_tokenResponse_contains_httpStatus_200() {
 
     final String KEY_ID = "puk_fd_enc";
-    // key from gra-server/src/main/resources/cert/fachdienst-enc.p12
+    // key from gra-server/src/main/resources/keys/gras-enc-pubkey.pem
     final String JWK_AS_STRING_PUK_FED_ENC =
         "{\"use\": \"enc\",\"kid\": \""
             + KEY_ID
@@ -564,7 +657,7 @@ class FedIdpControllerTest {
 
     Mockito.doNothing()
         .when(entityStatementRpService)
-        .doAutoregistration(testHostUrl, testHostUrl + "/AS");
+        .doAutoregistration(testHostUrl, testHostUrl + "/AS", "urn:telematik:given_name openid");
 
     Mockito.doReturn(PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING_PUK_FED_ENC))
         .when(entityStatementRpService)
@@ -623,12 +716,153 @@ class FedIdpControllerTest {
     assertThat(idpJwe.extractHeaderClaims()).containsEntry("kid", KEY_ID);
   }
 
+  @SneakyThrows
+  @Test
+  void parRequest_authRequestUriPar_userConsent_tokenResponse_contains_httpStatus_200() {
+
+    final String KEY_ID = "puk_fd_enc";
+    // key from gra-server/src/main/resources/keys/gras-enc-pubkey.pem
+    final String JWK_AS_STRING_PUK_FED_ENC =
+        "{\"use\": \"enc\",\"kid\": \""
+            + KEY_ID
+            + "\",\"kty\": \"EC\",\"crv\": \"P-256\",\"x\":"
+            + " \"NQLaWbuQDHgSHahqb9zxlDdiMCHXSgY0L9ql1k7BVUE\",\"y\":"
+            + " \"_USgmqhlM3pvabkZ2SS_YE2Q57tTs6pK9cE_uZB-u3c\"}";
+
+    Mockito.doNothing()
+        .when(entityStatementRpService)
+        .doAutoregistration(testHostUrl, testHostUrl + "/AS", "urn:telematik:versicherter openid");
+
+    Mockito.doReturn(PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING_PUK_FED_ENC))
+        .when(entityStatementRpService)
+        .getRpEncKey(any());
+
+    final String codeVerifier = ClientUtilities.generateCodeVerifier();
+    final String redirectUri = testHostUrl + "/AS";
+    final String fachdienstClientId = testHostUrl;
+
+    final HttpResponse<String> respMsg3 =
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
+            .field("client_id", fachdienstClientId)
+            .field("state", "state_Fachdienst")
+            .field("redirect_uri", redirectUri)
+            .field("code_challenge", ClientUtilities.generateCodeChallenge(codeVerifier))
+            .field("code_challenge_method", CodeChallengeMethod.S256.toString())
+            .field("response_type", "code")
+            .field("nonce", "42")
+            .field("scope", "urn:telematik:versicherter openid")
+            .field("acr_values", "gematik-ehealth-loa-high")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .asString();
+    assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
+
+    final String requestUri =
+        ((JsonObject) JsonParser.parseString(respMsg3.getBody())).get("request_uri").getAsString();
+
+    Unirest.config().reset().followRedirects(false);
+    final HttpResponse<String> respMsg6a =
+        Unirest.get(testHostUrl + FED_AUTH_ENDPOINT)
+            .queryString("request_uri", requestUri)
+            .queryString("device_type", "unittest")
+            .asString();
+
+    final HttpResponse<String> respMsg7 =
+        Unirest.get(testHostUrl + FED_AUTH_ENDPOINT)
+            .queryString("request_uri", requestUri)
+            .queryString("user_id", "12345678")
+            .queryString(
+                "selected_claims", "urn:telematik:claims:profession urn:telematik:claims:id")
+            .asString();
+
+    assertThat(respMsg7.getStatus()).isEqualTo(HttpStatus.FOUND);
+    final String code =
+        UriUtils.extractParameterValue(respMsg7.getHeaders().get("Location").get(0), "code");
+
+    final HttpResponse<JsonNode> httpResponse =
+        Unirest.post(testHostUrl + TOKEN_ENDPOINT)
+            .field("grant_type", "authorization_code")
+            .field("code", code)
+            .field("code_verifier", codeVerifier)
+            .field("client_id", fachdienstClientId)
+            .field("redirect_uri", redirectUri)
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .header(jakarta.ws.rs.core.HttpHeaders.USER_AGENT, "IdP-Client")
+            .header(org.springframework.http.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+            .asJson();
+    assertThat(httpResponse.getStatus()).isEqualTo(HttpStatus.OK);
+
+    final String idTokenEncrypted = httpResponse.getBody().getObject().getString("id_token");
+    final IdpJwe idpJwe = new IdpJwe(idTokenEncrypted);
+
+    // verify that token is encrypted and check kid
+    assertThat(idpJwe.extractHeaderClaims()).containsEntry("kid", KEY_ID);
+  }
+
+  @SneakyThrows
+  @Test
+  void parRequest_authRequestUriPar_invalidUserConsent_httpStatus_400() {
+
+    final String KEY_ID = "puk_fd_enc";
+    // key from gra-server/src/main/resources/keys/gras-enc-pubkey.pem
+    final String JWK_AS_STRING_PUK_FED_ENC =
+        "{\"use\": \"enc\",\"kid\": \""
+            + KEY_ID
+            + "\",\"kty\": \"EC\",\"crv\": \"P-256\",\"x\":"
+            + " \"NQLaWbuQDHgSHahqb9zxlDdiMCHXSgY0L9ql1k7BVUE\",\"y\":"
+            + " \"_USgmqhlM3pvabkZ2SS_YE2Q57tTs6pK9cE_uZB-u3c\"}";
+
+    Mockito.doNothing()
+        .when(entityStatementRpService)
+        .doAutoregistration(testHostUrl, testHostUrl + "/AS", "urn:telematik:versicherter openid");
+
+    Mockito.doReturn(PublicJsonWebKey.Factory.newPublicJwk(JWK_AS_STRING_PUK_FED_ENC))
+        .when(entityStatementRpService)
+        .getRpEncKey(any());
+
+    final String codeVerifier = ClientUtilities.generateCodeVerifier();
+    final String redirectUri = testHostUrl + "/AS";
+    final String fachdienstClientId = testHostUrl;
+
+    final HttpResponse<String> respMsg3 =
+        Unirest.post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
+            .field("client_id", fachdienstClientId)
+            .field("state", "state_Fachdienst")
+            .field("redirect_uri", redirectUri)
+            .field("code_challenge", ClientUtilities.generateCodeChallenge(codeVerifier))
+            .field("code_challenge_method", CodeChallengeMethod.S256.toString())
+            .field("response_type", "code")
+            .field("nonce", "42")
+            .field("scope", "urn:telematik:versicherter openid")
+            .field("acr_values", "gematik-ehealth-loa-high")
+            .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            .asString();
+    assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
+
+    final String requestUri =
+        ((JsonObject) JsonParser.parseString(respMsg3.getBody())).get("request_uri").getAsString();
+
+    Unirest.get(testHostUrl + FED_AUTH_ENDPOINT)
+        .queryString("request_uri", requestUri)
+        .queryString("device_type", "unittest")
+        .asString();
+
+    final HttpResponse<JsonNode> respMsg7 =
+        Unirest.get(testHostUrl + FED_AUTH_ENDPOINT)
+            .queryString("request_uri", requestUri)
+            .queryString("user_id", "12345678")
+            .queryString("selected_claims", "urn:telematik:claims:given_name")
+            .asJson();
+
+    assertThat(respMsg7.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(respMsg7.getBody().toString()).contains("selected claims exceed scopes in PAR");
+  }
+
   /** Increase Test coverage of Landing page endpoint */
   @Test
   void parRequest_authRequestUriPar_invalidClientId_httpStatus_400() {
     Mockito.doNothing()
         .when(entityStatementRpService)
-        .doAutoregistration(testHostUrl, testHostUrl + "/AS");
+        .doAutoregistration(testHostUrl, testHostUrl + "/AS", "urn:telematik:given_name openid");
 
     final String codeVerifier = ClientUtilities.generateCodeVerifier();
     final String redirectUri = testHostUrl + "/AS";
@@ -655,7 +889,7 @@ class FedIdpControllerTest {
       parRequest_authRequestUriPar_tokenRequest_invalidRedirectUri_invalidCodeVerifier_contains_httpStatus_400() {
     Mockito.doNothing()
         .when(entityStatementRpService)
-        .doAutoregistration(testHostUrl, testHostUrl + "/AS");
+        .doAutoregistration(testHostUrl, testHostUrl + "/AS", "urn:telematik:given_name openid");
 
     final String codeVerifier = ClientUtilities.generateCodeVerifier();
     final String redirectUri = testHostUrl + "/AS";
@@ -715,5 +949,12 @@ class FedIdpControllerTest {
             .header(org.springframework.http.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
             .asJson();
     assertThat(httpResponse2.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+  }
+
+  private void waitForSeconds(final int seconds) {
+    Awaitility.await()
+        .atMost(seconds + 1, TimeUnit.SECONDS)
+        .pollDelay(seconds, TimeUnit.SECONDS)
+        .until(() -> true);
   }
 }
