@@ -18,19 +18,11 @@ package de.gematik.idp.gsi.server.services;
 
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
-import static de.gematik.idp.field.ClaimName.BIRTHDATE;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_ALTER;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_DISPLAY_NAME;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_EMAIL;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_GESCHLECHT;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_GIVEN_NAME;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_ORGANIZATION;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_PROFESSION;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.gsi.server.data.InsuredPersonsService;
 import java.util.Map;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -44,21 +36,14 @@ public class AuthenticationService {
   /*
   simulate user authentication
    */
-  public void doAuthentication(final Map<String, Object> userData, final String userId) {
+  public void doAuthentication(
+      final Map<String, Object> userData,
+      final String userId,
+      final Set<String> selectedClaimsSet) {
     final Map<String, String> user = insuredPersonsService.getPerson(userId);
 
-    userData.put(TELEMATIK_PROFESSION.getJoseName(), user.get(TELEMATIK_PROFESSION.getJoseName()));
-    userData.put(TELEMATIK_GIVEN_NAME.getJoseName(), user.get(TELEMATIK_GIVEN_NAME.getJoseName()));
-    userData.put(
-        TELEMATIK_ORGANIZATION.getJoseName(), user.get(TELEMATIK_ORGANIZATION.getJoseName()));
-    userData.put(TELEMATIK_ID.getJoseName(), user.get(TELEMATIK_ID.getJoseName()));
+    selectedClaimsSet.forEach(claim -> userData.put(claim, user.get(claim)));
     userData.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
     userData.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "TODO amr");
-    userData.put(TELEMATIK_ALTER.getJoseName(), user.get(TELEMATIK_ALTER.getJoseName()));
-    userData.put(
-        TELEMATIK_DISPLAY_NAME.getJoseName(), user.get(TELEMATIK_DISPLAY_NAME.getJoseName()));
-    userData.put(TELEMATIK_EMAIL.getJoseName(), user.get(TELEMATIK_EMAIL.getJoseName()));
-    userData.put(TELEMATIK_GESCHLECHT.getJoseName(), user.get(TELEMATIK_GESCHLECHT.getJoseName()));
-    userData.put(BIRTHDATE.getJoseName(), user.get(BIRTHDATE.getJoseName()));
   }
 }

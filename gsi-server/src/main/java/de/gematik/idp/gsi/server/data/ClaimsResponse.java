@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ *  Copyright 2024 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,32 +14,20 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.gsi.server.configuration;
+package de.gematik.idp.gsi.server.data;
 
-import de.gematik.idp.data.KeyConfig;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
-@ConfigurationProperties("gsi")
-@Getter
-@Setter
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class GsiConfiguration {
-
-  private String serverUrl;
-  private String fedmasterUrl;
-  private String fedmasterSigPubKeyFilePath;
-  private KeyConfig esSigPrivKeyConfig;
-  private KeyConfig esSigPubKeyConfig;
-  private KeyConfig tokenSigPrivKeyConfig;
-  private KeyConfig tokenSigPubKeyConfig;
-  private String loglevel;
+public class ClaimsResponse {
+  private String[] requestedClaims;
 }

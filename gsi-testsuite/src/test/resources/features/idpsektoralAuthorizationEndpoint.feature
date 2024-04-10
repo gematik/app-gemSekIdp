@@ -28,6 +28,7 @@ Feature: Test IdpSektoral's Auth Endpoint
   @Approval
   @PRIO:1
   @TESTSTUFE:4
+  @CT
   Scenario: IdpSektoral Auth Endpoint - Gutfall - Validiere Response
 
   ```
@@ -84,7 +85,7 @@ Feature: Test IdpSektoral's Auth Endpoint
             "____error_uri":                '.*'
           }
         """
-    And TGR current response at "$.body.error" matches "<error>"
+    And TGR current response with attribute "$.body.error" matches "<error>"
 
     Examples:
       | client_id          | request_uri                                                    | error             | responseCode |
@@ -124,18 +125,17 @@ Feature: Test IdpSektoral's Auth Endpoint
             "____error_uri":                '.*'
           }
         """
-    And TGR current response at "$.body.error" matches "<error>"
+    And TGR current response with attribute "$.body.error" matches "<error>"
 
     Examples:
-      | client_id          | request_uri   | error           | responseCode |
-      | gsi.clientid.valid | $REMOVE       | invalid_request | 400          |
-      | $REMOVE            | ${requestUri} | invalid_request | 400          |
+      | client_id          | request_uri   | error             | responseCode |
+      | gsi.clientid.valid | $REMOVE       | invalid_request.* | 400          |
+      | $REMOVE            | ${requestUri} | invalid_request   | 400          |
 
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_004
   @LongRunning
   @Approval
-  @OpenBug
   @PRIO:1
   @TESTSTUFE:4
   Scenario: IdpSektoral Auth Endpoint - Negativfall - abgelaufene request_uri
@@ -167,4 +167,4 @@ Feature: Test IdpSektoral's Auth Endpoint
             "____error_uri":                '.*'
           }
         """
-    And TGR current response at "$.body.error" matches "(invalid_request|invalid_request_uri)"
+    And TGR current response with attribute "$.body.error" matches "(invalid_request|invalid_request_uri)"

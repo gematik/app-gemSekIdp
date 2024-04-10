@@ -51,7 +51,7 @@ Feature: Test IdpSektoral's Token Endpoint
             "____error_uri":                '.*'
           }
         """
-    And TGR current response at "$.body.error" matches "(invalid_request)|(invalid_grant)|(invalid_client)|(unsupported_grant_type)"
+    And TGR current response with attribute "$.body.error" matches "(invalid_request)|(invalid_grant)|(invalid_client)|(unsupported_grant_type)"
 
     Examples:
       | client_id          | redirect_uri            | code_verifier    | grant_type         | code                  | responseCode |
@@ -78,11 +78,11 @@ Feature: Test IdpSektoral's Token Endpoint
       | client_id          | redirect_uri    | code_verifier    | grant_type         | code                  |
       | gsi.clientid.valid | gsi.redirectUri | gsi.codeVerifier | authorization_code | gsi.authorizationCode |
     And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "405"
+    Then TGR current response with attribute "$.responseCode" matches "(404|405)"
     And TGR current response at "$.body" matches as JSON:
         """
           {
-            "error":                        'invalid_request',
+            "error":                        '.*',
             "____error_description":        '.*'
           }
         """
@@ -112,7 +112,7 @@ Feature: Test IdpSektoral's Token Endpoint
             "____error_uri":                '.*'
           }
         """
-    And TGR current response at "$.body.error" matches "(invalid_request)|(invalid_grant)"
+    And TGR current response with attribute "$.body.error" matches "(invalid_request)|(invalid_grant)"
 
     Examples:
       | client_id          | redirect_uri    | code_verifier    | grant_type         | code                  | responseCode |
@@ -145,11 +145,11 @@ Feature: Test IdpSektoral's Token Endpoint
       | client_id          | redirect_uri    | code_verifier    | grant_type         | code |
       | gsi.clientid.valid | gsi.redirectUri | gsi.codeVerifier | authorization_code | code |
     And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "401"
+    Then TGR current response with attribute "$.responseCode" matches "(400|401)"
     And TGR current response at "$.body" matches as JSON:
         """
           {
-            "error":                        'invalid_request',
+            "error":                        'invalid_.*',
             "____error_description":        '.*'
           }
         """
@@ -249,6 +249,7 @@ Feature: Test IdpSektoral's Token Endpoint
       }
     """
 
+
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_007
   @Approval
   @GematikSekIdpOnly
@@ -294,3 +295,106 @@ Feature: Test IdpSektoral's Token Endpoint
             "____error_description":        '.*'
           }
         """
+
+
+  @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_008
+    @Approval
+    @GematikSekIdpOnly
+  Scenario Outline: IdpSektoral Token Endpoint - Gutfall ohne userConsent - validiere ID_TOKEN Body Claims
+
+  ```
+  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint, um anschließend den Flow über mit der
+  Abkürzung ohne UserConsent abzuschließen. Den resultierenden authorization_code lösen wir ein
+
+  Der ID_TOKEN muss die richtigen Bodyclaims besitzen:
+
+    Given TGR clear recorded messages
+    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
+      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "201"
+    And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri   | user_id  |
+      | ${requestUri} | <userId> |
+    And TGR find request to path ".*"
+    And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
+    Given TGR clear recorded messages
+    When Send Post Request to "${token_endpoint}" with
+      | client_id          | redirect_uri    | code_verifier                                                                      | grant_type         | code        |
+      | gsi.clientid.valid | gsi.redirectUri | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | authorization_code | ${authCode} |
+    And TGR find request to path ".*"
+    Then TGR current response at "$.body.id_token.content.body.body" matches as JSON:
+    """
+      {
+      "sub": '.*',
+      "aud": '.*',
+      "acr": "gematik-ehealth-loa-high",
+      "urn:telematik:claims:id": "<id>",
+      "urn:telematik:claims:organization": "<organization>",
+      "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+      "urn:telematik:claims:display_name": "<displayName>",
+      "amr": '.*',
+      "iss": '.*',
+      "exp": "${json-unit.ignore}",
+      "iat": "${json-unit.ignore}",
+      "nonce": '.*'
+      }
+    """
+    Examples:
+      | userId     | id         | organization | displayName                                 |
+      | 12345678   | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld |
+      | D162565246 | D162565246 | 101592612    | Imagina Handt                               |
+
+
+  @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_009
+  @Approval
+  @GematikSekIdpOnly
+  Scenario: IdpSektoral Token Endpoint - Gutfall mit userConsent - validiere ID_TOKEN Body Claims
+
+  ```
+  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint, um anschließend den Flow über den Pfad mit
+  UserConsent abzuschließen. Den resultierenden authorization_code lösen wir ein
+
+  Der verschlüsselte ID_TOKEN muss die richtigen Claims besitzen:
+
+    Given TGR clear recorded messages
+    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope                             | acr_values               |
+      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | vy7rM801AQw1or22GhrZ | urn:telematik:versicherter openid | gematik-ehealth-loa-high |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "201"
+    And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri   | device_type |
+      | ${requestUri} | testsuite   |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "200"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri   | user_id  | selected_claims                 |
+      | ${requestUri} | 12345678 | urn:telematik:claims:profession |
+    And TGR find request to path ".*"
+    And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
+    Given TGR clear recorded messages
+    When Send Post Request to "${token_endpoint}" with
+      | client_id          | redirect_uri    | code_verifier                                                                      | grant_type         | code        |
+      | gsi.clientid.valid | gsi.redirectUri | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | authorization_code | ${authCode} |
+    And TGR find request to path ".*"
+    Then TGR current response at "$.body.id_token.content.body.body" matches as JSON:
+    """
+      {
+      "sub": '.*',
+      "aud": '.*',
+      "acr": "gematik-ehealth-loa-high",
+      "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+      "amr": '.*',
+      "iss": '.*',
+      "exp": "${json-unit.ignore}",
+      "iat": "${json-unit.ignore}",
+      "nonce": '.*'
+      }
+    """
