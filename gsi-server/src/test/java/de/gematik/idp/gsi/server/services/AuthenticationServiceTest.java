@@ -18,20 +18,15 @@ package de.gematik.idp.gsi.server.services;
 
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
-import static de.gematik.idp.field.ClaimName.BIRTHDATE;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_ALTER;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_DISPLAY_NAME;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_EMAIL;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_GESCHLECHT;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_GIVEN_NAME;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_ORGANIZATION;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_PROFESSION;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.gsi.server.data.InsuredPersonsService;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,27 +35,28 @@ import org.junit.jupiter.api.Test;
 class AuthenticationServiceTest {
 
   @BeforeEach
-  public void init() {}
+  void init() {}
 
   @Test
   void authenticationTest_LegacyUser12345678() {
     final AuthenticationService authenticationService =
         new AuthenticationService(new InsuredPersonsService("versicherte.gesundheitsid.json"));
     final Map<String, Object> userData = new HashMap<>();
-    authenticationService.doAuthentication(userData, "12345678");
+    final Set<String> selectedClaimsSet =
+        Set.of(
+            TELEMATIK_ID.getJoseName(),
+            AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
+            AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
+            TELEMATIK_PROFESSION.getJoseName(),
+            TELEMATIK_GIVEN_NAME.getJoseName());
+    authenticationService.doAuthentication(userData, "12345678", selectedClaimsSet);
     assertThat(userData.keySet())
         .containsExactlyInAnyOrder(
             TELEMATIK_PROFESSION.getJoseName(),
             TELEMATIK_GIVEN_NAME.getJoseName(),
-            TELEMATIK_ORGANIZATION.getJoseName(),
             TELEMATIK_ID.getJoseName(),
             AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
-            AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
-            TELEMATIK_ALTER.getJoseName(),
-            TELEMATIK_DISPLAY_NAME.getJoseName(),
-            TELEMATIK_EMAIL.getJoseName(),
-            TELEMATIK_GESCHLECHT.getJoseName(),
-            BIRTHDATE.getJoseName());
+            AUTHENTICATION_METHODS_REFERENCE.getJoseName());
     assertThat(userData).containsEntry(TELEMATIK_ID.getJoseName(), "X110411675");
   }
 }

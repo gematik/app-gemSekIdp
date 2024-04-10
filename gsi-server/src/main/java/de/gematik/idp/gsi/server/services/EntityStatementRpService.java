@@ -17,9 +17,10 @@
 package de.gematik.idp.gsi.server.services;
 
 import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
+import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_SCOPE;
 
 import de.gematik.idp.IdpConstants;
-import de.gematik.idp.crypto.CryptoLoader;
+import de.gematik.idp.gsi.server.data.GsiConstants;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
@@ -27,11 +28,14 @@ import java.security.PublicKey;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import lombok.RequiredArgsConstructor;
@@ -48,11 +52,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class EntityStatementRpService {
 
-  private final ResourceReader resourceReader;
+  private final PublicKey fedmasterSigKey;
   private final ServerUrlService serverUrlService;
 
   /** Entity statements delivered by Fachdienst */
   private final Map<String, JsonWebToken> entityStatementsOfFachdienst = new HashMap<>();
+
   /** Entity statements about Fachdienste. Delivered by Fedmaster. */
   private final Map<String, JsonWebToken> entityStatementsFedmasterAboutFachdienst =
       new HashMap<>();
@@ -62,12 +67,15 @@ public class EntityStatementRpService {
    *
    * @param clientId URL of relying party
    */
-  public void doAutoregistration(final String clientId, final String redirectUri) {
+  public void doAutoregistration(
+      final String clientId, final String redirectUri, final String scope) {
     // Msg 2a and 2b
     // Msg 2c and 2d
     log.debug("Autoregistration started...");
     getEntityStatementRp(clientId);
     verifyRedirectUriExistsInEntityStmnt(clientId, redirectUri);
+    verifyRequestedScopesListedInEntityStmnt(clientId, scope);
+    verifyIdpDoesSupportRequestedScopes(scope);
     log.debug("Autoregistration done.");
   }
 
@@ -186,6 +194,21 @@ public class EntityStatementRpService {
         (List<String>) openidRelyingParty.get("redirect_uris"), "missing claim: redirect_uris");
   }
 
+  private static List<String> getScopesFromEntityStatementRp(final JsonWebToken entityStmntRp) {
+    final Map<String, Object> bodyClaims = entityStmntRp.getBodyClaims();
+    final Map<String, Object> metadata =
+        Objects.requireNonNull(
+            (Map<String, Object>) bodyClaims.get("metadata"), "missing claim: metadata");
+    final Map<String, Object> openidRelyingParty =
+        Objects.requireNonNull(
+            (Map<String, Object>) metadata.get("openid_relying_party"),
+            "missing claim: openid_relying_party");
+    return Arrays.stream(
+            Objects.requireNonNull((String) openidRelyingParty.get("scope"), "missing claim: scope")
+                .split(" "))
+        .toList();
+  }
+
   /**
    * @param fachdienstClientId
    * @param redirectUri
@@ -198,6 +221,31 @@ public class EntityStatementRpService {
           INVALID_REQUEST,
           "Content of parameter redirect_uri [" + redirectUri + "] not found in entity statement. ",
           HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  private void verifyRequestedScopesListedInEntityStmnt(
+      final String fachdienstClientId, final String scopeParameter) {
+    final List<String> scopesFromEntityStatementRp =
+        getScopesFromEntityStatementRp(getEntityStatementRp(fachdienstClientId));
+    if (Arrays.stream(scopeParameter.split(" "))
+        .anyMatch(scope -> !scopesFromEntityStatementRp.contains(scope))) {
+      throw new GsiException(
+          INVALID_SCOPE,
+          "Content of parameter scope ["
+              + scopeParameter
+              + "] exceeds scopes found in entity statement. ",
+          HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  private void verifyIdpDoesSupportRequestedScopes(final String scopeParameter) {
+    final Set<String> requestedScopes =
+        Arrays.stream(scopeParameter.split(" ")).collect(Collectors.toSet());
+
+    if (!(GsiConstants.SCOPES_SUPPORTED.containsAll(requestedScopes))) {
+      throw new GsiException(
+          INVALID_SCOPE, "More scopes requested in PAR than supported.", HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -284,7 +332,7 @@ public class EntityStatementRpService {
             .asString();
     if (resp.getStatus() == HttpStatus.OK.value()) {
       final JsonWebToken entityStatementAboutRp = new JsonWebToken(resp.getBody());
-      entityStatementAboutRp.verify(getFedmasterSigKey());
+      entityStatementAboutRp.verify(fedmasterSigKey);
       entityStatementsFedmasterAboutFachdienst.put(sub, entityStatementAboutRp);
       log.debug(
           "Entitystatement about RP [{}] stored. JWT: {}",
@@ -303,11 +351,5 @@ public class EntityStatementRpService {
               + HttpStatus.valueOf(resp.getStatus()),
           HttpStatus.BAD_REQUEST);
     }
-  }
-
-  private PublicKey getFedmasterSigKey() {
-    return CryptoLoader.getCertificateFromPem(
-            resourceReader.getFileFromResourceAsBytes("cert/fedmaster-sig-TU.pem"))
-        .getPublicKey();
   }
 }

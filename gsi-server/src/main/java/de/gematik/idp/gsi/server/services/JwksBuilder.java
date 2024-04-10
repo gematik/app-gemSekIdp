@@ -16,7 +16,7 @@
 
 package de.gematik.idp.gsi.server.services;
 
-import de.gematik.idp.data.FederationPrivKey;
+import de.gematik.idp.data.FederationPubKey;
 import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.gsi.server.data.SignedJwksBody;
 import java.time.ZonedDateTime;
@@ -28,15 +28,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Slf4j
 public class JwksBuilder {
 
-  @Autowired FederationPrivKey esSigKey;
-  @Autowired FederationPrivKey tokenSigKey;
+  @Autowired FederationPubKey esSigPubKey;
+  @Autowired FederationPubKey tokenSigPubKey;
 
   public SignedJwksBody build(final String serverUrl) {
     final ZonedDateTime currentTime = ZonedDateTime.now();
     return SignedJwksBody.builder()
         .iat(currentTime.toEpochSecond())
         .iss(serverUrl)
-        .keys(JwtHelper.getJwks(esSigKey, tokenSigKey).getKeys())
+        .keys(JwtHelper.getJwks(esSigPubKey, tokenSigPubKey).getKeys())
         .build();
   }
 }

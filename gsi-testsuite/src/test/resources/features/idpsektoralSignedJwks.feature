@@ -30,6 +30,7 @@ Feature: Test signed Jwks of IdpSektoral
   @Approval
   @PRIO:1
   @TESTSTUFE:4
+  @CT
   Scenario: IdpSektoral signedJwks - Gutfall - Validiere Response
 
   ```

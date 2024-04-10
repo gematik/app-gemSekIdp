@@ -33,29 +33,25 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class EntityStatementBuilderTest {
 
-  @Autowired
-  private IdpJwtProcessor jwtProcessorEsSigKey;
-  @Autowired
-  private ObjectMapper objectMapper;
-  @Autowired
-  private EntityStatementBuilder entityStatementBuilder;
-  @Autowired
-private ServerUrlService serverUrlService;
-  @Autowired
-  private GsiConfiguration gsiConfiguration;
+  @Autowired private IdpJwtProcessor jwtProcessorEsSigPrivKey;
+  @Autowired private ObjectMapper objectMapper;
+  @Autowired private EntityStatementBuilder entityStatementBuilder;
+  @Autowired private ServerUrlService serverUrlService;
+  @Autowired private GsiConfiguration gsiConfiguration;
 
   @Test
   void generateEntityStatementValid20Years() {
     final int entityStatementTtlYears = 20;
-    final long nowPlus20Years = ZonedDateTime.now().plusYears(entityStatementTtlYears).toEpochSecond();
-    final String es = JwtHelper.signJson(
-        jwtProcessorEsSigKey,
-        objectMapper,
-        entityStatementBuilder.buildEntityStatement(
-            "http://localhost:8085", gsiConfiguration.getFedmasterUrl(),nowPlus20Years),
-        ENTITY_STATEMENT_TYP);
+    final long nowPlus20Years =
+        ZonedDateTime.now().plusYears(entityStatementTtlYears).toEpochSecond();
+    final String es =
+        JwtHelper.signJson(
+            jwtProcessorEsSigPrivKey,
+            objectMapper,
+            entityStatementBuilder.buildEntityStatement(
+                "http://localhost:8085", gsiConfiguration.getFedmasterUrl(), nowPlus20Years),
+            ENTITY_STATEMENT_TYP);
     assertThat(es).isNotEmpty();
     log.info("Entity statement (valid {} years):\n{}", entityStatementTtlYears, es);
   }
-
 }

@@ -2,6 +2,7 @@
   {
     "birthdate": "2000-06-05",
     "urn:telematik:claims:alter": "23",
+    "urn:telematik:claims:family_name": "Weitzenböck",
     "urn:telematik:claims:display_name": "Ditte Weitzenböck",
     "urn:telematik:claims:given_name": "Ditte",
     "urn:telematik:claims:geschlecht": "W",
@@ -13,6 +14,7 @@
   {
     "birthdate": "1941-05-23",
     "urn:telematik:claims:alter": "82",
+    "urn:telematik:claims:family_name": "Berge",
     "urn:telematik:claims:display_name": "Jenni van den Berge",
     "urn:telematik:claims:given_name": "Jenni",
     "urn:telematik:claims:geschlecht": "W",
@@ -24,6 +26,7 @@
   {
     "birthdate": "2002-01-23",
     "urn:telematik:claims:alter": "21",
+    "urn:telematik:claims:family_name": "Friderich",
     "urn:telematik:claims:display_name": "Karyn Friderich",
     "urn:telematik:claims:given_name": "Karyn",
     "urn:telematik:claims:geschlecht": "W",
@@ -35,6 +38,7 @@
   {
     "birthdate": "1938-11-26",
     "urn:telematik:claims:alter": "85",
+    "urn:telematik:claims:family_name": "Jammal",
     "urn:telematik:claims:display_name": "Trajan Jammal",
     "urn:telematik:claims:given_name": "Trajan",
     "urn:telematik:claims:geschlecht": "M",
@@ -46,6 +50,7 @@
   {
     "birthdate": "1931-07-19",
     "urn:telematik:claims:alter": "92",
+    "urn:telematik:claims:family_name": "Hölder",
     "urn:telematik:claims:display_name": "Kim Hölder",
     "urn:telematik:claims:given_name": "Kim",
     "urn:telematik:claims:geschlecht": "X",
@@ -57,6 +62,7 @@
   {
     "birthdate": "2006-03-17",
     "urn:telematik:claims:alter": "17",
+    "urn:telematik:claims:family_name": "Dürrwächter",
     "urn:telematik:claims:display_name": "Antje Dürrwächter",
     "urn:telematik:claims:given_name": "Antje",
     "urn:telematik:claims:geschlecht": "W",
@@ -68,6 +74,7 @@
   {
     "birthdate": "1967-11-22",
     "urn:telematik:claims:alter": "56",
+    "urn:telematik:claims:family_name": "Erner",
     "urn:telematik:claims:display_name": "Dorine Erner",
     "urn:telematik:claims:given_name": "Dorine",
     "urn:telematik:claims:geschlecht": "X",
@@ -79,6 +86,7 @@
   {
     "birthdate": "1937-12-30",
     "urn:telematik:claims:alter": "86",
+    "urn:telematik:claims:family_name": "Dominé",
     "urn:telematik:claims:display_name": "Mohammed Dominé",
     "urn:telematik:claims:given_name": "Mohammed",
     "urn:telematik:claims:geschlecht": "M",
@@ -90,6 +98,7 @@
   {
     "birthdate": "1993-10-19",
     "urn:telematik:claims:alter": "30",
+    "urn:telematik:claims:family_name": "Moning",
     "urn:telematik:claims:display_name": "Edmund Moning",
     "urn:telematik:claims:given_name": "Edmund",
     "urn:telematik:claims:geschlecht": "M",
@@ -101,6 +110,7 @@
   {
     "birthdate": "1944-11-19",
     "urn:telematik:claims:alter": "79",
+    "urn:telematik:claims:family_name": "Ransbach",
     "urn:telematik:claims:display_name": "Ulrike Eliane Ransbach",
     "urn:telematik:claims:given_name": "Ulrike Eliane",
     "urn:telematik:claims:geschlecht": "X",
@@ -112,6 +122,7 @@
   {
     "birthdate": "2007-09-29",
     "urn:telematik:claims:alter": "16",
+    "urn:telematik:claims:family_name": "Lattuada",
     "urn:telematik:claims:display_name": "Charlotta Lattuada",
     "urn:telematik:claims:given_name": "Charlotta",
     "urn:telematik:claims:geschlecht": "W",
@@ -123,6 +134,7 @@
   {
     "birthdate": "1952-08-05",
     "urn:telematik:claims:alter": "71",
+    "urn:telematik:claims:family_name": "Friederici",
     "urn:telematik:claims:display_name": "Fiorina Friederici",
     "urn:telematik:claims:given_name": "Fiorina",
     "urn:telematik:claims:geschlecht": "W",
@@ -134,6 +146,7 @@
   {
     "birthdate": "1966-09-12",
     "urn:telematik:claims:alter": "57",
+    "urn:telematik:claims:family_name": "Urfer",
     "urn:telematik:claims:display_name": "Metin Urfer",
     "urn:telematik:claims:given_name": "Metin",
     "urn:telematik:claims:geschlecht": "M",
@@ -145,6 +158,7 @@
   {
     "birthdate": "1955-04-20",
     "urn:telematik:claims:alter": "68",
+    "urn:telematik:claims:family_name": "Höttl",
     "urn:telematik:claims:display_name": "Claudius Höttl",
     "urn:telematik:claims:given_name": "Claudius",
     "urn:telematik:claims:geschlecht": "M",
@@ -156,6 +170,7 @@
   {
     "birthdate": "2000-06-13",
     "urn:telematik:claims:alter": "23",
+    "urn:telematik:claims:family_name": "Wieluch",
     "urn:telematik:claims:display_name": "Toussaint Wieluch",
     "urn:telematik:claims:given_name": "Toussaint",
     "urn:telematik:claims:geschlecht": "M",
@@ -167,6 +182,7 @@
   {
     "birthdate": "1929-02-12",
     "urn:telematik:claims:alter": "94",
+    "urn:telematik:claims:family_name": "Sklenar",
     "urn:telematik:claims:display_name": "Nola Sklenar",
     "urn:telematik:claims:given_name": "Nola",
     "urn:telematik:claims:geschlecht": "D",
@@ -178,6 +194,7 @@
   {
     "birthdate": "1975-09-30",
     "urn:telematik:claims:alter": "48",
+    "urn:telematik:claims:family_name": "Blübaum",
     "urn:telematik:claims:display_name": "Alanis Bárbara Blübaum",
     "urn:telematik:claims:given_name": "Alanis Bárbara",
     "urn:telematik:claims:geschlecht": "W",
@@ -189,6 +206,7 @@
   {
     "birthdate": "1979-05-11",
     "urn:telematik:claims:alter": "44",
+    "urn:telematik:claims:family_name": "Obermöller",
     "urn:telematik:claims:display_name": "Filomena Obermöller",
     "urn:telematik:claims:given_name": "Filomena",
     "urn:telematik:claims:geschlecht": "X",
@@ -200,6 +218,7 @@
   {
     "birthdate": "1935-08-17",
     "urn:telematik:claims:alter": "88",
+    "urn:telematik:claims:family_name": "Oehmen",
     "urn:telematik:claims:display_name": "Karl-August Oehmen",
     "urn:telematik:claims:given_name": "Karl-August",
     "urn:telematik:claims:geschlecht": "M",
@@ -211,6 +230,7 @@
   {
     "birthdate": "1986-04-01",
     "urn:telematik:claims:alter": "37",
+    "urn:telematik:claims:family_name": "Lubitsch",
     "urn:telematik:claims:display_name": "Liva Lubitsch",
     "urn:telematik:claims:given_name": "Liva",
     "urn:telematik:claims:geschlecht": "W",
@@ -222,6 +242,7 @@
   {
     "birthdate": "2007-10-21",
     "urn:telematik:claims:alter": "16",
+    "urn:telematik:claims:family_name": "Matthaei",
     "urn:telematik:claims:display_name": "Peter-Heinz Matthaei",
     "urn:telematik:claims:given_name": "Peter-Heinz",
     "urn:telematik:claims:geschlecht": "X",
@@ -233,6 +254,7 @@
   {
     "birthdate": "1992-01-18",
     "urn:telematik:claims:alter": "31",
+    "urn:telematik:claims:family_name": "Mazingu",
     "urn:telematik:claims:display_name": "Olcay Kilian Mazingu",
     "urn:telematik:claims:given_name": "Olcay Kilian",
     "urn:telematik:claims:geschlecht": "M",
@@ -244,6 +266,7 @@
   {
     "birthdate": "1985-06-02",
     "urn:telematik:claims:alter": "38",
+    "urn:telematik:claims:family_name": "Castan",
     "urn:telematik:claims:display_name": "Ferdinande Castan",
     "urn:telematik:claims:given_name": "Ferdinande",
     "urn:telematik:claims:geschlecht": "W",
@@ -255,6 +278,7 @@
   {
     "birthdate": "1975-06-28",
     "urn:telematik:claims:alter": "48",
+    "urn:telematik:claims:family_name": "Klaschka",
     "urn:telematik:claims:display_name": "Valer Klaschka",
     "urn:telematik:claims:given_name": "Valer",
     "urn:telematik:claims:geschlecht": "M",
@@ -266,6 +290,7 @@
   {
     "birthdate": "1952-02-02",
     "urn:telematik:claims:alter": "71",
+    "urn:telematik:claims:family_name": "Gürschner",
     "urn:telematik:claims:display_name": "Addi Gürschner",
     "urn:telematik:claims:given_name": "Addi",
     "urn:telematik:claims:geschlecht": "W",
@@ -277,6 +302,7 @@
   {
     "birthdate": "1948-09-12",
     "urn:telematik:claims:alter": "75",
+    "urn:telematik:claims:family_name": "Budař",
     "urn:telematik:claims:display_name": "Dietmar-Maria Budař",
     "urn:telematik:claims:given_name": "Dietmar-Maria",
     "urn:telematik:claims:geschlecht": "M",
@@ -288,6 +314,7 @@
   {
     "birthdate": "1928-09-17",
     "urn:telematik:claims:alter": "95",
+    "urn:telematik:claims:family_name": "Reuth",
     "urn:telematik:claims:display_name": "Eugenius Reuth",
     "urn:telematik:claims:given_name": "Eugenius",
     "urn:telematik:claims:geschlecht": "M",
@@ -299,6 +326,7 @@
   {
     "birthdate": "1999-06-03",
     "urn:telematik:claims:alter": "24",
+    "urn:telematik:claims:family_name": "Busche",
     "urn:telematik:claims:display_name": "Bertrand von dem Busche",
     "urn:telematik:claims:given_name": "Bertrand",
     "urn:telematik:claims:geschlecht": "M",
@@ -310,6 +338,7 @@
   {
     "birthdate": "1987-04-11",
     "urn:telematik:claims:alter": "36",
+    "urn:telematik:claims:family_name": "Fedel",
     "urn:telematik:claims:display_name": "Adelajda Fedel",
     "urn:telematik:claims:given_name": "Adelajda",
     "urn:telematik:claims:geschlecht": "W",
@@ -321,6 +350,7 @@
   {
     "birthdate": "1925-12-23",
     "urn:telematik:claims:alter": "98",
+    "urn:telematik:claims:family_name": "Lorch",
     "urn:telematik:claims:display_name": "Anniko Lorch",
     "urn:telematik:claims:given_name": "Anniko",
     "urn:telematik:claims:geschlecht": "W",
@@ -332,6 +362,7 @@
   {
     "birthdate": "1947-12-03",
     "urn:telematik:claims:alter": "76",
+    "urn:telematik:claims:family_name": "Gottschlag",
     "urn:telematik:claims:display_name": "Hannah-Lene Gottschlag",
     "urn:telematik:claims:given_name": "Hannah-Lene",
     "urn:telematik:claims:geschlecht": "W",
@@ -343,6 +374,7 @@
   {
     "birthdate": "1948-04-03",
     "urn:telematik:claims:alter": "75",
+    "urn:telematik:claims:family_name": "Steinhaeusser",
     "urn:telematik:claims:display_name": "İlkay Paul-Henri Steinhaeusser",
     "urn:telematik:claims:given_name": "İlkay Paul-Henri",
     "urn:telematik:claims:geschlecht": "D",
@@ -354,6 +386,7 @@
   {
     "birthdate": "1985-01-14",
     "urn:telematik:claims:alter": "38",
+    "urn:telematik:claims:family_name": "Abramowitsch",
     "urn:telematik:claims:display_name": "Johann Peter Abramowitsch",
     "urn:telematik:claims:given_name": "Johann Peter",
     "urn:telematik:claims:geschlecht": "M",
@@ -365,6 +398,7 @@
   {
     "birthdate": "1933-08-15",
     "urn:telematik:claims:alter": "90",
+    "urn:telematik:claims:family_name": "Erdle",
     "urn:telematik:claims:display_name": "Vitalis Erdle",
     "urn:telematik:claims:given_name": "Vitalis",
     "urn:telematik:claims:geschlecht": "X",
@@ -376,6 +410,7 @@
   {
     "birthdate": "1974-12-13",
     "urn:telematik:claims:alter": "49",
+    "urn:telematik:claims:family_name": "Wansing",
     "urn:telematik:claims:display_name": "Benedict Wansing",
     "urn:telematik:claims:given_name": "Benedict",
     "urn:telematik:claims:geschlecht": "M",
@@ -387,6 +422,7 @@
   {
     "birthdate": "2006-10-24",
     "urn:telematik:claims:alter": "17",
+    "urn:telematik:claims:family_name": "Edwards",
     "urn:telematik:claims:display_name": "Dieprand Edwards",
     "urn:telematik:claims:given_name": "Dieprand",
     "urn:telematik:claims:geschlecht": "M",
@@ -398,6 +434,7 @@
   {
     "birthdate": "1933-02-15",
     "urn:telematik:claims:alter": "90",
+    "urn:telematik:claims:family_name": "Eschebach",
     "urn:telematik:claims:display_name": "James Eschebach",
     "urn:telematik:claims:given_name": "James",
     "urn:telematik:claims:geschlecht": "M",
@@ -409,6 +446,7 @@
   {
     "birthdate": "1928-04-03",
     "urn:telematik:claims:alter": "95",
+    "urn:telematik:claims:family_name": "Tatge",
     "urn:telematik:claims:display_name": "Gunna Tatge",
     "urn:telematik:claims:given_name": "Gunna",
     "urn:telematik:claims:geschlecht": "W",
@@ -420,6 +458,7 @@
   {
     "birthdate": "1970-04-20",
     "urn:telematik:claims:alter": "53",
+    "urn:telematik:claims:family_name": "Labbadia",
     "urn:telematik:claims:display_name": "Damaris R. Labbadia",
     "urn:telematik:claims:given_name": "Damaris R.",
     "urn:telematik:claims:geschlecht": "W",
@@ -431,6 +470,7 @@
   {
     "birthdate": "2005-05-15",
     "urn:telematik:claims:alter": "18",
+    "urn:telematik:claims:family_name": "Ambacher",
     "urn:telematik:claims:display_name": "Marguerite Ambacher",
     "urn:telematik:claims:given_name": "Marguerite",
     "urn:telematik:claims:geschlecht": "X",
@@ -442,6 +482,7 @@
   {
     "birthdate": "1940-08-22",
     "urn:telematik:claims:alter": "83",
+    "urn:telematik:claims:family_name": "Schrader",
     "urn:telematik:claims:display_name": "Fridtjof Schrader",
     "urn:telematik:claims:given_name": "Fridtjof",
     "urn:telematik:claims:geschlecht": "M",
@@ -453,6 +494,7 @@
   {
     "birthdate": "1936-04-27",
     "urn:telematik:claims:alter": "87",
+    "urn:telematik:claims:family_name": "Görtz-Wrisberg",
     "urn:telematik:claims:display_name": "Berchtold Görtz-Wrisberg",
     "urn:telematik:claims:given_name": "Berchtold",
     "urn:telematik:claims:geschlecht": "M",
@@ -464,6 +506,7 @@
   {
     "birthdate": "2000-11-11",
     "urn:telematik:claims:alter": "23",
+    "urn:telematik:claims:family_name": "Zeitlhofer",
     "urn:telematik:claims:display_name": "Vitaly Zeitlhofer",
     "urn:telematik:claims:given_name": "Vitaly",
     "urn:telematik:claims:geschlecht": "M",
@@ -475,6 +518,7 @@
   {
     "birthdate": "1959-06-25",
     "urn:telematik:claims:alter": "64",
+    "urn:telematik:claims:family_name": "Kreppel",
     "urn:telematik:claims:display_name": "Göran Kreppel",
     "urn:telematik:claims:given_name": "Göran",
     "urn:telematik:claims:geschlecht": "M",
@@ -486,6 +530,7 @@
   {
     "birthdate": "1981-12-15",
     "urn:telematik:claims:alter": "42",
+    "urn:telematik:claims:family_name": "Jaks",
     "urn:telematik:claims:display_name": "Loraine Jaks",
     "urn:telematik:claims:given_name": "Loraine",
     "urn:telematik:claims:geschlecht": "X",
@@ -497,6 +542,7 @@
   {
     "birthdate": "1937-08-10",
     "urn:telematik:claims:alter": "86",
+    "urn:telematik:claims:family_name": "Krückels",
     "urn:telematik:claims:display_name": "Eren Krückels",
     "urn:telematik:claims:given_name": "Eren",
     "urn:telematik:claims:geschlecht": "M",
@@ -508,6 +554,7 @@
   {
     "birthdate": "1991-03-06",
     "urn:telematik:claims:alter": "32",
+    "urn:telematik:claims:family_name": "Raffington",
     "urn:telematik:claims:display_name": "Marielle Raffington",
     "urn:telematik:claims:given_name": "Marielle",
     "urn:telematik:claims:geschlecht": "W",
@@ -519,6 +566,7 @@
   {
     "birthdate": "1956-01-18",
     "urn:telematik:claims:alter": "67",
+    "urn:telematik:claims:family_name": "Opocensky",
     "urn:telematik:claims:display_name": "Eniola Opocensky",
     "urn:telematik:claims:given_name": "Eniola",
     "urn:telematik:claims:geschlecht": "W",
@@ -530,6 +578,7 @@
   {
     "birthdate": "1968-05-06",
     "urn:telematik:claims:alter": "55",
+    "urn:telematik:claims:family_name": "Bourbon",
     "urn:telematik:claims:display_name": "Beat Bourbon",
     "urn:telematik:claims:given_name": "Beat",
     "urn:telematik:claims:geschlecht": "M",
@@ -541,6 +590,7 @@
   {
     "birthdate": "1944-06-16",
     "urn:telematik:claims:alter": "79",
+    "urn:telematik:claims:family_name": "Mederow",
     "urn:telematik:claims:display_name": "Yannick Mederow",
     "urn:telematik:claims:given_name": "Yannick",
     "urn:telematik:claims:geschlecht": "M",
@@ -552,6 +602,7 @@
   {
     "birthdate": "1958-01-17",
     "urn:telematik:claims:alter": "65",
+    "urn:telematik:claims:family_name": "Eidams",
     "urn:telematik:claims:display_name": "Joris Eidams",
     "urn:telematik:claims:given_name": "Joris",
     "urn:telematik:claims:geschlecht": "M",
@@ -563,6 +614,7 @@
   {
     "birthdate": "1947-07-01",
     "urn:telematik:claims:alter": "76",
+    "urn:telematik:claims:family_name": "Baeyer",
     "urn:telematik:claims:display_name": "Annalise Baeyer",
     "urn:telematik:claims:given_name": "Annalise",
     "urn:telematik:claims:geschlecht": "W",
@@ -574,6 +626,7 @@
   {
     "birthdate": "1988-10-26",
     "urn:telematik:claims:alter": "35",
+    "urn:telematik:claims:family_name": "Zinner",
     "urn:telematik:claims:display_name": "Sébastien Zinner",
     "urn:telematik:claims:given_name": "Sébastien",
     "urn:telematik:claims:geschlecht": "M",
@@ -585,6 +638,7 @@
   {
     "birthdate": "1957-01-19",
     "urn:telematik:claims:alter": "66",
+    "urn:telematik:claims:family_name": "Zade",
     "urn:telematik:claims:display_name": "Tanya Zade",
     "urn:telematik:claims:given_name": "Tanya",
     "urn:telematik:claims:geschlecht": "W",
@@ -596,6 +650,7 @@
   {
     "birthdate": "1942-03-01",
     "urn:telematik:claims:alter": "81",
+    "urn:telematik:claims:family_name": "Tramp",
     "urn:telematik:claims:display_name": "Kreszentia Tramp",
     "urn:telematik:claims:given_name": "Kreszentia",
     "urn:telematik:claims:geschlecht": "W",
@@ -607,6 +662,7 @@
   {
     "birthdate": "2000-04-13",
     "urn:telematik:claims:alter": "23",
+    "urn:telematik:claims:family_name": "Dincer",
     "urn:telematik:claims:display_name": "Kerstin Dincer",
     "urn:telematik:claims:given_name": "Kerstin",
     "urn:telematik:claims:geschlecht": "M",
@@ -618,6 +674,7 @@
   {
     "birthdate": "1960-11-08",
     "urn:telematik:claims:alter": "63",
+    "urn:telematik:claims:family_name": "Schetelich",
     "urn:telematik:claims:display_name": "Thorn Schetelich",
     "urn:telematik:claims:given_name": "Thorn",
     "urn:telematik:claims:geschlecht": "M",
@@ -629,6 +686,7 @@
   {
     "birthdate": "1946-02-26",
     "urn:telematik:claims:alter": "77",
+    "urn:telematik:claims:family_name": "Feldmüller",
     "urn:telematik:claims:display_name": "Roswitha Feldmüller",
     "urn:telematik:claims:given_name": "Roswitha",
     "urn:telematik:claims:geschlecht": "W",
@@ -640,6 +698,7 @@
   {
     "birthdate": "1983-05-07",
     "urn:telematik:claims:alter": "40",
+    "urn:telematik:claims:family_name": "Keuning",
     "urn:telematik:claims:display_name": "Sandeep Keuning",
     "urn:telematik:claims:given_name": "Sandeep",
     "urn:telematik:claims:geschlecht": "M",
@@ -651,6 +710,7 @@
   {
     "birthdate": "1996-11-18",
     "urn:telematik:claims:alter": "27",
+    "urn:telematik:claims:family_name": "Zähler",
     "urn:telematik:claims:display_name": "Mimi Zähler",
     "urn:telematik:claims:given_name": "Mimi",
     "urn:telematik:claims:geschlecht": "W",
@@ -662,6 +722,7 @@
   {
     "birthdate": "1928-05-08",
     "urn:telematik:claims:alter": "95",
+    "urn:telematik:claims:family_name": "Edmond",
     "urn:telematik:claims:display_name": "S. Neda Edmond",
     "urn:telematik:claims:given_name": "S. Neda",
     "urn:telematik:claims:geschlecht": "W",
@@ -673,6 +734,7 @@
   {
     "birthdate": "1941-02-17",
     "urn:telematik:claims:alter": "82",
+    "urn:telematik:claims:family_name": "Winch",
     "urn:telematik:claims:display_name": "Anton Winch",
     "urn:telematik:claims:given_name": "Anton",
     "urn:telematik:claims:geschlecht": "X",
@@ -684,6 +746,7 @@
   {
     "birthdate": "1986-03-18",
     "urn:telematik:claims:alter": "37",
+    "urn:telematik:claims:family_name": "Klüwer",
     "urn:telematik:claims:display_name": "Flockina Klüwer",
     "urn:telematik:claims:given_name": "Flockina",
     "urn:telematik:claims:geschlecht": "W",
@@ -695,6 +758,7 @@
   {
     "birthdate": "1947-12-27",
     "urn:telematik:claims:alter": "76",
+    "urn:telematik:claims:family_name": "Scharfenorth",
     "urn:telematik:claims:display_name": "Joe Scharfenorth",
     "urn:telematik:claims:given_name": "Joe",
     "urn:telematik:claims:geschlecht": "D",
@@ -706,6 +770,7 @@
   {
     "birthdate": "1983-07-11",
     "urn:telematik:claims:alter": "40",
+    "urn:telematik:claims:family_name": "Koke",
     "urn:telematik:claims:display_name": "Pál Koke",
     "urn:telematik:claims:given_name": "Pál",
     "urn:telematik:claims:geschlecht": "M",
@@ -717,6 +782,7 @@
   {
     "birthdate": "1926-07-04",
     "urn:telematik:claims:alter": "97",
+    "urn:telematik:claims:family_name": "Anding",
     "urn:telematik:claims:display_name": "Farah Anding",
     "urn:telematik:claims:given_name": "Farah",
     "urn:telematik:claims:geschlecht": "W",
@@ -728,6 +794,7 @@
   {
     "birthdate": "1964-03-30",
     "urn:telematik:claims:alter": "59",
+    "urn:telematik:claims:family_name": "Breitschuh",
     "urn:telematik:claims:display_name": "Hiếu Breitschuh",
     "urn:telematik:claims:given_name": "Hiếu",
     "urn:telematik:claims:geschlecht": "M",
@@ -739,6 +806,7 @@
   {
     "birthdate": "1985-12-11",
     "urn:telematik:claims:alter": "38",
+    "urn:telematik:claims:family_name": "Hollwitz",
     "urn:telematik:claims:display_name": "Szymon Hollwitz",
     "urn:telematik:claims:given_name": "Szymon",
     "urn:telematik:claims:geschlecht": "M",
@@ -750,6 +818,7 @@
   {
     "birthdate": "1970-12-20",
     "urn:telematik:claims:alter": "53",
+    "urn:telematik:claims:family_name": "Hohoff",
     "urn:telematik:claims:display_name": "Kristina Hohoff",
     "urn:telematik:claims:given_name": "Kristina",
     "urn:telematik:claims:geschlecht": "W",
@@ -761,6 +830,7 @@
   {
     "birthdate": "1946-02-09",
     "urn:telematik:claims:alter": "77",
+    "urn:telematik:claims:family_name": "Brandenstein",
     "urn:telematik:claims:display_name": "Cerstin von Brandenstein",
     "urn:telematik:claims:given_name": "Cerstin",
     "urn:telematik:claims:geschlecht": "W",
@@ -772,6 +842,7 @@
   {
     "birthdate": "1961-07-20",
     "urn:telematik:claims:alter": "62",
+    "urn:telematik:claims:family_name": "Kaempfer",
     "urn:telematik:claims:display_name": "Jan Kaempfer",
     "urn:telematik:claims:given_name": "Jan",
     "urn:telematik:claims:geschlecht": "M",
@@ -783,6 +854,7 @@
   {
     "birthdate": "1982-01-21",
     "urn:telematik:claims:alter": "41",
+    "urn:telematik:claims:family_name": "Braunbeck",
     "urn:telematik:claims:display_name": "Ricki Braunbeck",
     "urn:telematik:claims:given_name": "Ricki",
     "urn:telematik:claims:geschlecht": "M",
@@ -794,6 +866,7 @@
   {
     "birthdate": "1992-01-31",
     "urn:telematik:claims:alter": "31",
+    "urn:telematik:claims:family_name": "Furkel",
     "urn:telematik:claims:display_name": "Laurence Furkel",
     "urn:telematik:claims:given_name": "Laurence",
     "urn:telematik:claims:geschlecht": "M",
@@ -805,6 +878,7 @@
   {
     "birthdate": "1974-04-28",
     "urn:telematik:claims:alter": "49",
+    "urn:telematik:claims:family_name": "Wessinghage",
     "urn:telematik:claims:display_name": "Massimiliano Wessinghage",
     "urn:telematik:claims:given_name": "Massimiliano",
     "urn:telematik:claims:geschlecht": "M",
@@ -816,6 +890,7 @@
   {
     "birthdate": "1955-09-13",
     "urn:telematik:claims:alter": "68",
+    "urn:telematik:claims:family_name": "Schwentke",
     "urn:telematik:claims:display_name": "Margarita Schwentke",
     "urn:telematik:claims:given_name": "Margarita",
     "urn:telematik:claims:geschlecht": "W",
@@ -827,6 +902,7 @@
   {
     "birthdate": "1971-04-09",
     "urn:telematik:claims:alter": "52",
+    "urn:telematik:claims:family_name": "Mross",
     "urn:telematik:claims:display_name": "Nick Mross",
     "urn:telematik:claims:given_name": "Nick",
     "urn:telematik:claims:geschlecht": "D",
@@ -838,6 +914,7 @@
   {
     "birthdate": "1961-01-09",
     "urn:telematik:claims:alter": "62",
+    "urn:telematik:claims:family_name": "Schickinger",
     "urn:telematik:claims:display_name": "Celestyn Schickinger",
     "urn:telematik:claims:given_name": "Celestyn",
     "urn:telematik:claims:geschlecht": "M",
@@ -849,6 +926,7 @@
   {
     "birthdate": "1977-06-14",
     "urn:telematik:claims:alter": "46",
+    "urn:telematik:claims:family_name": "Geizkofler",
     "urn:telematik:claims:display_name": "Burim Geizkofler",
     "urn:telematik:claims:given_name": "Burim",
     "urn:telematik:claims:geschlecht": "M",
@@ -860,6 +938,7 @@
   {
     "birthdate": "1994-02-22",
     "urn:telematik:claims:alter": "29",
+    "urn:telematik:claims:family_name": "Kijewski",
     "urn:telematik:claims:display_name": "Juan Sebastián Kijewski",
     "urn:telematik:claims:given_name": "Juan Sebastián",
     "urn:telematik:claims:geschlecht": "M",
@@ -871,6 +950,7 @@
   {
     "birthdate": "2003-10-15",
     "urn:telematik:claims:alter": "20",
+    "urn:telematik:claims:family_name": "Stendel",
     "urn:telematik:claims:display_name": "Carola Stendel",
     "urn:telematik:claims:given_name": "Carola",
     "urn:telematik:claims:geschlecht": "D",
@@ -882,6 +962,7 @@
   {
     "birthdate": "1959-08-09",
     "urn:telematik:claims:alter": "64",
+    "urn:telematik:claims:family_name": "Blaum",
     "urn:telematik:claims:display_name": "Janina Blaum",
     "urn:telematik:claims:given_name": "Janina",
     "urn:telematik:claims:geschlecht": "W",
@@ -893,6 +974,7 @@
   {
     "birthdate": "1956-09-04",
     "urn:telematik:claims:alter": "67",
+    "urn:telematik:claims:family_name": "Cain",
     "urn:telematik:claims:display_name": "Magda Cain",
     "urn:telematik:claims:given_name": "Magda",
     "urn:telematik:claims:geschlecht": "W",
@@ -904,6 +986,7 @@
   {
     "birthdate": "1962-11-03",
     "urn:telematik:claims:alter": "61",
+    "urn:telematik:claims:family_name": "Eickelberg",
     "urn:telematik:claims:display_name": "Ernie Eickelberg",
     "urn:telematik:claims:given_name": "Ernie",
     "urn:telematik:claims:geschlecht": "M",
@@ -915,6 +998,7 @@
   {
     "birthdate": "1970-01-31",
     "urn:telematik:claims:alter": "53",
+    "urn:telematik:claims:family_name": "Seeckt",
     "urn:telematik:claims:display_name": "Jules Seeckt",
     "urn:telematik:claims:given_name": "Jules",
     "urn:telematik:claims:geschlecht": "M",
@@ -926,6 +1010,7 @@
   {
     "birthdate": "1957-02-16",
     "urn:telematik:claims:alter": "66",
+    "urn:telematik:claims:family_name": "Niggeloh",
     "urn:telematik:claims:display_name": "Thankmar Niggeloh",
     "urn:telematik:claims:given_name": "Thankmar",
     "urn:telematik:claims:geschlecht": "M",
@@ -937,6 +1022,7 @@
   {
     "birthdate": "1962-09-17",
     "urn:telematik:claims:alter": "61",
+    "urn:telematik:claims:family_name": "Wehrenberg",
     "urn:telematik:claims:display_name": "Lipót Wehrenberg",
     "urn:telematik:claims:given_name": "Lipót",
     "urn:telematik:claims:geschlecht": "M",
@@ -948,6 +1034,7 @@
   {
     "birthdate": "1999-06-21",
     "urn:telematik:claims:alter": "24",
+    "urn:telematik:claims:family_name": "Geers",
     "urn:telematik:claims:display_name": "Zofia Geers",
     "urn:telematik:claims:given_name": "Zofia",
     "urn:telematik:claims:geschlecht": "X",
@@ -959,6 +1046,7 @@
   {
     "birthdate": "1958-11-14",
     "urn:telematik:claims:alter": "65",
+    "urn:telematik:claims:family_name": "Fauth",
     "urn:telematik:claims:display_name": "Scarlet Monika Fauth",
     "urn:telematik:claims:given_name": "Scarlet Monika",
     "urn:telematik:claims:geschlecht": "W",
@@ -970,6 +1058,7 @@
   {
     "birthdate": "1929-06-02",
     "urn:telematik:claims:alter": "94",
+    "urn:telematik:claims:family_name": "Fürsich",
     "urn:telematik:claims:display_name": "Hildur Fürsich",
     "urn:telematik:claims:given_name": "Hildur",
     "urn:telematik:claims:geschlecht": "W",
@@ -981,6 +1070,7 @@
   {
     "birthdate": "1960-05-12",
     "urn:telematik:claims:alter": "63",
+    "urn:telematik:claims:family_name": "Passy",
     "urn:telematik:claims:display_name": "Yaroslav Passy",
     "urn:telematik:claims:given_name": "Yaroslav",
     "urn:telematik:claims:geschlecht": "X",
@@ -992,6 +1082,7 @@
   {
     "birthdate": "1950-11-16",
     "urn:telematik:claims:alter": "73",
+    "urn:telematik:claims:family_name": "Börner",
     "urn:telematik:claims:display_name": "Paul-Werner Aslan Börner",
     "urn:telematik:claims:given_name": "Paul-Werner Aslan",
     "urn:telematik:claims:geschlecht": "M",
@@ -1003,6 +1094,7 @@
   {
     "birthdate": "1979-05-29",
     "urn:telematik:claims:alter": "44",
+    "urn:telematik:claims:family_name": "Hitzing",
     "urn:telematik:claims:display_name": "Margriet Hitzing",
     "urn:telematik:claims:given_name": "Margriet",
     "urn:telematik:claims:geschlecht": "W",
@@ -1014,6 +1106,7 @@
   {
     "birthdate": "1990-09-19",
     "urn:telematik:claims:alter": "33",
+    "urn:telematik:claims:family_name": "Hattstein",
     "urn:telematik:claims:display_name": "Iradj von Hattstein",
     "urn:telematik:claims:given_name": "Iradj",
     "urn:telematik:claims:geschlecht": "M",
@@ -1025,6 +1118,7 @@
   {
     "birthdate": "1954-12-13",
     "urn:telematik:claims:alter": "69",
+    "urn:telematik:claims:family_name": "Kalt",
     "urn:telematik:claims:display_name": "Kay Kalt",
     "urn:telematik:claims:given_name": "Kay",
     "urn:telematik:claims:geschlecht": "W",
@@ -1036,6 +1130,7 @@
   {
     "birthdate": "1990-05-13",
     "urn:telematik:claims:alter": "33",
+    "urn:telematik:claims:family_name": "Uhlenberg",
     "urn:telematik:claims:display_name": "Axel Wilhelm Raimund Uhlenberg",
     "urn:telematik:claims:given_name": "Axel Wilhelm Raimund",
     "urn:telematik:claims:geschlecht": "M",
@@ -1047,6 +1142,7 @@
   {
     "birthdate": "1930-04-01",
     "urn:telematik:claims:alter": "93",
+    "urn:telematik:claims:family_name": "Handt",
     "urn:telematik:claims:display_name": "Imagina Handt",
     "urn:telematik:claims:given_name": "Imagina",
     "urn:telematik:claims:geschlecht": "W",
@@ -1058,6 +1154,7 @@
   {
     "birthdate": "1937-05-08",
     "urn:telematik:claims:alter": "86",
+    "urn:telematik:claims:family_name": "Roedelheim",
     "urn:telematik:claims:display_name": "Phylicia Roedelheim",
     "urn:telematik:claims:given_name": "Phylicia",
     "urn:telematik:claims:geschlecht": "W",
@@ -1069,6 +1166,7 @@
   {
     "birthdate": "1954-05-22",
     "urn:telematik:claims:alter": "69",
+    "urn:telematik:claims:family_name": "Dettmers",
     "urn:telematik:claims:display_name": "Eileen Dettmers",
     "urn:telematik:claims:given_name": "Eileen",
     "urn:telematik:claims:geschlecht": "W",
@@ -1080,6 +1178,7 @@
   {
     "birthdate": "1975-04-29",
     "urn:telematik:claims:alter": "48",
+    "urn:telematik:claims:family_name": "Berkemeier",
     "urn:telematik:claims:display_name": "Nanette Berkemeier",
     "urn:telematik:claims:given_name": "Nanette",
     "urn:telematik:claims:geschlecht": "W",
@@ -1091,6 +1190,7 @@
   {
     "birthdate": "2000-05-25",
     "urn:telematik:claims:alter": "23",
+    "urn:telematik:claims:family_name": "Brockdorff",
     "urn:telematik:claims:display_name": "Kübra Brockdorff",
     "urn:telematik:claims:given_name": "Kübra",
     "urn:telematik:claims:geschlecht": "W",
@@ -1102,6 +1202,7 @@
   {
     "birthdate": "1973-09-01",
     "urn:telematik:claims:alter": "50",
+    "urn:telematik:claims:family_name": "Bödefeld",
     "urn:telematik:claims:display_name": "Darius Michael Brian Ubbo Graf von Bödefeld",
     "urn:telematik:claims:given_name": "Darius Michael Brian Ubbo",
     "urn:telematik:claims:geschlecht": "M",
@@ -1113,6 +1214,7 @@
   {
     "birthdate": "1974-09-07",
     "urn:telematik:claims:alter": "21",
+    "urn:telematik:claims:family_name": "VórmwinkelTEST-ONLY",
     "urn:telematik:claims:display_name": "Prof. Dr. Franz Bruno J. T. VórmwinkelTEST-ONLY",
     "urn:telematik:claims:given_name": "Franz Bruno Johann Tobias",
     "urn:telematik:claims:geschlecht": "M",
@@ -1124,6 +1226,7 @@
   {
     "birthdate": "1983-08-31",
     "urn:telematik:claims:alter": "40",
+    "urn:telematik:claims:family_name": "GrundnérTEST-ONLY",
     "urn:telematik:claims:display_name": "Prof. Dr. Hillary A. U. Gräfin GrundnérTEST-ONLY",
     "urn:telematik:claims:given_name": "Hillary Anastasia Ulrica Gräfin",
     "urn:telematik:claims:geschlecht": "W",

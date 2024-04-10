@@ -28,7 +28,7 @@ import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 import de.gematik.idp.IdpConstants;
-import de.gematik.idp.crypto.CryptoLoader;
+import de.gematik.idp.crypto.KeyUtility;
 import de.gematik.idp.exceptions.IdpJoseException;
 import de.gematik.idp.exceptions.IdpJwtExpiredException;
 import de.gematik.idp.gsi.server.GsiServer;
@@ -41,9 +41,10 @@ import java.security.PublicKey;
 import java.util.Optional;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.MediaType;
@@ -136,7 +137,9 @@ class EntityStatementRpServiceTest {
     gsiConfiguration.setFedmasterUrl(mockServerUrl);
     final String nonExistingUri = "nonExistingUri";
     assertThatThrownBy(
-            () -> entityStatementRpService.doAutoregistration(mockServerUrl, nonExistingUri))
+            () ->
+                entityStatementRpService.doAutoregistration(
+                    mockServerUrl, nonExistingUri, "urn:telematik:versicherter openid"))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining(
             "Content of parameter redirect_uri ["
@@ -147,10 +150,7 @@ class EntityStatementRpServiceTest {
   @Test
   void verifySignature_Token1Valid() throws IOException {
     final PublicKey publicKey =
-        CryptoLoader.getCertificateFromPem(
-                FileUtils.readFileToByteArray(
-                    new File("src/test/resources/cert/fachdienst-sig.pem")))
-            .getPublicKey();
+        KeyUtility.readX509PublicKey(new File("src/test/resources/cert/fachdienst-sig-pub.pem"));
     assertDoesNotThrow(
         () -> new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043).verify(publicKey));
   }
@@ -158,10 +158,7 @@ class EntityStatementRpServiceTest {
   @Test
   void verifySignature_Token1Invalid_SigAlgNone() throws IOException {
     final PublicKey publicKey =
-        CryptoLoader.getCertificateFromPem(
-                FileUtils.readFileToByteArray(
-                    new File("src/test/resources/cert/fachdienst-sig.pem")))
-            .getPublicKey();
+        KeyUtility.readX509PublicKey(new File("src/test/resources/cert/fachdienst-sig-pub.pem"));
     final JsonWebToken jwt =
         new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043_SIGALG_NONE);
     assertThatThrownBy(() -> jwt.verify(publicKey)).isInstanceOf(IdpJoseException.class);
@@ -170,10 +167,8 @@ class EntityStatementRpServiceTest {
   @Test
   void verifySignature_Token2Valid() throws IOException {
     final PublicKey publicKey =
-        CryptoLoader.getCertificateFromPem(
-                FileUtils.readFileToByteArray(
-                    new File("src/test/resources/cert/fedmaster-sig-TU.pem")))
-            .getPublicKey();
+        KeyUtility.readX509PublicKey(
+            new File("src/test/resources/cert/fedmaster-sigkey-TU-pub.pem"));
     assertDoesNotThrow(
         () ->
             new JsonWebToken(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043)
@@ -183,10 +178,7 @@ class EntityStatementRpServiceTest {
   @Test
   void verifySignature_TokenExpired() throws IOException {
     final PublicKey publicKey =
-        CryptoLoader.getCertificateFromPem(
-                FileUtils.readFileToByteArray(
-                    new File("src/test/resources/cert/fachdienst-sig.pem")))
-            .getPublicKey();
+        KeyUtility.readX509PublicKey(new File("src/test/resources/cert/fachdienst-sig-pub.pem"));
     final JsonWebToken jsonWebTokenExpired = new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRED);
     assertThatThrownBy(() -> jsonWebTokenExpired.verify(publicKey))
         .isInstanceOf(IdpJwtExpiredException.class);
@@ -249,6 +241,44 @@ class EntityStatementRpServiceTest {
     gsiConfiguration.setFedmasterUrl(mockServerUrl);
     final String correctRedirectUri = "https://redirect.testsuite.gsi";
     assertDoesNotThrow(
-        () -> entityStatementRpService.doAutoregistration(mockServerUrl, correctRedirectUri));
+        () ->
+            entityStatementRpService.doAutoregistration(
+                mockServerUrl, correctRedirectUri, "urn:telematik:versicherter openid"));
+  }
+
+  @ValueSource(
+      strings = {
+        "urn:telematik:geburtsdatumurn:telematik:alter openid",
+        "urn%3Atelematik%3Adisplay_name",
+        "urn:telematik:given_name+openid",
+        "urn:telematik:schlecht openid"
+      })
+  @ParameterizedTest(name = "checkException_verifyInvalidScopes scope: {0}")
+  void checkException_verifyInvalidScopes(final String scope) {
+    Mockito.doReturn(mockServerUrl + "/federation/fetch")
+        .when(serverUrlService)
+        .determineFetchEntityStatementEndpoint();
+    mockServerClient
+        .when(request().withMethod("GET").withPath(IdpConstants.ENTITY_STATEMENT_ENDPOINT))
+        .respond(
+            response()
+                .withStatusCode(200)
+                .withContentType(MediaType.APPLICATION_JSON)
+                .withBody(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
+    mockServerClient
+        .when(request().withMethod("GET").withPath("/federation/fetch"))
+        .respond(
+            response()
+                .withStatusCode(200)
+                .withContentType(MediaType.APPLICATION_JSON)
+                .withBody(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
+    gsiConfiguration.setFedmasterUrl(mockServerUrl);
+    assertThatThrownBy(
+            () ->
+                entityStatementRpService.doAutoregistration(
+                    mockServerUrl, "https://redirect.testsuite.gsi", scope))
+        .isInstanceOf(GsiException.class)
+        .hasMessageContaining(
+            "Content of parameter scope [" + scope + "] exceeds scopes found in entity statement.");
   }
 }
