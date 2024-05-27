@@ -48,13 +48,13 @@ public class GsiServer {
   private final GsiConfiguration gsiConfiguration;
 
   @PostConstruct
-  public void setGrasLogLevel() {
+  public void setGsiLogLevel() {
     final String loglevel = gsiConfiguration.getLoglevel();
     final String loggerServer = "de.gematik.idp.gsi.server";
     final String loggerRequests = "org.springframework.web.filter.CommonsRequestLoggingFilter";
-    log.info("gsiConfiguration.getLoglevel(): {}", loglevel);
     Configurator.setLevel(loggerServer, loglevel);
     Configurator.setLevel(loggerRequests, loglevel);
+    log.info("gsiConfiguration: {}", gsiConfiguration);
 
     final LoggerContext loggerContext =
         LoggerContext.getContext(StackLocatorUtil.getCallerClassLoader(2), false, null);

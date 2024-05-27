@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ *  Copyright 2024 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,7 +94,7 @@ public class EntityStatementRpService {
   }
 
   /**
-   * Update Entity statement about a relying party, from Fedmaster.
+   * Update entity statement about a relying party, from Fedmaster.
    *
    * @param sub identifier of the fachdienst/relying party
    * @return the entity statement about the fachdienst/relying party issued by the fed master
@@ -108,14 +108,16 @@ public class EntityStatementRpService {
     final Optional<PublicJsonWebKey> encKeyFromEntityStatement =
         getRpEncKeyFromEntityStatement(sub);
     if (encKeyFromEntityStatement.isPresent()) {
-      log.debug("Found encryption key in Entitystatement of [{}].", sub);
+      log.debug("Found encryption key in entity statement of [{}].", sub);
       return encKeyFromEntityStatement.get();
     }
     return getRpEncKeyFromSignedJwks(sub)
         .orElseThrow(
             () ->
                 new GsiException(
-                    INVALID_REQUEST, "No Relying Party Enc Key found", HttpStatus.BAD_REQUEST));
+                    INVALID_REQUEST,
+                    "Encryption key for relying party not found",
+                    HttpStatus.BAD_REQUEST));
   }
 
   private Optional<PublicJsonWebKey> getRpEncKeyFromEntityStatement(final String sub) {

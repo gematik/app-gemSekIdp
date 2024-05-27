@@ -1,3 +1,13 @@
+# Release 6.0.0
+
+- add new maven module gsi-fedmaster
+- remove parent pom from testsuite to avoid dependency conflicts
+- refactor names: distinguish between relying party and identity provider
+- add scripts to start a local federation
+- rename keys
+- add static qr code to GSIA (Android app) latest version download
+- update dependencies
+
 # Release 5.0.3
 
 - refactor key handling, use PrivateKey instead of p12 container when certificate is not required

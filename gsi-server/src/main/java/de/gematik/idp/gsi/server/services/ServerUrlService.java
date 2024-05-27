@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ *  Copyright 2024 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class ServerUrlService {
 
   public String determineServerUrl() {
     return getServerUrlFromConfig()
-        .orElse("Parameter \"fd-auth-server.serverUrl\" not found in configuration.");
+        .orElse("Parameter \"gsi.serverUrl\" not found in configuration.");
   }
 
   private Optional<String> getServerUrlFromConfig() {

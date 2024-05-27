@@ -1234,5 +1234,17 @@
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110593136",
     "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1983-08-31",
+    "urn:telematik:claims:alter": "40",
+    "urn:telematik:claims:family_name": "Gõdofský-Witzigmann",
+    "urn:telematik:claims:display_name": "Claudette Freifrau Gõdofský-WitzigmannTEST-ONLY",
+    "urn:telematik:claims:given_name": "Claudette Freifrau",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "claudette@mail.gwitzigmann.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110581992",
+    "urn:telematik:claims:organization": "109500969"
   }
 ]

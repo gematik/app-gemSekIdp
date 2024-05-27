@@ -61,7 +61,7 @@ class IdTokenBuilderTest {
   public void init() {
     final PrivateKey clientPrivateKey =
         KeyUtility.readX509PrivateKeyPlain(
-            ResourceReader.getFileFromResourceAsTmpFile("keys/ref-es-sig-privkey.pem"));
+            ResourceReader.getFileFromResourceAsTmpFile("keys/ref-gsi-sig-privkey.pem"));
 
     idTokenBuilder =
         new IdTokenBuilder(

@@ -211,7 +211,8 @@ Feature: Test Entity Statement of IdpSektoral
   ```
   Wir rufen das EntityStatement beim IdpSektoral ab
 
-  In dem Claim scopes_supported müssen (neben möglichen anderen) die von der gematik vorgeschriebenen Scopes enthalten sein
+  In dem Claim scopes_supported müssen (neben möglichen anderen) die von der gematik vorgeschriebenen Scopes enthalten sein.
+  Der Claim family_name wird erst mit dem ePA4all-Release verpflichtend.
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
@@ -224,6 +225,7 @@ Feature: Test Entity Statement of IdpSektoral
     And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:email.*"
     And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:versicherter.*"
     And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*openid.*"
+    And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:family_name.*"
 
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_008

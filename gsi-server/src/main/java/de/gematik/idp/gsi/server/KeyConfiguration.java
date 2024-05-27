@@ -33,13 +33,11 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ResourceLoader;
 
 @Configuration
 @RequiredArgsConstructor
 public class KeyConfiguration implements KeyConfigurationBase {
 
-  private final ResourceLoader resourceLoader;
   private final GsiConfiguration gsiConfiguration;
 
   @Bean
