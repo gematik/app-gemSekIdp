@@ -20,9 +20,7 @@ import static de.gematik.idp.gsi.test.steps.IdpSektoralSteps.ENTITY_STATEMENT_EN
 import static de.gematik.idp.gsi.test.steps.IdpSektoralSteps.FED_MASTER_URL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.JsonNode;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.rbellogger.RbelLogger;
@@ -40,7 +38,6 @@ import io.cucumber.java.en.When;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import lombok.SneakyThrows;
@@ -57,7 +54,7 @@ import org.jose4j.lang.JoseException;
 @Slf4j
 public class StepsGlue {
 
-  private static final List<JsonElement> truststore = new ArrayList<>();
+  private static final List<JsonNode> truststore = new ArrayList<>();
 
   @Steps IdpSektoralSteps idpSektoralSteps;
 
@@ -97,15 +94,14 @@ public class StepsGlue {
   @And("Expect JWKS in last message and add its keys to truststore")
   public void findJwk() {
     final RbelElement lastMessage = getLastMessage();
-    final JsonArray jwks =
-        (JsonArray)
-            lastMessage
-                .findElement("$..keys")
-                .flatMap(el -> el.getFacet(RbelJsonFacet.class))
-                .map(RbelJsonFacet::getJsonElement)
-                .orElseThrow();
+    final JsonNode jwks =
+        lastMessage
+            .findElement("$..keys")
+            .flatMap(el -> el.getFacet(RbelJsonFacet.class))
+            .map(RbelJsonFacet::getJsonElement)
+            .orElseThrow();
     assertThat(jwks).isNotEmpty();
-    for (final JsonElement jwk : jwks) {
+    for (final JsonNode jwk : jwks) {
       truststore.add(jwk);
     }
   }
@@ -122,9 +118,8 @@ public class StepsGlue {
             .getHeader()
             .getFacetOrFail(RbelJsonFacet.class)
             .getJsonElement()
-            .getAsJsonObject()
             .get("kid")
-            .getAsString();
+            .asText();
     final JsonWebKey jwk = getJsonWebKey(truststore, kidInJws);
     validateJwsSignature(jwsAsString, jwk);
   }
@@ -191,16 +186,11 @@ public class StepsGlue {
     jwtConsumer.process(jws);
   }
 
-  static JsonWebKey getJsonWebKey(final List<JsonElement> keyList, final String kid)
+  static JsonWebKey getJsonWebKey(final List<JsonNode> keyList, final String kid)
       throws JoseException {
-    final JsonElement keyAsJwk =
-        keyList.stream()
-            .map(JsonElement::getAsJsonObject)
-            .filter(el -> el.get("kid").getAsString().equals(kid))
-            .findFirst()
-            .orElseThrow();
-    final Map keyAsMap = new Gson().fromJson(keyAsJwk, Map.class);
-    return JsonWebKey.Factory.newJwk(keyAsMap);
+    final JsonNode keyAsJwk =
+        keyList.stream().filter(el -> el.get("kid").asText().equals(kid)).findFirst().orElseThrow();
+    return JsonWebKey.Factory.newJwk(keyAsJwk.toString());
   }
 
   private static RbelElement getLastMessage() {

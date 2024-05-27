@@ -59,7 +59,7 @@ class GsiConfigurationTest {
     assertThat(gsiConfig.getTokenSigPrivKeyConfig()).isNotNull();
     assertThat(GsiConfiguration.builder().toString()).hasSizeGreaterThan(0);
 
-    assertThatThrownBy(() -> new KeyConfiguration(resourceLoader, gsiConfig).esSigPrivKey())
+    assertThatThrownBy(() -> new KeyConfiguration(gsiConfig).esSigPrivKey())
         .isInstanceOf(NullPointerException.class);
   }
 }

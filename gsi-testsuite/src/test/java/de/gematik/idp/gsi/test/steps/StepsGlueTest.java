@@ -19,8 +19,9 @@ package de.gematik.idp.gsi.test.steps;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.test.tiger.common.config.TigerGlobalConfiguration;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +38,20 @@ class StepsGlueTest {
 
   private static final String EXPIRED_JWS =
       "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InB1a19mZWRfc2lnIn0.eyJpc3MiOiJodHRwOi8vZ3N0b3BkaDIudG9wLmxvY2FsOjg1NzQiLCJzdWIiOiJodHRwOi8vZ3N0b3BkaDIudG9wLmxvY2FsOjg1NzQiLCJpYXQiOjE2NjYzMzU0ODAsImV4cCI6MTY2Njk0MDI4MCwiandrcyI6eyJrZXlzIjpbeyJ1c2UiOiJzaWciLCJraWQiOiJwdWtfZmVkX3NpZyIsImt0eSI6IkVDIiwiY3J2IjoiUC0yNTYiLCJ4IjoieEppeGtRdjlENVpSMUp1cW9iREtjRmZBY3YwYklKbjhJUTRjTFJ3WnVSbyIsInkiOiJpbUJPdWJydzdXel9tMlF4WnBNS2JNdjdPU3ZDd2FSenN1YlV4U3RfWkEwIn1dfSwibWV0YWRhdGEiOnsiZmVkZXJhdGlvbl9lbnRpdHkiOnsiZmVkZXJhdGlvbl9mZXRjaF9lbmRwb2ludCI6Imh0dHA6Ly9nc3RvcGRoMi50b3AubG9jYWw6ODU3NC9mZWRlcmF0aW9uX2ZldGNoX2VuZHBvaW50IiwiZmVkZXJhdGlvbl9saXN0X2VuZHBvaW50IjoiaHR0cDovL2dzdG9wZGgyLnRvcC5sb2NhbDo4NTc0L2ZlZGVyYXRpb25fbGlzdCIsImlkcF9saXN0X2VuZHBvaW50IjoiaHR0cDovL2dzdG9wZGgyLnRvcC5sb2NhbDo4NTc0Ly53ZWxsLWtub3duL2lkcF9saXN0In19fQ.4LIyPcOW58kreey7oJZoG5E9riiJvIRoUsAZvBHnSuTxGiiGjGDGO9NPcOxYhr5Msu1rAxFmAONbyUMnHuo2aA";
-  private static final JsonElement FED_SIG_KEY_AS_JWK =
-      JsonParser.parseString(
-          "{\"use\":\"sig\",\"kid\":\"puk_fed_sig\",\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"xJixkQv9D5ZR1JuqobDKcFfAcv0bIJn8IQ4cLRwZuRo\",\"y\":\"imBOubrw7Wz_m2QxZpMKbMv7OSvCwaRzsubUxSt_ZA0\"}");
-  private static final List<JsonElement> TRUSTSTORE = new ArrayList<>();
+  private static final JsonNode FED_SIG_KEY_AS_JWK;
+
+  static {
+    try {
+      FED_SIG_KEY_AS_JWK =
+          new ObjectMapper()
+              .readTree(
+                  "{\"use\":\"sig\",\"kid\":\"puk_fed_sig\",\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"xJixkQv9D5ZR1JuqobDKcFfAcv0bIJn8IQ4cLRwZuRo\",\"y\":\"imBOubrw7Wz_m2QxZpMKbMv7OSvCwaRzsubUxSt_ZA0\"}");
+    } catch (final JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static final List<JsonNode> TRUSTSTORE = new ArrayList<>();
   private static final String KID_OF_FED_SIG_KEY = "puk_fed_sig";
 
   static {

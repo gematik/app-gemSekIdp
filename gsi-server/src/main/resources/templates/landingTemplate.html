@@ -14,10 +14,10 @@
 <p style="color:red;">This is just a test implementation for a web-based authentication with the gematik IDP. All you have to do in order to continue with the flow is to click the "Submit TAN Button". Scanning the QR-Code or even entering a TAN is not needed.</p>
 </body>
 <p th:utext="'Relying party (Fachdienst) <b>' + ${clientId} + '</b> requires authentication!'"/>
-<p>If you have not installed the Authenticator app yet go to the app store.</p>
-<img th:src="@{/images/qrCodePlaystoreAuthenticator.png}" alt="QR Code" title="Authenticator App"><br>
+<p>If you have not installed the GSIA app yet go to the app store.</p>
+<img th:src="@{/images/qrCodeGSIA.jpg}" alt="QR Code" title="Authenticator App"><br>
 
-<p>Scan image below with your mobile device. The Authenticator app will start and guide you through the authentication procedure. When it is completed, you will receive a TAN.</p>
+<p>Scan image below with your mobile device. The GSIA app will start and guide you through the authentication procedure. When it is completed, you will receive a TAN.</p>
 <img th:src="${dynamicImageDataUri}" alt="Dynamic Image"> </p>
 <label for="tan">gematik authenticator TAN</label>
 <input type="text" id="tan" name="gematik_tan" placeholder="Enter received TAN here"><br>

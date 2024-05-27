@@ -7,18 +7,7 @@
       "namespace": "android_app",
       "package_name": "de.gematik.gsia.android",
       "sha256_cert_fingerprints": [
-        "30:03:68:35:2C:AB:CA:85:62:48:C3:44:F2:84:A7:3F:3A:50:92:21:71:15:3C:4F:45:92:95:A9:AA:5C:19:E8"
-      ]
-    }
-  },
-  {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "de.gematik.gsia.android",
-      "sha256_cert_fingerprints": [
+        "06:91:19:60:27:88:B8:B8:AC:52:2D:B1:20:FC:3D:FB:BF:19:CD:2A:B7:DB:E3:BE:63:D2:49:5B:79:17:43:C2",
         "3C:48:E8:0B:3F:6F:7A:FB:59:6D:8F:A6:3D:9B:19:82:93:B9:3F:F5:AD:38:AB:14:0A:AA:73:0F:1D:C3:EA:1F"
       ]
     }

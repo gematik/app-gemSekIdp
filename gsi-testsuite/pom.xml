@@ -4,20 +4,24 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>de.gematik.idp</groupId>
-    <artifactId>gemSekIdp-global</artifactId>
-    <version>5.0.3</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
-
+  <groupId>de.gematik.idp</groupId>
   <artifactId>gsi-testsuite</artifactId>
-  <version>5.0.3</version>
+  <version>6.0.0</version>
   <packaging>jar</packaging>
   <description>Testsuite fuer sektorale IDPs</description>
 
   <properties>
-
+    <version.idp-commons>27.0.3</version.idp-commons>
+    <version.java>17</version.java>
+    <version.lombok>1.18.32</version.lombok>
+    <version.maven-compiler-plugin>3.13.0</version.maven-compiler-plugin>
+    <version.maven-enforcer-plugin>3.4.1</version.maven-enforcer-plugin>
+    <version.maven-failsafe-plugin>3.2.5</version.maven-failsafe-plugin>
+    <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
+    <version.maven-surefire-plugin>3.2.5</version.maven-surefire-plugin>
+    <version.spotless-maven-plugin>2.43.0</version.spotless-maven-plugin>
+    <version.spotless.google-java-format>1.16.0</version.spotless.google-java-format>
+    <version.tiger>3.0.4</version.tiger>
   </properties>
 
   <dependencyManagement>
@@ -42,11 +46,14 @@
     <dependency>
       <groupId>de.gematik.idp</groupId>
       <artifactId>idp-commons</artifactId>
+      <version>${version.idp-commons}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
+      <version>${version.lombok}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -184,6 +191,48 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${version.spotless-maven-plugin}</version>
+        <configuration>
+          <formats>
+            <!-- you can define as many formats as you want, each is independent -->
+            <format>
+              <!-- define the files to apply to -->
+              <includes>
+                <include>**/*.yml</include>
+              </includes>
+              <excludes>
+                <exclude>**/target/**/*</exclude>
+              </excludes>
+              <!-- define the steps to apply to those files -->
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
+              <indent>
+                <spaces>true</spaces>
+                <spacesPerTab>2</spacesPerTab>
+              </indent>
+            </format>
+          </formats>
+          <java>
+            <toggleOffOn/>
+            <googleJavaFormat>
+              <version>${version.spotless.google-java-format}</version>
+              <style>GOOGLE</style>
+              <reflowLongStrings>true</reflowLongStrings>
+            </googleJavaFormat>
+          </java>
+          <markdown>
+            <includes>
+              <include>**/*.md</include>
+            </includes>
+            <excludes>
+              <exclude>**/target/**/*</exclude>
+            </excludes>
+          </markdown>
+        </configuration>
       </plugin>
     </plugins>
   </build>

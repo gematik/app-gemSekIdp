@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.2.4</version>
+    <version>3.2.5</version>
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gemSekIdp-global</artifactId>
-  <version>5.0.3</version>
+  <version>6.0.0</version>
   <packaging>pom</packaging>
 
   <description>gsi - gematik sektoraler IDP</description>
@@ -41,6 +41,7 @@
 
   <modules>
     <module>gsi-server</module>
+    <module>gsi-fedmaster</module>
     <module>gsi-testsuite</module>
     <module>gsi-coverage-report</module>
   </modules>
@@ -63,6 +64,8 @@
     <docker.registry.gematik>local</docker.registry.gematik>
     <docker.image.name.gsiserver>${docker.registry.gematik}/idm/gsi-server
     </docker.image.name.gsiserver>
+    <docker.image.name.gsifedmaster>${docker.registry.gematik}/idm/gsi-fedmaster
+    </docker.image.name.gsifedmaster>
     <version.java>17</version.java>
     <mpir.skip>true</mpir.skip>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -77,26 +80,27 @@
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.language>java</sonar.language>
 
-    <version.bouncycastle.bcpkix>1.78</version.bouncycastle.bcpkix>
-    <version.commons-io>2.16.0</version.commons-io>
+    <version.bouncycastle.bcpkix>1.78.1</version.bouncycastle.bcpkix>
+    <version.commons-io>2.16.1</version.commons-io>
+    <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <version.json>20240303</version.json>
     <version.log4j2>2.23.1</version.log4j2>
     <version.unirest>3.14.5</version.unirest>
 
     <version.docker-maven-plugin>0.44.0</version.docker-maven-plugin>
-    <version.idp-commons>27.0.2</version.idp-commons>
-    <version.idp-crypto>27.0.2</version.idp-crypto>
-    <version.idp-test>27.0.2</version.idp-test>
+    <version.idp-commons>27.0.3</version.idp-commons>
+    <version.idp-crypto>27.0.3</version.idp-crypto>
+    <version.idp-test>27.0.3</version.idp-test>
 
     <version.jacoco-maven-plugin>0.8.12</version.jacoco-maven-plugin>
-    <version.jakarta.ws.rs-api>3.1.0</version.jakarta.ws.rs-api>
+    <version.jakarta.ws.rs-api>4.0.0</version.jakarta.ws.rs-api>
     <version.lombok>1.18.32</version.lombok>
     <version.maven>3.8.6</version.maven>
     <version.maven-clean-plugin>3.3.2</version.maven-clean-plugin>
     <version.maven-compiler-plugin>3.13.0</version.maven-compiler-plugin>
     <version.maven-enforcer-plugin>3.4.1</version.maven-enforcer-plugin>
     <version.maven-failsafe-plugin>3.2.5</version.maven-failsafe-plugin>
-    <version.maven-gpg-plugin>3.2.2</version.maven-gpg-plugin>
+    <version.maven-gpg-plugin>3.2.4</version.maven-gpg-plugin>
     <version.maven-project-info-reports-plugin>3.5.0</version.maven-project-info-reports-plugin>
     <!-- only needed for mvn site to avoid stack traces flooding the console -->
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
@@ -107,7 +111,6 @@
     <version.sonar-maven-plugin>3.11.0.3922</version.sonar-maven-plugin>
     <version.spotless-maven-plugin>2.43.0</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.16.0</version.spotless.google-java-format>
-    <version.tiger>3.0.0</version.tiger>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
 
@@ -116,6 +119,11 @@
       <dependency>
         <groupId>${project.groupId}</groupId>
         <artifactId>gsi-server</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>${project.groupId}</groupId>
+        <artifactId>gsi-fedmaster</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -214,11 +222,6 @@
       <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-core</artifactId>
-        <version>${version.log4j2}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.logging.log4j</groupId>
-        <artifactId>log4j-slf4j2-impl</artifactId>
         <version>${version.log4j2}</version>
       </dependency>
     </dependencies>

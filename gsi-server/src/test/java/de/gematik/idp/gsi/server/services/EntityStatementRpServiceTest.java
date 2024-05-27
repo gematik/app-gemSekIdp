@@ -17,9 +17,7 @@
 package de.gematik.idp.gsi.server.services;
 
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
-import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRED;
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
-import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043_SIGALG_NONE;
 import static de.gematik.idp.gsi.server.common.Constants.SIGNED_JWKS;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -28,16 +26,10 @@ import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 import de.gematik.idp.IdpConstants;
-import de.gematik.idp.crypto.KeyUtility;
-import de.gematik.idp.exceptions.IdpJoseException;
-import de.gematik.idp.exceptions.IdpJwtExpiredException;
 import de.gematik.idp.gsi.server.GsiServer;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
-import java.io.File;
-import java.io.IOException;
-import java.security.PublicKey;
 import java.util.Optional;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -145,43 +137,6 @@ class EntityStatementRpServiceTest {
             "Content of parameter redirect_uri ["
                 + nonExistingUri
                 + "] not found in entity statement");
-  }
-
-  @Test
-  void verifySignature_Token1Valid() throws IOException {
-    final PublicKey publicKey =
-        KeyUtility.readX509PublicKey(new File("src/test/resources/cert/fachdienst-sig-pub.pem"));
-    assertDoesNotThrow(
-        () -> new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043).verify(publicKey));
-  }
-
-  @Test
-  void verifySignature_Token1Invalid_SigAlgNone() throws IOException {
-    final PublicKey publicKey =
-        KeyUtility.readX509PublicKey(new File("src/test/resources/cert/fachdienst-sig-pub.pem"));
-    final JsonWebToken jwt =
-        new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043_SIGALG_NONE);
-    assertThatThrownBy(() -> jwt.verify(publicKey)).isInstanceOf(IdpJoseException.class);
-  }
-
-  @Test
-  void verifySignature_Token2Valid() throws IOException {
-    final PublicKey publicKey =
-        KeyUtility.readX509PublicKey(
-            new File("src/test/resources/cert/fedmaster-sigkey-TU-pub.pem"));
-    assertDoesNotThrow(
-        () ->
-            new JsonWebToken(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043)
-                .verify(publicKey));
-  }
-
-  @Test
-  void verifySignature_TokenExpired() throws IOException {
-    final PublicKey publicKey =
-        KeyUtility.readX509PublicKey(new File("src/test/resources/cert/fachdienst-sig-pub.pem"));
-    final JsonWebToken jsonWebTokenExpired = new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRED);
-    assertThatThrownBy(() -> jsonWebTokenExpired.verify(publicKey))
-        .isInstanceOf(IdpJwtExpiredException.class);
   }
 
   @SneakyThrows

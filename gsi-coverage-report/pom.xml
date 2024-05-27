@@ -6,7 +6,7 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>gemSekIdp-global</artifactId>
-    <version>5.0.3</version>
+    <version>6.0.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -22,6 +22,10 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>gsi-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>gsi-fedmaster</artifactId>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
