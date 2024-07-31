@@ -19,7 +19,6 @@ package de.gematik.idp.gsi.server.services;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
 
-import de.gematik.idp.IdpConstants;
 import de.gematik.idp.gsi.server.data.InsuredPersonsService;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +42,15 @@ public class AuthenticationService {
     final Map<String, String> user = insuredPersonsService.getPerson(userId);
 
     selectedClaimsSet.forEach(claim -> userData.put(claim, user.get(claim)));
-    userData.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH);
-    userData.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "TODO amr");
+    userData.put(
+        AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
+        user.containsKey(AUTHENTICATION_CLASS_REFERENCE.getJoseName())
+            ? user.get(AUTHENTICATION_CLASS_REFERENCE.getJoseName())
+            : "gematik-ehealth-loa-high");
+    userData.put(
+        AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
+        user.containsKey(AUTHENTICATION_METHODS_REFERENCE.getJoseName())
+            ? user.get(AUTHENTICATION_METHODS_REFERENCE.getJoseName())
+            : "urn:telematik:auth:eGK");
   }
 }

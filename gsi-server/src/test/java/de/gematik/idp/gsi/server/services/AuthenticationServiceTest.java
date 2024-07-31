@@ -59,4 +59,27 @@ class AuthenticationServiceTest {
             AUTHENTICATION_METHODS_REFERENCE.getJoseName());
     assertThat(userData).containsEntry(TELEMATIK_ID.getJoseName(), "X110411675");
   }
+
+  @Test
+  void authenticationTest_User_AcrAndAmrNotSet() {
+    final AuthenticationService authenticationService =
+        new AuthenticationService(new InsuredPersonsService("versicherte.gesundheitsid.json"));
+    final Map<String, Object> userData = new HashMap<>();
+    final Set<String> selectedClaimsSet =
+        Set.of(
+            TELEMATIK_ID.getJoseName(),
+            AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
+            AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
+            TELEMATIK_PROFESSION.getJoseName(),
+            TELEMATIK_GIVEN_NAME.getJoseName());
+    authenticationService.doAuthentication(userData, "G049950594", selectedClaimsSet);
+    assertThat(userData.keySet())
+        .containsExactlyInAnyOrder(
+            TELEMATIK_PROFESSION.getJoseName(),
+            TELEMATIK_GIVEN_NAME.getJoseName(),
+            TELEMATIK_ID.getJoseName(),
+            AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
+            AUTHENTICATION_METHODS_REFERENCE.getJoseName());
+    assertThat(userData).containsEntry(TELEMATIK_ID.getJoseName(), "G049950594");
+  }
 }

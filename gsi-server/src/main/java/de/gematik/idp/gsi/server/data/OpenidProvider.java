@@ -48,4 +48,6 @@ public class OpenidProvider {
   private String[] idTokenEncryptionAlgValuesSupported;
   private String[] idTokenEncryptionEncValuesSupported;
   private String[] userTypeSupported;
+  private String[] claimsSupported;
+  private boolean claimsParameterSupported;
 }

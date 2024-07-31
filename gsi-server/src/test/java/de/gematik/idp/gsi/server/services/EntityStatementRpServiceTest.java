@@ -30,6 +30,7 @@ import de.gematik.idp.gsi.server.GsiServer;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
+import java.security.cert.X509Certificate;
 import java.util.Optional;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -172,6 +173,41 @@ class EntityStatementRpServiceTest {
     gsiConfiguration.setFedmasterUrl(mockServerUrl);
     final PublicJsonWebKey rpEncKey = entityStatementRpService.getRpEncKey(mockServerUrl);
     assertThat(rpEncKey).isNotNull();
+  }
+
+  @SneakyThrows
+  @Test
+  void getClientCertRpFromSignedJwks() {
+    Mockito.doReturn(mockServerUrl + "/federation/fetch")
+        .when(serverUrlService)
+        .determineFetchEntityStatementEndpoint();
+    Mockito.doReturn(Optional.of(mockServerUrl + "/jws.json"))
+        .when(serverUrlService)
+        .determineSignedJwksUri(Mockito.any());
+    mockServerClient
+        .when(request().withMethod("GET").withPath(IdpConstants.ENTITY_STATEMENT_ENDPOINT))
+        .respond(
+            response()
+                .withStatusCode(200)
+                .withContentType(MediaType.APPLICATION_JSON)
+                .withBody(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
+    mockServerClient
+        .when(request().withMethod("GET").withPath("/federation/fetch"))
+        .respond(
+            response()
+                .withStatusCode(200)
+                .withContentType(MediaType.APPLICATION_JSON)
+                .withBody(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
+    mockServerClient
+        .when(request().withMethod("GET").withPath("/jws.json"))
+        .respond(
+            response()
+                .withStatusCode(200)
+                .withContentType(new MediaType("application", "entity-statement+jwt"))
+                .withBody(SIGNED_JWKS));
+    gsiConfiguration.setFedmasterUrl(mockServerUrl);
+    final X509Certificate cert = entityStatementRpService.getRpTlsClientCert(mockServerUrl);
+    assertThat(cert).isNotNull();
   }
 
   @Test

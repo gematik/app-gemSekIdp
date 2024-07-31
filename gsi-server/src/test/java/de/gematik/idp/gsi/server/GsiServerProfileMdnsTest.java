@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-package de.gematik.idp.gsi.fedmaster;
+package de.gematik.idp.gsi.server;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class Constants {
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.ActiveProfiles;
 
-  public static final String FEDMASTER_FEDERATION_FETCH_ENDPOINT = "/federation_fetch_endpoint";
-  public static final String FED_LIST_ENDPOINT = "/federation_list";
-  public static final String LOGO_URI =
-      "https://raw.githubusercontent.com/gematik/zero-lab/main/static/images/GID_App_light_mode.svg";
+@ActiveProfiles({"localnet", "mdns"})
+@SpringBootTest
+class GsiServerProfileMdnsTest {
+
+  @Autowired private ApplicationContext context;
+
+  @Test
+  void contextLoads() {
+    assertThat(context).isNotNull();
+  }
 }

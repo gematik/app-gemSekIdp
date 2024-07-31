@@ -49,7 +49,10 @@ class EntityStatementBuilderTest {
             jwtProcessorEsSigPrivKey,
             objectMapper,
             entityStatementBuilder.buildEntityStatement(
-                "http://localhost:8085", gsiConfiguration.getFedmasterUrl(), nowPlus20Years),
+                "http://localhost:8085",
+                "http://localhost:8085",
+                gsiConfiguration.getFedmasterUrl(),
+                nowPlus20Years),
             ENTITY_STATEMENT_TYP);
     assertThat(es).isNotEmpty();
     log.info("Entity statement (valid {} years):\n{}", entityStatementTtlYears, es);

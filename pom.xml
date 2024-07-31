@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.2.5</version>
+    <version>3.3.2</version>
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gemSekIdp-global</artifactId>
-  <version>6.0.0</version>
+  <version>7.0.2</version>
   <packaging>pom</packaging>
 
   <description>gsi - gematik sektoraler IDP</description>
@@ -66,8 +66,9 @@
     </docker.image.name.gsiserver>
     <docker.image.name.gsifedmaster>${docker.registry.gematik}/idm/gsi-fedmaster
     </docker.image.name.gsifedmaster>
-    <version.java>17</version.java>
+    <java.version>21</java.version>
     <mpir.skip>true</mpir.skip>
+    <skip.jacoco.instrument>true</skip.jacoco.instrument>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -80,37 +81,43 @@
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.language>java</sonar.language>
 
+    <sonar.cpd.exclusions>
+      gsi-server/src/main/java/de/gematik/idp/gsi/server/services/StaticHostResolverProvider.java,
+      gsi-fedmaster/src/main/java/de/gematik/idp/gsi/fedmaster/services/StaticHostResolverProvider.java
+    </sonar.cpd.exclusions>
+
     <version.bouncycastle.bcpkix>1.78.1</version.bouncycastle.bcpkix>
     <version.commons-io>2.16.1</version.commons-io>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <version.json>20240303</version.json>
     <version.log4j2>2.23.1</version.log4j2>
-    <version.unirest>3.14.5</version.unirest>
-
-    <version.docker-maven-plugin>0.44.0</version.docker-maven-plugin>
-    <version.idp-commons>27.0.3</version.idp-commons>
-    <version.idp-crypto>27.0.3</version.idp-crypto>
-    <version.idp-test>27.0.3</version.idp-test>
+    <version.unirest.java.core>4.4.4</version.unirest.java.core>
+    <version.unirest.objectmapper.jackson>4.2.9</version.unirest.objectmapper.jackson>
+    <version.httpclient>5.3.1</version.httpclient>
+    <version.docker-maven-plugin>0.45.0</version.docker-maven-plugin>
+    <version.idp-commons>29.0.1</version.idp-commons>
+    <version.idp-crypto>29.0.1</version.idp-crypto>
+    <version.idp-test>29.0.1</version.idp-test>
 
     <version.jacoco-maven-plugin>0.8.12</version.jacoco-maven-plugin>
     <version.jakarta.ws.rs-api>4.0.0</version.jakarta.ws.rs-api>
-    <version.lombok>1.18.32</version.lombok>
+    <version.lombok>1.18.34</version.lombok>
     <version.maven>3.8.6</version.maven>
-    <version.maven-clean-plugin>3.3.2</version.maven-clean-plugin>
+    <version.maven-clean-plugin>3.4.0</version.maven-clean-plugin>
     <version.maven-compiler-plugin>3.13.0</version.maven-compiler-plugin>
-    <version.maven-enforcer-plugin>3.4.1</version.maven-enforcer-plugin>
+    <version.maven-enforcer-plugin>3.5.0</version.maven-enforcer-plugin>
     <version.maven-failsafe-plugin>3.2.5</version.maven-failsafe-plugin>
     <version.maven-gpg-plugin>3.2.4</version.maven-gpg-plugin>
-    <version.maven-project-info-reports-plugin>3.5.0</version.maven-project-info-reports-plugin>
+    <version.maven-project-info-reports-plugin>3.6.2</version.maven-project-info-reports-plugin>
     <!-- only needed for mvn site to avoid stack traces flooding the console -->
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
     <version.maven-site-plugin>3.12.1</version.maven-site-plugin>
     <!-- settings for upload to sonar server -->
-    <version.maven-surefire-plugin>3.2.5</version.maven-surefire-plugin>
-    <version.nexus-staging-maven-plugin>1.6.13</version.nexus-staging-maven-plugin>
-    <version.sonar-maven-plugin>3.11.0.3922</version.sonar-maven-plugin>
+    <version.maven-surefire-plugin>3.3.1</version.maven-surefire-plugin>
+    <version.nexus-staging-maven-plugin>1.7.0</version.nexus-staging-maven-plugin>
+    <version.sonar-maven-plugin>4.0.0.4121</version.sonar-maven-plugin>
     <version.spotless-maven-plugin>2.43.0</version.spotless-maven-plugin>
-    <version.spotless.google-java-format>1.16.0</version.spotless.google-java-format>
+    <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
 
@@ -143,13 +150,13 @@
       </dependency>
       <dependency>
         <groupId>com.konghq</groupId>
-        <artifactId>unirest-java</artifactId>
-        <version>${version.unirest}</version>
+        <artifactId>unirest-java-core</artifactId>
+        <version>${version.unirest.java.core}</version>
       </dependency>
       <dependency>
         <groupId>com.konghq</groupId>
         <artifactId>unirest-objectmapper-jackson</artifactId>
-        <version>${version.unirest}</version>
+        <version>${version.unirest.objectmapper.jackson}</version>
       </dependency>
       <dependency>
         <groupId>org.projectlombok</groupId>
@@ -166,13 +173,13 @@
       <dependency>
         <groupId>jakarta.validation</groupId>
         <artifactId>jakarta.validation-api</artifactId>
-        <version>3.0.2</version>
+        <version>3.1.0</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/jakarta.persistence/jakarta.persistence-api -->
       <dependency>
         <groupId>jakarta.persistence</groupId>
         <artifactId>jakarta.persistence-api</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.0</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/jakarta.annotation/jakarta.annotation-api -->
       <dependency>
@@ -224,6 +231,13 @@
         <artifactId>log4j-core</artifactId>
         <version>${version.log4j2}</version>
       </dependency>
+      <dependency>
+        <groupId>org.jacoco</groupId>
+        <artifactId>org.jacoco.agent</artifactId>
+        <classifier>runtime</classifier>
+        <version>0.8.12</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -240,8 +254,8 @@
           <version>${version.maven-compiler-plugin}</version>
           <configuration>
             <encoding>${project.build.sourceEncoding}</encoding>
-            <source>${version.java}</source>
-            <target>${version.java}</target>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
             <debug>true</debug>
           </configuration>
         </plugin>
@@ -265,8 +279,8 @@
                   <version>${version.maven}</version>
                 </requireMavenVersion>
                 <requireJavaVersion>
-                  <message>Java version should be ${version.java}.</message>
-                  <version>${version.java}</version>
+                  <message>Java version should be ${java.version}.</message>
+                  <version>${java.version}</version>
                 </requireJavaVersion>
               </rules>
             </configuration>
@@ -308,7 +322,10 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${version.maven-surefire-plugin}</version>
         <configuration>
-          <argLine>${surefireArgLine} -Dfile.encoding=UTF-8</argLine>
+          <argLine>${surefireArgLine} -Xshare:off -XX:+EnableDynamicAgentLoading
+            -Dfile.encoding=UTF-8
+            -Djacoco-agent.destfile=${project.basedir}/../gsi-coverage-report/target/jacoco.exec
+          </argLine>
           <skipTests>${skip.unittests}</skipTests>
         </configuration>
       </plugin>
@@ -316,6 +333,11 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${version.jacoco-maven-plugin}</version>
+        <configuration>
+          <includes>
+            <include>de/gematik/**/*</include>
+          </includes>
+        </configuration>
         <executions>
           <execution>
             <id>default-prepare-agent</id>
@@ -325,7 +347,46 @@
             <configuration>
               <propertyName>surefireArgLine</propertyName>
               <append>true</append>
-              <destFile>${project.basedir}/target/jacoco.exec</destFile>
+              <destFile>${project.basedir}/../gsi-coverage-report/target/jacoco.exec</destFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>default-instrument</id>
+            <goals>
+              <goal>instrument</goal>
+            </goals>
+            <configuration>
+              <skip>${skip.jacoco.instrument}</skip>
+              <includes>
+                <include>**/StaticHostResolverProvider*</include>
+              </includes>
+            </configuration>
+          </execution>
+          <execution>
+            <!-- bind restore-instrumented-classes to prepare-package phase, so report-generation
+                 sees uninstrumented classes in report-aggregation goal (verify phase) -->
+            <id>restore-instrumented-classes</id>
+            <goals>
+              <goal>restore-instrumented-classes</goal>
+            </goals>
+            <phase>prepare-package</phase>
+          </execution>
+          <execution>
+            <id>default-report-integration</id>
+            <goals>
+              <goal>report-integration</goal>
+            </goals>
+            <configuration>
+              <dataFile>${project.basedir}/../gsi-coverage-report/target/jacoco.exec</dataFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>post-unit-test</id>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <dataFile>${project.basedir}/../gsi-coverage-report/target/jacoco.exec</dataFile>
             </configuration>
           </execution>
         </executions>

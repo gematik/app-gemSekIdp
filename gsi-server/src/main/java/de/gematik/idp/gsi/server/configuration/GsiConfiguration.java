@@ -37,6 +37,7 @@ import org.springframework.stereotype.Component;
 public class GsiConfiguration {
 
   private String serverUrl;
+  private String serverUrlMtls;
   private String fedmasterUrl;
   private String fedmasterSigPubKeyFilePath;
   private KeyConfig esSigPrivKeyConfig;
@@ -44,4 +45,6 @@ public class GsiConfiguration {
   private KeyConfig tokenSigPrivKeyConfig;
   private KeyConfig tokenSigPubKeyConfig;
   private String loglevel;
+  private Integer requestUriTTL;
+  private boolean isRequiredClientCert;
 }

@@ -21,14 +21,17 @@ import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_TYP;
 import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
+import static de.gematik.idp.data.Oauth2ErrorCode.UNAUTHORIZED_CLIENT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
-import static de.gematik.idp.gsi.server.data.GsiConstants.REQUEST_URI_TTL_SECS;
+import static de.gematik.idp.gsi.server.data.GsiConstants.TLS_CLIENT_CERT_HEADER_NAME;
 import static de.gematik.idp.gsi.server.util.ClaimHelper.getClaimsForScopeSet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.Nonce;
+import de.gematik.idp.crypto.exceptions.IdpCryptoException;
 import de.gematik.idp.data.FederationPrivKey;
 import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.data.ParResponse;
@@ -52,6 +55,7 @@ import jakarta.validation.constraints.Pattern;
 import java.io.Serial;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -75,6 +79,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -128,7 +133,9 @@ public class FedIdpController {
         jwtProcessorEsSigPrivKey,
         objectMapper,
         entityStatementBuilder.buildEntityStatement(
-            serverUrlService.determineServerUrl(), gsiConfiguration.getFedmasterUrl()),
+            gsiConfiguration.getServerUrl(),
+            gsiConfiguration.getServerUrlMtls(),
+            gsiConfiguration.getFedmasterUrl()),
         ENTITY_STATEMENT_TYP);
   }
 
@@ -170,10 +177,19 @@ public class FedIdpController {
           @NotEmpty
           @Pattern(regexp = "gematik-ehealth-loa-high|gematik-ehealth-loa-substantial")
           final String acrValues,
+      @RequestParam(name = "amr", required = false)
+          @Pattern(
+              regexp =
+                  "urn:telematik:auth:eGK|urn:telematik:auth:eID|urn:telematik:auth:sso|urn:telematik:auth:mEW|urn:telematik:auth:guest:eGK|urn:telematik:auth:other")
+          final String amr,
+      @RequestParam(name = "claims", required = false) final String claims,
+      @RequestHeader(name = TLS_CLIENT_CERT_HEADER_NAME, required = false) final String clientCert,
       final HttpServletResponse respMsgNr3) {
     log.info(
         "App2App-Flow: RX message nr 2 (Pushed Authorization Request) received at {}",
         serverUrlService.determineServerUrl());
+
+    validateCertificate(clientCert, fachdienstClientId);
 
     entityStatementRpService.doAutoregistration(fachdienstClientId, fachdienstRedirectUri, scope);
 
@@ -195,7 +211,8 @@ public class FedIdpController {
             .requestedScopes(Arrays.stream(scope.split(" ")).collect(Collectors.toSet()))
             .fachdienstRedirectUri(fachdienstRedirectUri)
             .authorizationCode(Nonce.getNonceAsHex(AUTH_CODE_LENGTH))
-            .expiresAt(ZonedDateTime.now().plusSeconds(REQUEST_URI_TTL_SECS).toString())
+            .expiresAt(
+                ZonedDateTime.now().plusSeconds(gsiConfiguration.getRequestUriTTL()).toString())
             .build());
 
     log.info(
@@ -206,7 +223,10 @@ public class FedIdpController {
     setNoCacheHeader(respMsgNr3);
     respMsgNr3.setStatus(HttpStatus.CREATED.value());
 
-    return ParResponse.builder().requestUri(requestUri).expiresIn(REQUEST_URI_TTL_SECS).build();
+    return ParResponse.builder()
+        .requestUri(requestUri)
+        .expiresIn(gsiConfiguration.getRequestUriTTL())
+        .build();
   }
 
   /* Federation App2App/Web2App flow
@@ -306,10 +326,13 @@ public class FedIdpController {
       @RequestParam("code_verifier") @NotEmpty final String codeVerifier,
       @RequestParam("client_id") @NotEmpty final String clientId,
       @RequestParam("redirect_uri") @NotEmpty final String redirectUri,
+      @RequestHeader(name = TLS_CLIENT_CERT_HEADER_NAME, required = false) final String clientCert,
       final HttpServletResponse respMsgNr11) {
     log.info(
         "App2App-Flow: RX message nr 10 (Authorization Code) at {}",
         serverUrlService.determineServerUrl());
+
+    validateCertificate(clientCert, clientId);
 
     final String sessionKey =
         getSessionKeyByAuthCode(URLDecoder.decode(code, StandardCharsets.UTF_8));
@@ -418,5 +441,36 @@ public class FedIdpController {
       }
     }
     return selectedClaimsSet;
+  }
+
+  private void validateCertificate(final String clientCert, final String clientId) {
+    if (clientCert == null) {
+      if (gsiConfiguration.isRequiredClientCert()) {
+        throw new GsiException(
+            INVALID_REQUEST, "client certificate is missing", HttpStatus.BAD_REQUEST);
+      }
+    } else {
+      try {
+        final X509Certificate certFromRequest =
+            CryptoLoader.getCertificateFromPem(
+                java.net.URLDecoder.decode(clientCert, StandardCharsets.UTF_8).getBytes());
+        final X509Certificate certFromEntityStatement =
+            entityStatementRpService.getRpTlsClientCert(clientId);
+        if (!certFromRequest.equals(certFromEntityStatement)) {
+          throw new GsiException(
+              UNAUTHORIZED_CLIENT,
+              "client certificate in tls handshake does not match certificate in entity"
+                  + " statement/signed_jwks",
+              HttpStatus.UNAUTHORIZED);
+        }
+      } catch (final IdpCryptoException e) {
+        throw new GsiException(
+            UNAUTHORIZED_CLIENT,
+            "client certificate in tls handshake is not a valid x509 certificate",
+            HttpStatus.UNAUTHORIZED);
+      } catch (final JoseException e) {
+        throw new RuntimeException();
+      }
+    }
   }
 }

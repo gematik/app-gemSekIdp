@@ -176,6 +176,16 @@ public class StepsGlue {
         .until(() -> true);
   }
 
+  @SneakyThrows
+  @When("Wait for {tigerResolvedString} Seconds")
+  public void waitForSeconds(final String seconds) {
+    final int sec = Integer.parseInt(seconds);
+    Awaitility.await()
+        .atMost(sec + 1, TimeUnit.SECONDS)
+        .pollDelay(sec, TimeUnit.SECONDS)
+        .until(() -> true);
+  }
+
   static void validateJwsSignature(final String jws, final JsonWebKey jwk)
       throws InvalidJwtException {
     final JwtConsumer jwtConsumer =

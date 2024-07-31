@@ -19,16 +19,16 @@ package de.gematik.idp.gsi.fedmaster.controller;
 import static de.gematik.idp.gsi.fedmaster.Constants.FED_LIST_ENDPOINT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import kong.unirest.HttpResponse;
-import kong.unirest.HttpStatus;
-import kong.unirest.Unirest;
+import kong.unirest.core.HttpResponse;
+import kong.unirest.core.HttpStatus;
+import kong.unirest.core.Unirest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpHeaders;
 
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

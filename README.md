@@ -2,16 +2,18 @@
 
 Project **gemSekIdp-global** consists of 2 subprojects. These are:
 
-* **gsi-server:** "gematik sektoraler IDP" - MVP of a sectoral IDP, used to develop/test the gsi-testsuite
-* **gsi-testsuite:** Approval test suite (Zulassungstests) for sectoral IDPs, will be executed as integration tests
+* **gsi-server:** "gematik sektoraler IDP" - MVP of a sectoral IDP, used to develop/test the
+  gsi-testsuite
+* **gsi-testsuite:** Approval test suite (Zulassungstests) for sectoral IDPs, will be executed as
+  integration tests
 
   <br>
 
 ### just build project
 
-To quickly check your build environment without running any tests (just build idp sektoral server and testsuite) do in
+To quickly check your build environment without running any tests (just build idp sektoral server
+and testsuite) do in
 project root:
-
 `mvn clean package -Dskip.unittests`
 
 ### build project and run unit tests (skip integration tests == skip testsuite execution)
@@ -20,12 +22,15 @@ project root:
 
 ### build project and run integration tests (unit tests will be executed as well as long as they are not skipped)
 
-To execute integration tests you have to set the environment variable where the tiger test framework find its configuration:
+To execute integration tests you have to set the environment variable where the tiger test framework
+find its
+configuration:
 
 `export TIGER_TESTENV_CFGFILE=tiger-external-Idp.yaml`
 `mvn test`
 
-In order to run the integration tests (= testsuite) follow the instruction listed under "Test an external sectoral IDP".
+In order to run the integration tests (= testsuite) follow the instruction listed under "Test an
+external sectoral IDP".
 
 The keys
 `gsi-fedmaster/src/main/resources/keys/ref-fedmaster-sig-privkey.pem`
@@ -37,8 +42,10 @@ are added for unit tests only and can be published.
 - To check test environment, the gsi-server can be used. Just build/start this server and
   execute [runTestsuite-external-Idp.sh](runTestsuite-external-Idp.sh).
 - The address of the SUT (system under test == sectoral IDP server) is configured
-  in [gsi-testsuite/tiger-external-Idp.yaml](gsi-testsuite/tiger-external-Idp.yaml). Local gsi-server is set as default.
-- In order to validate the structure of an ID_TOKEN one has to add its value (base64 encoded) to the tc_properties-file
+  in [gsi-testsuite/tiger-external-Idp.yaml](gsi-testsuite/tiger-external-Idp.yaml). Local
+  gsi-server is set as default.
+- In order to validate the structure of an ID_TOKEN one has to add its value (base64 encoded) to the
+  tc_properties-file
   that is used during the test execution
 
 #### Serenity BDD Report
@@ -59,66 +66,19 @@ Copy this jwt to the clipboard and paste it www.jwt.io to see the content.
 
 ### run federation locally
 
-Start a local federation consisting of a Fedmaster and an IDP server. Both are modules inside this maven project.
-You have to configure two things:
+content moved to project FEDIS
+not yet available,
+link will follow
 
-1. The Authorization Server must be registerd in the federation. This is done by configuring the Authorization server in the fedmaster's configuration file:
-   gsi-fedmaster/src/main/resources/application.yml (section `relyingPartyConfigs`)
-2. Configure the servers to be started in `federation/startFederationLocal.sh` but
-   ootb the federation should start without any further configuration.
+### OpenAPI Specification
 
-The federation can be build and started then by executing this script:
+You can receive the OpenAPI Specification under the following paths
 
-```shell
-./federation/startFederationLocalJars.sh
-```
+- GsiServer Port: 8085
+- FedMasterServer Port: 8083
 
-##### fedmaster
-
-```shell
-# get entity statement
-curl http://localhost:8083/.well-known/openid-federation
-```
-
-```shell
-# get federation list and idp list
-curl http://localhost:8083/federation_list
-curl http://localhost:8083/.well-known/idp_list
-```
-
-```shell
-# get entity statement about gsi-server 
-curl 'http://127.0.0.1:8083/federation_fetch_endpoint?sub=http://127.0.0.1:8085&iss=http://127.0.0.1:8083'
-# get entity statement about gra-server
-curl 'http://127.0.0.1:8083/federation_fetch_endpoint?sub=http://127.0.0.1:8084&iss=http://127.0.0.1:8083'
-```
-
-##### gra-server
-
-```shell
-# get entity statement
-curl http://localhost:8084/.well-known/openid-federation
-```
-
-##### gsi-server
-
-```shell
-# get entity statement
-curl http://localhost:8085/.well-known/openid-federation
-```
-
-send PAR request to gsi-server
-expected is a HTTP 201 mit Content-Type: application/json with the redirect_uri
-like: `{"request_uri":"urn:http://127.0.0.1:8084:48ac8294c7ef112d","expires_in":90}`
-
-```shell
-curl --location --request POST 'http://127.0.0.1:8085/PAR_Auth?scope=urn%3Atelematik%3Adisplay_name%20urn%3Atelematik%3Aversicherter%20openid&acr_values=gematik-ehealth-loa-high&response_type=code&state=yyystateyyy&redirect_uri=https%3A%2F%2Fredirect.testsuite.gsi&code_challenge_method=S256&nonce=vy7rM801AQw1or22GhrZ&client_id=http%3A%2F%2F127.0.0.1%3A8084&code_challenge=9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI' \
---header 'AcceptAccept: */*' \
---header 'Content-Type: application/x-www-form-urlencoded; charset=UTF-8'
-```
-
-send authorization request to auth endpoint of auth-server
-
-```shell
-curl --location 'http://127.0.0.1:8084/auth?client_id=e42RezeptApp&state=mystate&redirect_uri=anyUri&code_challenge=P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk&code_challenge_method=S256&response_type=code&scope=e-rezept&idp_iss=http%3A%2F%2F127.0.0.1%3A8085'
-```
+| Format  | Path                                   |
+|---------|----------------------------------------|
+| JSON    | http://127.0.0.1:port/v3/api-docs      |
+| YAML    | http://127.0.0.1:port/v3/api-docs.yaml |
+| SWAGGER | http://127.0.0.1:port/swagger-ui.html  |
