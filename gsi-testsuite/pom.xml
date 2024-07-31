@@ -6,27 +6,32 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gsi-testsuite</artifactId>
-  <version>6.0.0</version>
+  <version>7.0.1</version>
   <packaging>jar</packaging>
   <description>Testsuite fuer sektorale IDPs</description>
 
   <properties>
-    <version.idp-commons>27.0.3</version.idp-commons>
-    <version.java>17</version.java>
-    <version.lombok>1.18.32</version.lombok>
+    <version.idp-commons>29.0.1</version.idp-commons>
+    <java.version>21</java.version>
+    <version.lombok>1.18.34</version.lombok>
     <version.maven-compiler-plugin>3.13.0</version.maven-compiler-plugin>
-    <version.maven-enforcer-plugin>3.4.1</version.maven-enforcer-plugin>
-    <version.maven-failsafe-plugin>3.2.5</version.maven-failsafe-plugin>
+    <version.maven-enforcer-plugin>3.5.0</version.maven-enforcer-plugin>
+    <version.maven-failsafe-plugin>3.3.1</version.maven-failsafe-plugin>
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
-    <version.maven-surefire-plugin>3.2.5</version.maven-surefire-plugin>
+    <version.maven-surefire-plugin>3.3.1</version.maven-surefire-plugin>
     <version.spotless-maven-plugin>2.43.0</version.spotless-maven-plugin>
-    <version.spotless.google-java-format>1.16.0</version.spotless.google-java-format>
-    <version.tiger>3.0.4</version.tiger>
+    <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
+    <version.tiger>3.1.3</version.tiger>
+    <version.jacoco-maven-plugin>0.8.12</version.jacoco-maven-plugin>
   </properties>
 
   <dependencyManagement>
     <dependencies>
-
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>1.5.6</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -35,12 +40,22 @@
       <groupId>de.gematik.test</groupId>
       <artifactId>tiger-test-lib</artifactId>
       <version>${version.tiger}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty-servlet</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty-client</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.junit.vintage/junit-vintage-engine -->
     <dependency>
       <groupId>org.junit.vintage</groupId>
       <artifactId>junit-vintage-engine</artifactId>
-      <version>5.10.2</version>
+      <version>5.10.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -70,8 +85,8 @@
           <version>${version.maven-compiler-plugin}</version>
           <configuration>
             <encoding>${project.build.sourceEncoding}</encoding>
-            <source>${version.java}</source>
-            <target>${version.java}</target>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
             <debug>true</debug>
           </configuration>
         </plugin>
@@ -91,8 +106,8 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <message>Java version should be ${version.java}.</message>
-                  <version>${version.java}</version>
+                  <message>Java version should be ${java.version}.</message>
+                  <version>${java.version}</version>
                 </requireJavaVersion>
               </rules>
             </configuration>
@@ -232,6 +247,38 @@
               <exclude>**/target/**/*</exclude>
             </excludes>
           </markdown>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.3.0</version>
+        <executions>
+          <execution>
+            <id>check-file-existence</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <!--suppress UnresolvedMavenProperty, MavenModelInspection -->
+              <skip>${skip.inttests}</skip>
+              <executable>sh</executable>
+              <arguments>
+                <argument>-c</argument>
+                <!-- verify that testsuite was executed and generates a report-->
+                <argument>test -f ./target/site/serenity/index.html</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${version.jacoco-maven-plugin}</version>
+        <configuration>
+          <skip>true</skip>
         </configuration>
       </plugin>
     </plugins>

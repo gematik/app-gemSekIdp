@@ -16,6 +16,8 @@
 
 package de.gematik.idp.gsi.fedmaster.services;
 
+import static de.gematik.idp.gsi.fedmaster.Constants.LOGO_URI;
+
 import de.gematik.idp.gsi.fedmaster.data.IdentityProviderConfig;
 import de.gematik.idp.gsi.fedmaster.data.IdpList;
 import de.gematik.idp.gsi.fedmaster.data.IdpListEntry;
@@ -49,7 +51,7 @@ public class IdpListBuilder {
           IdpListEntry.builder()
               .iss(identityProviderConfig.getIssuer())
               .organizationName(identityProviderConfig.getOrganizationName())
-              .logoUri("https://todo-logo")
+              .logoUri(LOGO_URI)
               .userTypeSupported("IP")
               .build());
     }

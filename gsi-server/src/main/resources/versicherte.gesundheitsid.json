@@ -1005,7 +1005,9 @@
     "urn:telematik:claims:email": "Jules.Seeckt@example.com",
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "G839948921",
-    "urn:telematik:claims:organization": "104401207"
+    "urn:telematik:claims:organization": "104401207",
+    "amr": "urn:telematik:auth:sso",
+    "acr": "gematik-ehealth-loa-high"
   },
   {
     "birthdate": "1957-02-16",
@@ -1065,7 +1067,9 @@
     "urn:telematik:claims:email": "Hildur.Fürsich@example.com",
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "O018753329",
-    "urn:telematik:claims:organization": "106589300"
+    "urn:telematik:claims:organization": "106589300",
+    "amr": "urn:telematik:auth:mEW",
+    "acr": "gematik-ehealth-loa-substantial"
   },
   {
     "birthdate": "1960-05-12",
@@ -1149,7 +1153,9 @@
     "urn:telematik:claims:email": "Imagina.Handt@example.com",
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "D162565246",
-    "urn:telematik:claims:organization": "101592612"
+    "urn:telematik:claims:organization": "101592612",
+    "amr": "urn:telematik:auth:eID",
+    "acr": "gematik-ehealth-loa-high"
   },
   {
     "birthdate": "1937-05-08",
@@ -1209,7 +1215,9 @@
     "urn:telematik:claims:email": "darius_michael@mail.boedefeld.de",
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110411675",
-    "urn:telematik:claims:organization": "109500969"
+    "urn:telematik:claims:organization": "109500969",
+    "amr": "urn:telematik:auth:eGK",
+    "acr": "gematik-ehealth-loa-high"
   },
   {
     "birthdate": "1974-09-07",
@@ -1245,6 +1253,202 @@
     "urn:telematik:claims:email": "claudette@mail.gwitzigmann.de",
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110581992",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1982-07-20",
+    "urn:telematik:claims:alter": "41",
+    "urn:telematik:claims:family_name": "Schölz",
+    "urn:telematik:claims:display_name": "Hillary Steffi Gräfin SchölzTEST-ONLY",
+    "urn:telematik:claims:given_name": "Hillary Steffi Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "hillary@mail.schölz.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110542925",
+    "urn:telematik:claims:organization": "109500969",
+    "amr": "urn:telematik:auth:eGK",
+    "acr": "gematik-ehealth-loa-high"
+  },
+  {
+    "birthdate": "1980-02-07",
+    "urn:telematik:claims:alter": "44",
+    "urn:telematik:claims:family_name": "Lüdenscheidt-Klöbner",
+    "urn:telematik:claims:display_name": "Xenia Petra Gräfin von Lüdenscheidt-KlöbnerTEST-ONLY",
+    "urn:telematik:claims:given_name": "Xenia Petra Gräfin von",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "xenia@mail.klöbner.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110401369",
+    "urn:telematik:claims:organization": "109500969",
+    "amr": "urn:telematik:auth:eGK",
+    "acr": "gematik-ehealth-loa-high"
+  },
+  {
+    "birthdate": "1984-09-01",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Tínman",
+    "urn:telematik:claims:display_name": "Helmut Thorsten Walter H. Freiherr TínmanTEST-ONLY",
+    "urn:telematik:claims:given_name": "Helmut Thorsten Walter Heider Freiherr",
+    "urn:telematik:claims:geschlecht": "M",
+    "urn:telematik:claims:email": "helmut@mail.tinman.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110467329",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-02",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Gõdofský",
+    "urn:telematik:claims:display_name": "Prof. Dr. Vera Maria K. G. Gräfin GõdofskýTEST-ONLY",
+    "urn:telematik:claims:given_name": "Vera Maria Kriemhild Gabriele Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "vera@mail.godofsky.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110406713",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-03",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Bruser",
+    "urn:telematik:claims:display_name": "Prof. Dr. Heike Maria BruserTEST-ONLY",
+    "urn:telematik:claims:given_name": "Heike Maria",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "heike@mail.bruser.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110485695",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-03",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Côllins",
+    "urn:telematik:claims:display_name": "Heide Mia Mia Leonie Heide Gräfin CôllinsTEST-ONLY",
+    "urn:telematik:claims:given_name": "Heide Mia Mia Leonie Heide Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "heide@mail.collins.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110568831",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-03",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Blôch-Bauer",
+    "urn:telematik:claims:display_name": "Waltraut Annika Virginia Gräfin Blôch-BauerTEST-ONLY",
+    "urn:telematik:claims:given_name": "Waltraut Annika Virginia Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "waltraut@mail.bloch-bauer.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110503517",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-03",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Münchhausen",
+    "urn:telematik:claims:display_name": "Prof. Dr. Tanja G. A. M. J. Gräfin MünchhausenTEST-ONLY",
+    "urn:telematik:claims:given_name": "Tanja Grace Amelie Martina Jacqueline Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "tanja@mail.muenchhausen.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110593656",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-03",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Dåmmer-Ørsted",
+    "urn:telematik:claims:display_name": "Karla Freifrau Dåmmer-ØrstedTEST-ONLY",
+    "urn:telematik:claims:given_name": "Karla Freifrau",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "karla@mail.dammer-orsted.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110529195",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-03",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Bödefeld",
+    "urn:telematik:claims:display_name": "Lisa Tina Alice Abigail W. Gräfin von BödefeldTEST-ONLY",
+    "urn:telematik:claims:given_name": "Lisa Tina Alice Abigail Waltraut Gräfin von",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "lisa@mail.boedefeld.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110512264",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-03",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Popówitsch",
+    "urn:telematik:claims:display_name": "Dr. Francesco Sigurd Helmut PopówitschTEST-ONLY",
+    "urn:telematik:claims:given_name": "Francesco Sigurd Helmut",
+    "urn:telematik:claims:geschlecht": "M",
+    "urn:telematik:claims:email": "Francesco@mail.Popowitsch.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110430954",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-03",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Gåndersheim",
+    "urn:telematik:claims:display_name": "Mia Christiane Gabriele A. Gräfin GåndersheimTEST-ONLY",
+    "urn:telematik:claims:given_name": "Mia Christiane Gabriele Anastasia Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "Mia@mail.Gandersheim.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110547751",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-03",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Schröder",
+    "urn:telematik:claims:display_name": "Prof. Dr. Hannelore E. H. F. S. Gräfin SchröderTEST-ONLY",
+    "urn:telematik:claims:given_name": "Hannelore Emilia Heide Flora Steffi Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "hannelore@mail.schroeder.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110424405",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-03",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Heckhäusen-Frankenstein",
+    "urn:telematik:claims:display_name": "Franz Archibald G. Graf von Heckhäusen-FrankensteinTEST-ONLY",
+    "urn:telematik:claims:given_name": "Franz Archibald Gunther Graf von",
+    "urn:telematik:claims:geschlecht": "M",
+    "urn:telematik:claims:email": "franz@mail.frankenstein.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110469792",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-15",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Gõdofský",
+    "urn:telematik:claims:display_name": "Tamara Annika Maria Tatjana Gräfin GõdofskýTEST-ONLY",
+    "urn:telematik:claims:given_name": "Tamara Annika Maria Tatjana Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "tamara@mail.godofsky.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110536695",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-16",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Özdemir",
+    "urn:telematik:claims:display_name": "Prof. Dr. Leni-Paula A. G. A. V. ÖzdemirTEST-ONLY",
+    "urn:telematik:claims:given_name": "Leni-Paula Annika Gisela Adele Veronika",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "leni@mail.oezdemir.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110596703",
     "urn:telematik:claims:organization": "109500969"
   }
 ]

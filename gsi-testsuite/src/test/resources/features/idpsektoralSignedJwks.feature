@@ -67,7 +67,7 @@ Feature: Test signed Jwks of IdpSektoral
           {
           alg:        'ES256',
           kid:        '.*',
-          typ:        'jwk-set+json'
+          ____typ:        'jwk-set+json'
           }
         """
 

@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GsiConstants {
+
   public static final Set<String> SCOPES_SUPPORTED =
       Set.of(
           "urn:telematik:geburtsdatum",
@@ -34,11 +35,13 @@ public final class GsiConstants {
           "urn:telematik:family_name",
           "openid");
 
-  public static final int REQUEST_URI_TTL_SECS = 90;
   public static final int IDTOKEN_TTL_MINUTES = 5;
 
   public static final String FEDIDP_PAR_AUTH_ENDPOINT = "/PAR_Auth";
   public static final String FED_SIGNED_JWKS_ENDPOINT = "/jws.json";
   public static final String ASSET_LINKS_ENDPOINT_ANDROID = "/.well-known/assetlinks.json";
   public static final String ASSET_LINKS_ENDPOINT_IOS = "/.well-known/apple-app-site-association";
+  public static final String TLS_CLIENT_CERT_HEADER_NAME = "X-SSL-CERT";
+  public static final String LOGO_URI =
+      "https://raw.githubusercontent.com/gematik/zero-lab/main/static/images/GID_App_light_mode.svg";
 }

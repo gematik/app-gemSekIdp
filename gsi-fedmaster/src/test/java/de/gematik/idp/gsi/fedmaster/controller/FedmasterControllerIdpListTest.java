@@ -23,17 +23,17 @@ import de.gematik.idp.gsi.fedmaster.common.ConfigReader;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.List;
 import java.util.Map;
-import kong.unirest.HttpResponse;
-import kong.unirest.HttpStatus;
-import kong.unirest.Unirest;
+import kong.unirest.core.HttpResponse;
+import kong.unirest.core.HttpStatus;
+import kong.unirest.core.Unirest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpHeaders;
 
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

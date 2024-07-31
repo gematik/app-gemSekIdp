@@ -24,11 +24,16 @@ import de.gematik.idp.gsi.server.data.GsiConstants;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
+import java.io.ByteArrayInputStream;
 import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +41,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import kong.unirest.HttpResponse;
-import kong.unirest.Unirest;
+import kong.unirest.core.HttpResponse;
+import kong.unirest.core.Unirest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jose4j.jwk.JsonWebKeySet;
@@ -104,6 +109,90 @@ public class EntityStatementRpService {
     return entityStatementsFedmasterAboutFachdienst.get(sub);
   }
 
+  public X509Certificate getRpTlsClientCert(final String sub) throws JoseException {
+    final Optional<X509Certificate> tlsClientCertFromEntityStatement =
+        getRpTlsClientCertFromEntityStatement(sub);
+    if (tlsClientCertFromEntityStatement.isPresent()) {
+      log.debug("Found TLS client certificate in entity statement of [{}].", sub);
+      return tlsClientCertFromEntityStatement.get();
+    }
+    return getRpTlsClientCertFromSignedJwks(sub)
+        .orElseThrow(
+            () ->
+                new GsiException(
+                    INVALID_REQUEST,
+                    "TLS client certificate for relying party not found",
+                    HttpStatus.BAD_REQUEST));
+  }
+
+  private Optional<X509Certificate> getRpTlsClientCertFromEntityStatement(final String sub) {
+    try {
+      final Optional<List<Map<String, Object>>> keyList = getKeyListFromEntityStatement(sub);
+      if (keyList.isPresent()) {
+        final Optional<Map<String, Object>> certKeyAsMap =
+            keyList.get().stream()
+                .filter(key -> key.containsKey("use") && key.containsKey("x5c"))
+                .filter(key -> key.get("use").equals("sig"))
+                .findFirst();
+        if (certKeyAsMap.isPresent()) {
+          final List<String> certList = (List<String>) certKeyAsMap.get().get("x5c");
+          if (certList.size() > 1) {
+            throw new GsiException(
+                INVALID_REQUEST, "More than one x5c certificate found", HttpStatus.UNAUTHORIZED);
+          }
+          return certList.stream().findFirst().map(this::transformStringToX509Certificate);
+        }
+      }
+      return Optional.empty();
+    } catch (final NullPointerException | ClassCastException e) {
+      return Optional.empty();
+    }
+  }
+
+  private Optional<X509Certificate> getRpTlsClientCertFromSignedJwks(final String sub) {
+    try {
+      log.debug("Search TLS client certificate in signed JWKS of RP [{}]).", sub);
+      final Optional<List<Map<String, Object>>> keyList = getKeyListFromSignedJwks(sub);
+      if (keyList.isPresent()) {
+        final Optional<Map<String, Object>> certKeyAsMap =
+            keyList.get().stream()
+                .filter(key -> key.containsKey("use") && key.containsKey("x5c"))
+                .filter(key -> key.get("use").equals("sig"))
+                .findFirst();
+        if (certKeyAsMap.isPresent()) {
+          log.debug("Found client certificate in signed JWKS of RP [{}]).", sub);
+          final List<String> certList = (List<String>) certKeyAsMap.get().get("x5c");
+          if (certList.size() > 1) {
+            throw new GsiException(
+                INVALID_REQUEST, "More than one x5c certificate", HttpStatus.UNAUTHORIZED);
+          }
+          return certList.stream().findFirst().map(this::transformStringToX509Certificate);
+        }
+      }
+      return Optional.empty();
+    } catch (final NullPointerException | ClassCastException e) {
+      return Optional.empty();
+    }
+  }
+
+  private X509Certificate transformStringToX509Certificate(final String certAsString) {
+    final byte[] encodedCert = Base64.getDecoder().decode(certAsString);
+    final ByteArrayInputStream inputStream = new ByteArrayInputStream(encodedCert);
+
+    final CertificateFactory certFactory;
+    final X509Certificate cert;
+    try {
+      certFactory = CertificateFactory.getInstance("X.509");
+      cert = (X509Certificate) certFactory.generateCertificate(inputStream);
+    } catch (final CertificateException e) {
+      throw new GsiException(
+          INVALID_REQUEST,
+          "entry of x5c-element in signed_jwks/entity statement is not a valid x509-certificate",
+          HttpStatus.UNAUTHORIZED);
+    }
+    return cert;
+  }
+
   public PublicJsonWebKey getRpEncKey(final String sub) throws JoseException {
     final Optional<PublicJsonWebKey> encKeyFromEntityStatement =
         getRpEncKeyFromEntityStatement(sub);
@@ -122,18 +211,10 @@ public class EntityStatementRpService {
 
   private Optional<PublicJsonWebKey> getRpEncKeyFromEntityStatement(final String sub) {
     try {
-      final JsonWebToken entityStmntRp = getEntityStatementRp(sub);
-      final Map<String, Object> metadata =
-          (Map<String, Object>) entityStmntRp.getBodyClaims().get("metadata");
-      final Map<String, Object> openidRelyingParty =
-          (Map<String, Object>) metadata.get("openid_relying_party");
-      if (openidRelyingParty.containsKey("jwks")) {
-        log.debug(
-            "Key [jwks] found in openid_relying_party (inside Entitystatement of RP [{}]).", sub);
-        final Map<String, Object> jwksMap = (Map<String, Object>) openidRelyingParty.get("jwks");
-        final List<Map<String, Object>> keyList = (List<Map<String, Object>>) jwksMap.get("keys");
+      final Optional<List<Map<String, Object>>> keyList = getKeyListFromEntityStatement(sub);
+      if (keyList.isPresent()) {
         final Optional<Map<String, Object>> encKeyAsMap =
-            keyList.stream()
+            keyList.get().stream()
                 .filter(key -> key.containsKey("use"))
                 .filter(key -> key.get("use").equals("enc"))
                 .findFirst();
@@ -150,12 +231,10 @@ public class EntityStatementRpService {
   private Optional<PublicJsonWebKey> getRpEncKeyFromSignedJwks(final String sub) {
     try {
       log.debug("Search encryption key in signed JWKS of RP [{}]).", sub);
-      final Optional<JsonWebToken> signedJwks = getSignedJwks(sub);
-      if (signedJwks.isPresent()) {
-        final List<Map<String, Object>> keyList =
-            (List<Map<String, Object>>) signedJwks.get().getBodyClaims().get("keys");
+      final Optional<List<Map<String, Object>>> keyList = getKeyListFromSignedJwks(sub);
+      if (keyList.isPresent()) {
         final Optional<Map<String, Object>> encKeyAsMap =
-            keyList.stream()
+            keyList.get().stream()
                 .filter(key -> key.containsKey("use"))
                 .filter(key -> key.get("use").equals("enc"))
                 .findFirst();
@@ -179,6 +258,32 @@ public class EntityStatementRpService {
         // TODO check signature
         return Optional.of(new JsonWebToken(resp.getBody()));
       }
+    }
+    return Optional.empty();
+  }
+
+  private Optional<List<Map<String, Object>>> getKeyListFromEntityStatement(final String sub) {
+    final JsonWebToken entityStmntRp = getEntityStatementRp(sub);
+    final Map<String, Object> metadata =
+        (Map<String, Object>) entityStmntRp.getBodyClaims().get("metadata");
+    final Map<String, Object> openidRelyingParty =
+        (Map<String, Object>) metadata.get("openid_relying_party");
+    if (openidRelyingParty.containsKey("jwks")) {
+      log.debug(
+          "Key [jwks] found in openid_relying_party (inside Entitystatement of RP [{}]).", sub);
+      final Map<String, Object> jwksMap = (Map<String, Object>) openidRelyingParty.get("jwks");
+      final List<Map<String, Object>> keyList = (List<Map<String, Object>>) jwksMap.get("keys");
+      return Optional.of(keyList);
+    }
+    return Optional.empty();
+  }
+
+  private Optional<List<Map<String, Object>>> getKeyListFromSignedJwks(final String sub) {
+    final Optional<JsonWebToken> signedJwks = getSignedJwks(sub);
+    if (signedJwks.isPresent()) {
+      final List<Map<String, Object>> keyList =
+          (List<Map<String, Object>>) signedJwks.get().getBodyClaims().get("keys");
+      return Optional.of(keyList);
     }
     return Optional.empty();
   }
@@ -298,8 +403,7 @@ public class EntityStatementRpService {
     if (resp.getStatus() == HttpStatus.OK.value()) {
       final JsonWebToken entityStmnt = new JsonWebToken(resp.getBody());
       verifyEntityStmntRp(entityStmnt, issuer);
-      entityStatementsOfFachdienst.put(
-          issuer, entityStmnt); // TODO: hier nicht als string sondern als entityStatementObjekt
+      entityStatementsOfFachdienst.put(issuer, entityStmnt);
       log.debug(
           "Entitystatement of RP [{}] stored. JWT: {}",
           issuer,

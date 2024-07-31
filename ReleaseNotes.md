@@ -1,3 +1,17 @@
+# Release 7.0.1
+
+- Java 21
+- switch to docker base image eclipse-temurin:21-jre
+- made jmdns dependant on active mdns Spring profile
+- introduce static host name resolving dependent on active hostsmap Spring profile
+- add optional parameter amr in par request
+- set request_uri as configuration property instead of constant
+- add mTLS configuration for par and token endpoint
+- add client cert validation
+- add parameters in metadata of entity statement
+- add dependency for openapi documentation
+- update dependencies
+
 # Release 6.0.0
 
 - add new maven module gsi-fedmaster
