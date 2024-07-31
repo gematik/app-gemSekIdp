@@ -398,3 +398,57 @@ Feature: Test IdpSektoral's Token Endpoint
       "nonce": '.*'
       }
     """
+
+  @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_010
+    @Approval
+    @GematikSekIdpOnly
+  Scenario Outline: IdpSektoral Token Endpoint - Gutfall ohne userConsent - validiere ID_TOKEN Body Claims
+
+  ```
+  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint, um anschließend den Flow über mit der
+  Abkürzung ohne UserConsent abzuschließen. Den resultierenden authorization_code lösen wir ein. Die values für acr und amr im par request sollen mit acr/amr claims in der token response übereinstimmen.
+
+  Der ID_TOKEN muss die richtigen Bodyclaims besitzen:
+
+    Given TGR clear recorded messages
+    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values   | amr   |
+      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | <acr_values> | <amr> |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "201"
+    And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri   | user_id  |
+      | ${requestUri} | <userId> |
+    And TGR find request to path ".*"
+    And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
+    Given TGR clear recorded messages
+    When Send Post Request to "${token_endpoint}" with
+      | client_id          | redirect_uri    | code_verifier                                                                      | grant_type         | code        |
+      | gsi.clientid.valid | gsi.redirectUri | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | authorization_code | ${authCode} |
+    And TGR find request to path ".*"
+    Then TGR current response at "$.body.id_token.content.body.body" matches as JSON:
+    """
+      {
+      "sub": '.*',
+      "aud": '.*',
+      "acr": "<acr_values>",
+      "urn:telematik:claims:id": "<id>",
+      "urn:telematik:claims:organization": "<organization>",
+      "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+      "urn:telematik:claims:display_name": "<displayName>",
+      "amr": '<amr>',
+      "iss": '.*',
+      "exp": "${json-unit.ignore}",
+      "iat": "${json-unit.ignore}",
+      "nonce": '.*'
+      }
+    """
+    Examples:
+      | userId     | id         | organization | displayName                                 | acr_values                      | amr                    |
+      | 12345678   | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld | gematik-ehealth-loa-high        | urn:telematik:auth:eGK |
+      | D162565246 | D162565246 | 101592612    | Imagina Handt                               | gematik-ehealth-loa-high        | urn:telematik:auth:eID |
+      | O018753329 | O018753329 | 106589300    | Hildur Fürsich                              | gematik-ehealth-loa-substantial | urn:telematik:auth:mEW |
+      | G839948921 | G839948921 | 104401207    | Jules Seeckt                                | gematik-ehealth-loa-high        | urn:telematik:auth:sso |
+

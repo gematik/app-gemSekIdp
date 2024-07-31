@@ -20,12 +20,14 @@ import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.LOGO_URI;
+import static de.gematik.idp.gsi.server.data.GsiConstants.SCOPES_SUPPORTED;
+import static de.gematik.idp.gsi.server.util.ClaimHelper.getClaimsForScopeSet;
 
 import de.gematik.idp.data.FederationPubKey;
 import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.gsi.server.data.EntityStatement;
 import de.gematik.idp.gsi.server.data.FederationEntity;
-import de.gematik.idp.gsi.server.data.GsiConstants;
 import de.gematik.idp.gsi.server.data.Metadata;
 import de.gematik.idp.gsi.server.data.OpenidProvider;
 import de.gematik.idp.gsi.server.data.RequestAuthenticationMethodsSupported;
@@ -40,14 +42,21 @@ public class EntityStatementBuilder {
   @Autowired FederationPubKey esSigPubKey;
   @Autowired FederationPubKey tokenSigPubKey;
 
-  public EntityStatement buildEntityStatement(final String serverUrl, final String fedmasterUrl) {
+  public EntityStatement buildEntityStatement(
+      final String serverUrl, final String serverUrlMtls, final String fedmasterUrl) {
     final ZonedDateTime currentTime = ZonedDateTime.now();
     return buildEntityStatement(
-        serverUrl, fedmasterUrl, currentTime.plusDays(ENTITY_STATEMENT_TTL_DAYS).toEpochSecond());
+        serverUrl,
+        serverUrlMtls,
+        fedmasterUrl,
+        currentTime.plusDays(ENTITY_STATEMENT_TTL_DAYS).toEpochSecond());
   }
 
   public EntityStatement buildEntityStatement(
-      final String serverUrl, final String fedmasterUrl, final long expSeconds) {
+      final String serverUrl,
+      final String serverUrlMtls,
+      final String fedmasterUrl,
+      final long expSeconds) {
     final ZonedDateTime currentTime = ZonedDateTime.now();
     return EntityStatement.builder()
         .exp(expSeconds)
@@ -56,24 +65,24 @@ public class EntityStatementBuilder {
         .sub(serverUrl)
         .jwks(JwtHelper.getJwks(esSigPubKey, tokenSigPubKey))
         .authorityHints(new String[] {fedmasterUrl})
-        .metadata(getMetadata(serverUrl))
+        .metadata(getMetadata(serverUrl, serverUrlMtls))
         .build();
   }
 
-  private Metadata getMetadata(final String serverUrl) {
+  private Metadata getMetadata(final String serverUrl, final String serverUrlMtls) {
     final OpenidProvider openidProvider =
         OpenidProvider.builder()
             .issuer(serverUrl)
             .signedJwksUri(serverUrl + FED_SIGNED_JWKS_ENDPOINT)
             .organizationName("gematik sektoraler IDP")
-            .logoUri(serverUrl + "/noLogoYet")
+            .logoUri(LOGO_URI)
             .authorizationEndpoint(serverUrl + FED_AUTH_ENDPOINT)
-            .tokenEndpoint(serverUrl + TOKEN_ENDPOINT)
-            .pushedAuthorizationRequestEndpoint(serverUrl + FEDIDP_PAR_AUTH_ENDPOINT)
+            .tokenEndpoint(serverUrlMtls + TOKEN_ENDPOINT)
+            .pushedAuthorizationRequestEndpoint(serverUrlMtls + FEDIDP_PAR_AUTH_ENDPOINT)
             .clientRegistrationTypesSupported(new String[] {"automatic"})
             .subjectTypesSupported(new String[] {"pairwise"})
             .responseTypesSupported(new String[] {"code"})
-            .scopesSupported(GsiConstants.SCOPES_SUPPORTED.toArray(String[]::new))
+            .scopesSupported(SCOPES_SUPPORTED.toArray(String[]::new))
             .responseModesSupported(new String[] {"query"})
             .grantTypesSupported(new String[] {"authorization_code"})
             .requirePushedAuthorizationRequests(true)
@@ -87,6 +96,8 @@ public class EntityStatementBuilder {
             .idTokenEncryptionAlgValuesSupported(new String[] {"ECDH-ES"})
             .idTokenEncryptionEncValuesSupported(new String[] {"A256GCM"})
             .userTypeSupported(new String[] {"IP"})
+            .claimsSupported(getClaimsForScopeSet(SCOPES_SUPPORTED).toArray(String[]::new))
+            .claimsParameterSupported(true)
             .build();
     final FederationEntity federationEntity =
         FederationEntity.builder()

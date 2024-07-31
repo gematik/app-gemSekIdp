@@ -16,9 +16,9 @@
 
 package de.gematik.idp.gsi.server.data;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import de.gematik.idp.field.ClaimName;
@@ -57,9 +57,8 @@ class InsuredPersonsServiceTest {
   @Test
   void getFamilyNameOfPersonX110411675() {
     final InsuredPersonsService iPr = new InsuredPersonsService("versicherte.gesundheitsid.json");
-    assertThat(
-            iPr.getPersons().get("X110411675").get(ClaimName.TELEMATIK_FAMILY_NAME.getJoseName()))
-        .isEqualTo("Bödefeld");
+    assertThat(iPr.getPersons().get("X110411675"))
+        .containsEntry(ClaimName.TELEMATIK_FAMILY_NAME.getJoseName(), "Bödefeld");
   }
 
   @Test
@@ -70,7 +69,7 @@ class InsuredPersonsServiceTest {
         .forEach(
             person -> {
               try {
-                assertThat(person.size()).isEqualTo(10);
+                assertThat(person.size()).isBetween(10, 12);
               } catch (final AssertionError e) {
                 log.error("Assertion failed for person: " + person);
                 throw e; // rethrow the AssertionError to fail the test

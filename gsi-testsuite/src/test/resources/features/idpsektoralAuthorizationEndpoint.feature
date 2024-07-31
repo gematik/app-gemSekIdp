@@ -153,7 +153,7 @@ Feature: Test IdpSektoral's Auth Endpoint
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
-    And Wait for 100 Seconds
+    And Wait for "${tiger.gsi.requestUriTTL}" Seconds
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |

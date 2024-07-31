@@ -19,7 +19,7 @@ package de.gematik.idp.gsi.server.services;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import java.net.URISyntaxException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.core5.net.URIBuilder;
 import org.springframework.stereotype.Service;
 
 @Service

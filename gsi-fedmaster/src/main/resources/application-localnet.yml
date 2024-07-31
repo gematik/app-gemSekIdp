@@ -10,7 +10,7 @@ fedmaster:
     use: sig
     addX5c: false
   relyingPartyConfigs:
-    - issuer: "${ISSUER_RP_01:http://127.0.0.1:8084}"
+    - issuer: "http://gras.local:8084"
       organization-name: "GRAS"
       keyConfig:
         fileName: "keys/ref-gras-pubkey.pem"
@@ -18,14 +18,14 @@ fedmaster:
         use: "sig"
         x5cInJwks: false
   identityProviderConfigs:
-    - issuer: "${ISSUER_IDP_01:http://127.0.0.1:8085}"
+    - issuer: "http://gsi.local:8085"
       organization-name: "GSI"
       keyConfig:
         fileName: "keys/ref-gsi-es-sig-pubkey.pem"
         keyId: "puk_idp_sig"
         use: "sig"
         x5cInJwks: false
-  serverUrl: "${FEDMASTER_SERVER_URL:http://127.0.0.1:8083}"
+  serverUrl: "${FEDMASTER_SERVER_URL:http://fedmaster.local:8083}"
   debug:
     requestLogging: true
   loglevel: debug

@@ -1,3 +1,6 @@
+gsi:
+  requestUriTTL: 90
+
 ports:
   invalidCertPort: ${free.port.100}
   invalidCertAdminPort: ${free.port.101}

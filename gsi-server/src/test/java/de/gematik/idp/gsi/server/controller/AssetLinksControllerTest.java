@@ -21,9 +21,9 @@ import static de.gematik.idp.gsi.server.data.GsiConstants.ASSET_LINKS_ENDPOINT_I
 import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.gsi.server.GsiServer;
-import kong.unirest.HttpResponse;
-import kong.unirest.HttpStatus;
-import kong.unirest.Unirest;
+import kong.unirest.core.HttpResponse;
+import kong.unirest.core.HttpStatus;
+import kong.unirest.core.Unirest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
