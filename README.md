@@ -1,7 +1,8 @@
 ## Overview
 
-Project **gemSekIdp-global** consists of 2 subprojects. These are:
+Project **gemSekIdp-global** consists of 3 subprojects. These are:
 
+* **gsi-fedmaster:** MVP of a Fedmaster, used to work with a local federation
 * **gsi-server:** "gematik sektoraler IDP" - MVP of a sectoral IDP, used to develop/test the
   gsi-testsuite
 * **gsi-testsuite:** Approval test suite (Zulassungstests) for sectoral IDPs, will be executed as

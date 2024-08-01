@@ -6,7 +6,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gsi-testsuite</artifactId>
-  <version>7.0.2</version>
+  <version>7.0.3</version>
   <packaging>jar</packaging>
   <description>Testsuite fuer sektorale IDPs</description>
 
@@ -279,6 +279,8 @@
         <version>${version.jacoco-maven-plugin}</version>
         <configuration>
           <skip>true</skip>
+          <rules>
+          </rules>
         </configuration>
       </plugin>
     </plugins>

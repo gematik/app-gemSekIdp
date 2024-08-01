@@ -1,3 +1,8 @@
+# Release 7.0.3
+
+- skip jacoco by default
+- add documentation
+
 # Release 7.0.2
 
 - Java 21
