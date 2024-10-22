@@ -37,7 +37,7 @@ class AssetLinksControllerTest {
   @LocalServerPort private int serverPort;
 
   @Test
-  void getAssetLinksAndroid_ok() {
+  void test_getAssetLinksAndroid_200() {
     final String testHostUrl = "http://localhost:" + serverPort;
     final HttpResponse<String> resp =
         Unirest.get(testHostUrl + ASSET_LINKS_ENDPOINT_ANDROID).asString();
@@ -45,7 +45,7 @@ class AssetLinksControllerTest {
   }
 
   @Test
-  void getAssetLinksIos_ok() {
+  void test_getAssetLinksIos_200() {
     final String testHostUrl = "http://localhost:" + serverPort;
     final HttpResponse<String> resp =
         Unirest.get(testHostUrl + ASSET_LINKS_ENDPOINT_IOS).asString();

@@ -24,6 +24,7 @@ Feature: Test IdpSektoral's Token Endpoint
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
     Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$..authorization_endpoint')}"
     Then TGR set local variable "token_endpoint" to "!{rbel:currentResponseAsString('$..token_endpoint')}"
+    And TGR HttpClient followRedirects Konfiguration deaktiviert
 
 
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_001

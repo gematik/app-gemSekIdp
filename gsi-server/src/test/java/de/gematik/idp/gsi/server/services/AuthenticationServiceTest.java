@@ -38,7 +38,7 @@ class AuthenticationServiceTest {
   void init() {}
 
   @Test
-  void authenticationTest_LegacyUser12345678() {
+  void test_authentication_LegacyUser12345678() {
     final AuthenticationService authenticationService =
         new AuthenticationService(new InsuredPersonsService("versicherte.gesundheitsid.json"));
     final Map<String, Object> userData = new HashMap<>();
@@ -61,7 +61,7 @@ class AuthenticationServiceTest {
   }
 
   @Test
-  void authenticationTest_User_AcrAndAmrNotSet() {
+  void test_authentication_User_AcrAndAmrNotSet() {
     final AuthenticationService authenticationService =
         new AuthenticationService(new InsuredPersonsService("versicherte.gesundheitsid.json"));
     final Map<String, Object> userData = new HashMap<>();

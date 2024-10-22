@@ -43,7 +43,7 @@ class EntityStatementRpTest {
   }
 
   @Test
-  void verifySignature_Token1Valid() {
+  void test_verifySignature_Token1_VALID() {
     final PublicKey publicKey =
         KeyUtility.readX509PublicKey(new File("src/test/resources/keys/fachdienst-sig-pub.pem"));
     assertDoesNotThrow(
@@ -51,7 +51,7 @@ class EntityStatementRpTest {
   }
 
   @Test
-  void verifySignature_Token1Invalid_SigAlgNone() {
+  void test_verifySignature_Token1_SigAlgNone_INVALID() {
     final PublicKey publicKey =
         KeyUtility.readX509PublicKey(new File("src/test/resources/keys/fachdienst-sig-pub.pem"));
     final JsonWebToken jwt =
@@ -60,7 +60,7 @@ class EntityStatementRpTest {
   }
 
   @Test
-  void verifySignature_Token2Valid() {
+  void test_verifySignature_Token2_VALID() {
     final PublicKey publicKey =
         KeyUtility.readX509PublicKey(
             new File("src/test/resources/keys/fedmaster-sigkey-TU-pub.pem"));
@@ -71,7 +71,7 @@ class EntityStatementRpTest {
   }
 
   @Test
-  void verifySignature_TokenExpired() {
+  void test_verifySignature_TokenExpired_INVALID() {
     final PublicKey publicKey =
         KeyUtility.readX509PublicKey(new File("src/test/resources/keys/fachdienst-sig-pub.pem"));
     final JsonWebToken jsonWebTokenExpired = new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRED);

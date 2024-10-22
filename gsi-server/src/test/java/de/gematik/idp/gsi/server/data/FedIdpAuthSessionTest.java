@@ -20,6 +20,7 @@ import static de.gematik.idp.gsi.server.controller.FedIdpController.AUTH_CODE_LE
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import de.gematik.idp.crypto.Nonce;
+import de.gematik.idp.gsi.server.util.ClaimHelper;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,14 +33,19 @@ class FedIdpAuthSessionTest {
   void testBuild() {
     final int REQUEST_URI_TTL_SECS = 42;
     final Set<String> scopes =
-        new HashSet<>(Arrays.asList("profile", "telematik", "openid", "email"));
+        new HashSet<>(
+            Arrays.asList(
+                "urn:telematik:display_name",
+                "urn:telematik:alter",
+                "openid",
+                "urn:telematik:email"));
 
     final FedIdpAuthSession fedIdpAuthSession =
         FedIdpAuthSession.builder()
             .fachdienstCodeChallenge("fachdienstCodeChallenge")
             .fachdienstCodeChallengeMethod("fachdienstCodeChallengeMethod")
             .fachdienstNonce("fachdienstNonce")
-            .requestedScopes(scopes)
+            .requestedOptionalClaims(ClaimHelper.getClaimsForScopeSet(scopes))
             .fachdienstRedirectUri("fachdienstRedirectUri")
             .authorizationCode(Nonce.getNonceAsHex(AUTH_CODE_LENGTH))
             .expiresAt(ZonedDateTime.now().plusSeconds(REQUEST_URI_TTL_SECS).toString())
@@ -53,7 +59,12 @@ class FedIdpAuthSessionTest {
     assertThat(fedIdpAuthSession.getFachdienstRedirectUri()).isEqualTo("fachdienstRedirectUri");
     assertThat(fedIdpAuthSession.getFachdienstCodeChallengeMethod())
         .isEqualTo("fachdienstCodeChallengeMethod");
-    assertThat(fedIdpAuthSession.getRequestedScopes()).isEqualTo(scopes);
+    assertThat(fedIdpAuthSession.getRequestedOptionalClaims())
+        .isEqualTo(
+            Set.of(
+                "urn:telematik:claims:display_name",
+                "urn:telematik:claims:alter",
+                "urn:telematik:claims:email"));
 
     assertThat(FedIdpAuthSession.builder().toString()).hasSizeGreaterThan(0);
   }

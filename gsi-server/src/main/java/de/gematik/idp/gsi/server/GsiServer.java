@@ -78,6 +78,8 @@ public class GsiServer {
     final String loggerRequests = "org.springframework.web.filter.CommonsRequestLoggingFilter";
     Configurator.setLevel(loggerServer, loglevel);
     Configurator.setLevel(loggerRequests, loglevel);
+    log.info("GSI_CLIENT_CERT_REQUIRED in env: " + System.getenv("GSI_CLIENT_CERT_REQUIRED"));
+    log.info("isClientCertRequired in config: " + gsiConfiguration.isClientCertRequired());
     log.info("gsiConfiguration: {}", gsiConfiguration);
 
     final LoggerContext loggerContext =

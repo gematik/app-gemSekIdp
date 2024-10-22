@@ -19,15 +19,19 @@
 Feature: Test IdpSektoral's Pushed Auth Endpoint
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
+    Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
     And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
+    And TGR HttpClient followRedirects Konfiguration deaktiviert
+    And Wait for 1 Seconds
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_001
-  @Approval
-  @PRIO:1
-  @TESTSTUFE:4
-  Scenario: IdpSektoral Pushed Auth Endpoint - Gutfall - Validiere Response
+    @Approval
+    @PRIO:1
+    @TESTSTUFE:4
+    @OpenBug
+  Scenario Outline: IdpSektoral Pushed Auth Endpoint - Gutfall - Validiere Response
 
   ```
   Wir senden einen PAR an den sektoralen IDP
@@ -38,12 +42,18 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   - einen json-Body enthalten
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values   |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | <acr_values> |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR current response with attribute "$.header.Content-Type" matches "application/json.*"
+
+    Examples:
+      | acr_values                      |
+      | gematik-ehealth-loa-high        |
+      | gematik-ehealth-loa-substantial |
+#      | gematik-ehealth-loa-substantial gematik-ehealth-loa-high |
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_002
@@ -59,9 +69,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   Die Response muss als Body eine korrekte json Struktur enthalten:
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high |
     And TGR find request to path ".*"
     Then TGR current response at "$.body" matches as JSON:
         """
@@ -74,7 +84,6 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_003
     @Approval
     @PRIO:1
-    @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - fehlerhaft befüllte Parameter
 
   ```
@@ -83,7 +92,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   Die Response muss als Body eine passende Fehlermeldung enthalten:
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id   | state       | redirect_uri   | code_challenge                              | code_challenge_method   | response_type   | nonce                | scope   | acr_values   |
       | <client_id> | yyystateyyy | <redirect_uri> | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | <code_challenge_method> | <response_type> | vy7rM801AQw1or22GhrZ | <scope> | <acr_values> |
     And TGR find request to path ".*"
@@ -99,13 +108,13 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     And TGR current response with attribute "$.body.error" matches "<error>"
 
     Examples:
-      | client_id          | redirect_uri            | code_challenge_method | response_type | scope        | acr_values               | error           | responseCode |
-      | notUrl             | gsi.redirectUri         | S256                  | code          | gsi.scope    | gematik-ehealth-loa-high | invalid_.*      | 40.*         |
-      | gsi.clientid.valid | gsi.redirectUri         | plain                 | code          | gsi.scope    | gematik-ehealth-loa-high | invalid_request | 400          |
-      | gsi.clientid.valid | gsi.redirectUri         | S256                  | token         | gsi.scope    | gematik-ehealth-loa-high | .*              | 400          |
-      | gsi.clientid.valid | gsi.redirectUri         | S256                  | code          | invalidScope | gematik-ehealth-loa-high | invalid_scope   | 400          |
-      | gsi.clientid.valid | gsi.redirectUri         | S256                  | code          | gsi.scope    | invalidAcr               | invalid_request | 400          |
-      | gsi.clientid.valid | https://invalidRedirect | S256                  | code          | gsi.scope    | gematik-ehealth-loa-high | invalid_request | 400          |
+      | client_id             | redirect_uri            | code_challenge_method | response_type | scope        | acr_values               | error           | responseCode |
+      | notUrl                | ${gsi.redirectUri}      | S256                  | code          | ${gsi.scope} | gematik-ehealth-loa-high | invalid_.*      | 40.*         |
+      | ${gsi.clientid.valid} | ${gsi.redirectUri}      | plain                 | code          | ${gsi.scope} | gematik-ehealth-loa-high | invalid_request | 400          |
+      | ${gsi.clientid.valid} | ${gsi.redirectUri}      | S256                  | token         | ${gsi.scope} | gematik-ehealth-loa-high | .*              | 400          |
+      | ${gsi.clientid.valid} | ${gsi.redirectUri}      | S256                  | code          | invalidScope | gematik-ehealth-loa-high | invalid_scope   | 400          |
+      | ${gsi.clientid.valid} | ${gsi.redirectUri}      | S256                  | code          | ${gsi.scope} | invalidAcr               | invalid_request | 400          |
+      | ${gsi.clientid.valid} | https://invalidRedirect | S256                  | code          | ${gsi.scope} | gematik-ehealth-loa-high | invalid_request | 400          |
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_004
@@ -145,7 +154,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   Die Response muss als Body eine passende Fehlermeldung enthalten:
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id   | state       | redirect_uri   | code_challenge                              | code_challenge_method   | response_type   | nonce                | scope   | acr_values   |
       | <client_id> | yyystateyyy | <redirect_uri> | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | <code_challenge_method> | <response_type> | vy7rM801AQw1or22GhrZ | <scope> | <acr_values> |
     And TGR find request to path ".*"
@@ -161,12 +170,12 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     And TGR current response with attribute "$.body.error" matches "(invalid_request|invalid_scope|unsupported_response_type)"
 
     Examples:
-      | client_id          | redirect_uri    | code_challenge_method | response_type | scope     | acr_values               | responseCode |
-      | $REMOVE            | gsi.redirectUri | S256                  | code          | gsi.scope | gematik-ehealth-loa-high | 400          |
-      | gsi.clientid.valid | $REMOVE         | S256                  | code          | gsi.scope | gematik-ehealth-loa-high | 400          |
-      | gsi.clientid.valid | gsi.redirectUri | $REMOVE               | code          | gsi.scope | gematik-ehealth-loa-high | 400          |
-      | gsi.clientid.valid | gsi.redirectUri | S256                  | $REMOVE       | gsi.scope | gematik-ehealth-loa-high | 400          |
-      | gsi.clientid.valid | gsi.redirectUri | S256                  | code          | $REMOVE   | gematik-ehealth-loa-high | 400          |
+      | client_id             | redirect_uri       | code_challenge_method | response_type | scope        | acr_values               | responseCode |
+      | $REMOVE               | ${gsi.redirectUri} | S256                  | code          | ${gsi.scope} | gematik-ehealth-loa-high | 400          |
+      | ${gsi.clientid.valid} | $REMOVE            | S256                  | code          | ${gsi.scope} | gematik-ehealth-loa-high | 400          |
+      | ${gsi.clientid.valid} | ${gsi.redirectUri} | $REMOVE               | code          | ${gsi.scope} | gematik-ehealth-loa-high | 400          |
+      | ${gsi.clientid.valid} | ${gsi.redirectUri} | S256                  | $REMOVE       | ${gsi.scope} | gematik-ehealth-loa-high | 400          |
+      | ${gsi.clientid.valid} | ${gsi.redirectUri} | S256                  | code          | $REMOVE      | gematik-ehealth-loa-high | 400          |
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_006
@@ -181,9 +190,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   Die Response auf den zweiten PAR muss als Body eine passende Fehlermeldung enthalten:
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR clear recorded messages
@@ -204,6 +213,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_007
     @PRIO:1
     @TESTSTUFE:4
+    @Approval
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - invalide Entity Statements
 
   ```
@@ -211,7 +221,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   so dass die Autoregistrierung scheitern muss.
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id   | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
       | <client_id> | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
     And TGR find request to path ".*"
@@ -219,15 +229,15 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     And TGR current response at "$.body" matches as JSON:
         """
           {
-            "error":                        '(invalid_request|invalid_client)',
+            "error":                        '(invalid_request|invalid_client|missing_trust_anchor)',
             "____error_description":        '.*'
           }
         """
 
     Examples:
-      | client_id                     | responseCode |
-      | gsi.clientid.expired          | 40.*         |
-      | gsi.clientid.invalidSignature | 40.*         |
+      | client_id                        | responseCode |
+      | ${gsi.clientid.expired}          | 40.*         |
+      | ${gsi.clientid.invalidSignature} | 40.*         |
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_008
@@ -243,15 +253,15 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   Dieser Request muss abgelehnt werden.
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope   | acr_values               |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | <scope> | gematik-ehealth-loa-high |
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope   | acr_values               |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | <scope> | gematik-ehealth-loa-high |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
 
     Examples:
       | scope                             | responseCode |
-      | gsi.scope                         | 201          |
+      | ${gsi.scope}                      | 201          |
       | urn:telematik:geburtsdatum openid | 40.*         |
 
 
@@ -259,16 +269,16 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     @Approval
     @PRIO:1
     @TESTSTUFE:4
-  Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - Zusätzliche Parameter
+  Scenario Outline: IdpSektoral Pushed Auth Endpoint - Positivfall - Zusätzliche Parameter
 
   ```
   Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dieser enthält zusätzliche Parameter. Die erste Variante entspricht dem PAR des eRezept-Authservers,
   Die zweite enthält einen unbekannten Parameter. Der IDP muss den PAR akzeptieren.
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               | <param_name>  |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high | <param_value> |
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | <param_name>  |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <param_value> |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
 
@@ -281,66 +291,51 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_010
     @Akzeptanzfeature
     @Approval
+    @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Positivfall - Amr/Acr Kombinationen
 
   ```
   Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei wird der optionale Parameter amr mit verschiedenen Werten mitgeschickt.
-  Alle gelisteten Kombinationen sind gültig und Spec-konform.
+  Alle gelisteten Kombinationen sind teilweise gültig/Spec-konform und teilweise genau nicht.
+  Der IDP kann auch die invaliden Request akzeptieren und diese invaliden "Vorschläge" dann ignorieren.
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type   | nonce                | scope     | acr_values   | amr   |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code            | vy7rM801AQw1or22GhrZ | gsi.scope | <acr_values> | <amr> |
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values   | amr   |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | <acr_values> | <amr> |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
 
     Examples:
-    | acr_values                      | amr                          |
-    | gematik-ehealth-loa-high        | urn:telematik:auth:eGK       |
-    | gematik-ehealth-loa-high        | urn:telematik:auth:eID       |
-    | gematik-ehealth-loa-high        | urn:telematik:auth:sso       |
-    | gematik-ehealth-loa-substantial | urn:telematik:auth:mEW       |
-    | gematik-ehealth-loa-high        | urn:telematik:auth:guest:eGK |
-    | gematik-ehealth-loa-substantial | urn:telematik:auth:other     |
-    | gematik-ehealth-loa-high        | urn:telematik:auth:other     |
-
-
-  @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_011
-    @Akzeptanzfeature
-    @OpenBug
-  Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - Amr/Acr Kombinationen
-
-  ```
-  Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei wird der optionale Parameter amr mit verschiedenen Werten mitgeschickt.
-  Keine der gelisteten Kombinationen ist gültig oder Spec-konform.
-
-    Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type   | nonce                | scope     | acr_values   | amr   |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code            | vy7rM801AQw1or22GhrZ | gsi.scope | <acr_values> | <amr> |
-    And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "400"
-
-    Examples:
       | acr_values                      | amr                          |
+      | gematik-ehealth-loa-high        | urn:telematik:auth:eGK       |
+      | gematik-ehealth-loa-high        | urn:telematik:auth:eID       |
+      | gematik-ehealth-loa-high        | urn:telematik:auth:sso       |
+      | gematik-ehealth-loa-substantial | urn:telematik:auth:mEW       |
+      | gematik-ehealth-loa-high        | urn:telematik:auth:guest:eGK |
+      | gematik-ehealth-loa-substantial | urn:telematik:auth:other     |
+      | gematik-ehealth-loa-high        | urn:telematik:auth:other     |
       | gematik-ehealth-loa-substantial | urn:telematik:auth:eGK       |
       | gematik-ehealth-loa-substantial | urn:telematik:auth:eID       |
-      | gematik-ehealth-loa-substantial |  urn:telematik:auth:sso      |
+      | gematik-ehealth-loa-substantial | urn:telematik:auth:sso       |
       | gematik-ehealth-loa-high        | urn:telematik:auth:mEW       |
       | gematik-ehealth-loa-substantial | urn:telematik:auth:guest:eGK |
+
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_012
     @Akzeptanzfeature
     @Approval
+    @GematikSekIdpOnly
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - Amr Parameter
 
   ```
   Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei wird der optionale Parameter amr mit verschiedenen invaliden Werten mitgeschickt, die nicht spec-konform sind.
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type   | nonce                | scope     | acr_values               | amr   |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code            | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high | <amr> |
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | amr   |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <amr> |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "400"
     And TGR current response at "$.body" matches as JSON:
@@ -361,16 +356,17 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_013
     @Akzeptanzfeature
     @Approval
+    @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Gutfall - Prompt Parameter
 
   ```
-  Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei werden die optionalen Parameter prompt mit verschiedenen validen Werten mitgeschickt.
-  Keine der gelisteten Kombinationen ist gültig oder Spec-konform.
+  Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei wird der optionalen Parameter prompt mit verschiedenen validen Werten mitgeschickt.
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type   | nonce                | scope     | acr_values               | prompt   |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code            | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high | <prompt> |
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | prompt   |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <prompt> |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
 
@@ -381,21 +377,24 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
       | consent        |
       | select_account |
 
+
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_014
     @Akzeptanzfeature
-    @OpenBug
+    @PRIO:1
+    @TESTSTUFE:4
+    @Approval
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - Prompt Parameter
 
   ```
-  Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei werden die optionalen Parameter prompt mit verschiedenen invaliden Werten mitgeschickt.
-  Keine der gelisteten Kombinationen ist gültig oder Spec-konform.
+  Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei wird der optionale Parameter prompt mit invaliden Werten mitgeschickt.
+  Keine der gelisteten Kombinationen ist gültig. Der IDP darf diesen Wert aber ignorieren und eine 201 schicken oder mit einer Fehlermeldung ablehnen.
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type   | nonce                | scope     | acr_values               | prompt   |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code            | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high | <prompt> |
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | prompt   |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <prompt> |
     And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "400"
+    Then TGR current response with attribute "$.responseCode" matches "(201|400)"
 
     Examples:
       | prompt         |
@@ -404,16 +403,18 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_015
     @Akzeptanzfeature
     @Approval
+    @PRIO:1
+    @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Positivfall - max_age Parameter
 
   ```
   Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei werden die optionalen Parameter max_age mit verschiedenen validen Werten mitgeschickt.
-  Keine der gelisteten Kombinationen ist gültig oder Spec-konform.
+  Die gelisteten Kombinationen sind gültig und müssen akzeptiert werden.
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type   | nonce                | scope     | acr_values               | max_age   |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code            | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high | <max_age> |
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | max_age   |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <max_age> |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
 
@@ -424,23 +425,73 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_016
     @Akzeptanzfeature
-    @OpenBug
+    @PRIO:1
+    @TESTSTUFE:4
+    @Approval
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - max_age Parameter
 
   ```
   Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei werden die optionalen Parameter max_age mit verschiedenen invaliden Werten mitgeschickt.
-  Keine der gelisteten Kombinationen ist gültig oder Spec-konform.
+  Keine der gelisteten Kombinationen ist gültig oder Spec-konform. Der IDP darf diesen Wert aber ignorieren und eine 201 schicken oder mit einer Fehlermeldung ablehnen.
 
     Given TGR clear recorded messages
-    When Send Post Request to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type   | nonce                | scope     | acr_values               | max_age   |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code            | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high | <max_age> |
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | max_age   |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <max_age> |
     And TGR find request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "400"
+    Then TGR current response with attribute "$.responseCode" matches "(201|400)"
 
     Examples:
       | max_age |
       | -123    |
 
 
+  @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_017
+    @Akzeptanzfeature
+    @OpenBug
+    @PRIO:1
+    @TESTSTUFE:4
+    @Approval
+  Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - claims Parameter
 
+  ```
+  Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei wird der optionale Parameter claims mit verschiedenen invaliden Werten mitgeschickt.
+  Keine der gelisteten Kombinationen ist gültig. Da die invaliden Claims essential sind, muss der IDP den Request ablehnen.
+
+    Given TGR clear recorded messages
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | claims   |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <claims> |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "400"
+
+    Examples:
+      | claims                                                                           |
+      | {"id_token":{"acr":{"essential":true,"values":["gematik-ehealth-loa-invalid"]}}} |
+      | {"id_token":{"amr":{"essential":true,"value":"invalidAmr"}}}                     |
+      | {"id_token":{"invalid_claim":{"essential":true}}}                                |
+      | {"id_token":{"invalid_claim":null}}                                              |
+
+
+  @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_018
+    @Akzeptanzfeature
+    @PRIO:1
+    @TESTSTUFE:4
+    @Approval
+  Scenario Outline: IdpSektoral Pushed Auth Endpoint - Positivfall - claims Parameter
+
+  ```
+  Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei wird der optionale Parameter claims mit validen Werten geschickt.
+  Die erste Variante ist ein Gastlogin, bei der zweiten können nicht-essential-Claims ignoriert werden.
+
+    Given TGR clear recorded messages
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | claims   |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <claims> |
+    And TGR find request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "201"
+
+    Examples:
+      | claims                                                                                                                                     |
+      | {"id_token":{"acr":{"essential":true,"value":"gematik-ehealth-loa-high"},"amr":{"essential":true,"value":"urn:telematik:auth:guest:eGK"}}} |
+      | {"id_token":{"acr":{"value":"gematik-ehealth-loa-invalid"}}}                                                                               |

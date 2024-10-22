@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>gemSekIdp-global</artifactId>
-    <version>7.0.3</version>
+    <version>7.0.4</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>gsi-server</artifactId>
-  <version>7.0.3</version>
+  <version>7.0.4</version>
   <packaging>jar</packaging>
 
   <name>gsi-server</name>
@@ -60,7 +60,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.12.0</version>
+      <version>5.14.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -92,11 +92,10 @@
       <groupId>com.konghq</groupId>
       <artifactId>unirest-java-core</artifactId>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents.client5/httpclient5 -->
     <dependency>
-      <groupId>org.apache.httpcomponents.client5</groupId>
-      <artifactId>httpclient5</artifactId>
-      <version>${version.httpclient}</version>
+      <groupId>org.apache.httpcomponents.core5</groupId>
+      <artifactId>httpcore5</artifactId>
+      <version>${version.httpcore5}</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
     <dependency>
@@ -138,7 +137,13 @@
     <dependency>
       <groupId>org.jmdns</groupId>
       <artifactId>jmdns</artifactId>
-      <version>3.5.9</version>
+      <version>3.5.12</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>5.2.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

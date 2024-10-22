@@ -90,7 +90,7 @@ public class ServerUrlService {
     return Objects.requireNonNull((String) federationEntity.get("federation_fetch_endpoint"));
   }
 
-  public Optional<String> determineSignedJwksUri(final JsonWebToken entityStmntRp) {
+  public static Optional<String> determineSignedJwksUri(final JsonWebToken entityStmntRp) {
     final Map<String, Object> bodyClaims = entityStmntRp.getBodyClaims();
     final Map<String, Object> metadata =
         Objects.requireNonNull(
@@ -99,6 +99,6 @@ public class ServerUrlService {
         Objects.requireNonNull(
             (Map<String, Object>) metadata.get("openid_relying_party"),
             "missing claim: openid_relying_party");
-    return Optional.of((String) openidRelyingParty.get("signed_jwks_uri"));
+    return Optional.ofNullable((String) openidRelyingParty.getOrDefault("signed_jwks_uri", null));
   }
 }

@@ -40,7 +40,7 @@ class EntityStatementBuilderTest {
   @Autowired private GsiConfiguration gsiConfiguration;
 
   @Test
-  void generateEntityStatementValid20Years() {
+  void test_generateEntityStatementValid20Years() {
     final int entityStatementTtlYears = 20;
     final long nowPlus20Years =
         ZonedDateTime.now().plusYears(entityStatementTtlYears).toEpochSecond();

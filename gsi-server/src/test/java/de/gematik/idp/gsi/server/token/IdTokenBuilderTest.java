@@ -81,7 +81,7 @@ class IdTokenBuilderTest {
   }
 
   @Test
-  void checkIdTokenClaims() {
+  void test_checkIdTokenClaims_VALID() {
     final JsonWebToken idToken = idTokenBuilder.buildIdToken();
 
     assertThat(idToken.getBodyClaims())

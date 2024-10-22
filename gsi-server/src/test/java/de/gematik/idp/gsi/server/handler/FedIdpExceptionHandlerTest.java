@@ -34,7 +34,7 @@ class FedIdpExceptionHandlerTest {
   private final GsiExceptionHandler fedIdpExceptionHandler = new GsiExceptionHandler();
 
   @Test
-  void testGsiException() {
+  void test_GsiException() {
     final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleGsiException(
             new GsiException(
@@ -46,7 +46,7 @@ class FedIdpExceptionHandlerTest {
   }
 
   @Test
-  void testValidationException() {
+  void test_ValidationException() {
     final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleValidationException(
             new ValidationException("something strange happened again"));
@@ -55,7 +55,7 @@ class FedIdpExceptionHandlerTest {
   }
 
   @Test
-  void testMissingServletRequestParameterException() {
+  void test_MissingServletRequestParameterException() {
     final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleMissingServletRequestParameter(
             new MissingServletRequestParameterException("anyName", "anyType"));
@@ -64,7 +64,7 @@ class FedIdpExceptionHandlerTest {
   }
 
   @Test
-  void testRuntimeException() {
+  void test_RuntimeException() {
     final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleRuntimeException(new RuntimeException("anyMsg"));
     assertThat(Objects.requireNonNull(resp.getBody()).getError())
@@ -72,14 +72,14 @@ class FedIdpExceptionHandlerTest {
   }
 
   @Test
-  void testGsiExceptionWithEx() {
+  void test_GsiExceptionWithEx() {
     final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleGsiException(new GsiException(new NullPointerException()));
     assertThat(resp.getStatusCode().is5xxServerError()).isTrue();
   }
 
   @Test
-  void testGsiExceptionWithExAndMsg() {
+  void test_GsiExceptionWithExAndMsg() {
     final ResponseEntity<Oauth2ErrorResponse> resp =
         fedIdpExceptionHandler.handleGsiException(
             new GsiException("Oooops", new NullPointerException()));

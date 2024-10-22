@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 class ClaimHelperTest {
 
   @Test
-  void getClaimsForValidScopeSet() {
+  void test_getClaimsForValidScopeSet_VALID() {
     assertThat(
             getClaimsForScopeSet(
                 new HashSet<>(
@@ -46,7 +46,7 @@ class ClaimHelperTest {
   }
 
   @Test
-  void getClaimsForInvalidScopeSet() {
+  void test_getClaimsForInvalidScopeSet_INVALID() {
     assertDoesNotThrow(
         () -> getClaimsForScopeSet(new HashSet<>(Arrays.asList("openid", "invalid:scope"))));
   }

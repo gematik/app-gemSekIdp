@@ -23,6 +23,37 @@
     function submitForm(){
       let kvnrValue = document.getElementById("kvnr").value.trim();
       document.getElementById("userid").value = kvnrValue != "" ? kvnrValue : "X110411675";
+
+      document.getElementById("acrValue").value = (document.getElementById("acrValue").value === "") ? "gematik-ehealth-loa-high" : document.getElementById("acrValue").value
+      document.getElementById("amrValue").value = (document.getElementById("amrValue").value === "") ? "urn:telematik:auth:eGK" : document.getElementById("amrValue").value
+    }
+
+    function setAmrOptions(acr){
+      document.getElementById("acrValue").value = acr
+      let amrValues = ["urn:telematik:auth:mEW", "urn:telematik:auth:eGK", "urn:telematik:auth:eID", "urn:telematik:auth:sso", "urn:telematik:auth:guest:eGK", "urn:telematik:auth:other"]
+      let amrSelectElement = document.getElementById("amr-select")
+      while (amrSelectElement.lastChild) {
+        if(amrSelectElement.children.length === 1) break
+        amrSelectElement.removeChild(amrSelectElement.lastChild);
+      }
+      if(acr === "gematik-ehealth-loa-substantial"){
+        addAmrOption(amrValues[0], amrSelectElement)
+      } else if (acr === "gematik-ehealth-loa-high"){
+        for(let i = 1; i < amrValues.length; i++){
+          addAmrOption(amrValues[i], amrSelectElement)
+        }
+      }
+    }
+
+    function addAmrOption(optionValue, amrSelectElement){
+      let amrOption = document.createElement("option")
+      amrOption.value = optionValue
+      amrOption.text = optionValue
+      amrSelectElement.add(amrOption)
+    }
+
+    function setAmrValue() {
+      document.getElementById("amrValue").value = document.getElementById("amr-select").value;
     }
   </script>
 </head>
@@ -42,10 +73,23 @@
 <br>
 <label for="tan">gematik authenticator TAN</label>
 <input type="text" id="tan" placeholder="Enter received TAN here"><br>
+<br><br>
+<label><b>Authentication Class Reference</b></label><br>
+<label for="high">gematik-ehealth-loa-high</label>
+<input type="radio" id="high" name="acr" th:value="gematik-ehealth-loa-high" onchange="setAmrOptions('gematik-ehealth-loa-high')">
+<label for="substantial">gematik-ehealth-loa-substantial</label>
+<input type="radio" id="substantial" name="acr" th:value="gematik-ehealth-loa-substantial" onchange="setAmrOptions('gematik-ehealth-loa-substantial')">
+<br><br>
+<label for="amr-select"><b>Authentication Method Reference</b></label><br>
+<select id="amr-select" onchange="setAmrValue()">
+<option disabled selected>Select Value</option>
+</select>
 <form th:action="${fedAuthEndpointUrl}" onsubmit="submitForm()">
   <br>
   <input type="hidden" id="requesturi" name="request_uri" th:value="${requestUri}">
   <input type="hidden" id="userid" name="user_id">
+  <input type="hidden" id="amrValue" name="amr_value">
+  <input type="hidden" id="acrValue" name="acr_value">
   <br>
   <input type="submit" value="Login">
 </form>

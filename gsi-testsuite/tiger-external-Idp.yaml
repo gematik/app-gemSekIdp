@@ -16,7 +16,7 @@ tigerProxy:
 lib:
   activateWorkflowUI: false
 
-additionalYamls:
+additionalConfigurationFiles:
   - filename: tc_properties-external-Idp.yaml
     baseKey: gsi
 
