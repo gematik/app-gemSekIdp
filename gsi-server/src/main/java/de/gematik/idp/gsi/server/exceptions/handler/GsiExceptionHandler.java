@@ -34,6 +34,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -50,7 +51,8 @@ public class GsiExceptionHandler {
   @ExceptionHandler({
     ConstraintViolationException.class,
     ValidationException.class,
-    MethodArgumentNotValidException.class
+    MethodArgumentNotValidException.class,
+    MethodArgumentTypeMismatchException.class
   })
   public ResponseEntity<Oauth2ErrorResponse> handleValidationException(final Exception exc) {
     return handleGsiException(

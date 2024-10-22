@@ -23,6 +23,7 @@ Feature: Test IdpSektoral's Auth Endpoint
     And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
     Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$..authorization_endpoint')}"
+    And TGR HttpClient followRedirects Konfiguration deaktiviert
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_001
   @Approval

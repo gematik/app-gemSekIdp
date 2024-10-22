@@ -16,12 +16,27 @@
 
 package de.gematik.idp.gsi.server.data;
 
+import de.gematik.idp.field.ClaimName;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class GsiConstants {
+
+  public static final Set<String> VALID_CLAIMS =
+      Set.of(
+          ClaimName.TELEMATIK_ALTER.getJoseName(),
+          ClaimName.TELEMATIK_DISPLAY_NAME.getJoseName(),
+          ClaimName.TELEMATIK_GIVEN_NAME.getJoseName(),
+          ClaimName.TELEMATIK_GESCHLECHT.getJoseName(),
+          ClaimName.TELEMATIK_EMAIL.getJoseName(),
+          ClaimName.TELEMATIK_PROFESSION.getJoseName(),
+          ClaimName.TELEMATIK_ID.getJoseName(),
+          ClaimName.TELEMATIK_ORGANIZATION.getJoseName(),
+          ClaimName.TELEMATIK_FAMILY_NAME.getJoseName());
 
   public static final Set<String> SCOPES_SUPPORTED =
       Set.of(
@@ -34,6 +49,25 @@ public final class GsiConstants {
           "urn:telematik:versicherter",
           "urn:telematik:family_name",
           "openid");
+
+  public static final Set<String> AMR_VALUES_HIGH =
+      Set.of(
+          "urn:telematik:auth:eGK",
+          "urn:telematik:auth:eID",
+          "urn:telematik:auth:sso",
+          "urn:telematik:auth:guest:eGK",
+          "urn:telematik:auth:other");
+
+  public static final Set<String> AMR_VALUES_SUBSTANTIAL = Set.of("urn:telematik:auth:mEW");
+
+  public static final Set<String> AMR_VALUES =
+      Stream.concat(AMR_VALUES_HIGH.stream(), AMR_VALUES_SUBSTANTIAL.stream())
+          .collect(Collectors.toSet());
+
+  public static final String ACR_HIGH = "gematik-ehealth-loa-high";
+  public static final String ACR_SUBSTANTIAL = "gematik-ehealth-loa-substantial";
+
+  public static final Set<String> ACR_VALUES = Set.of(ACR_HIGH, ACR_SUBSTANTIAL);
 
   public static final int IDTOKEN_TTL_MINUTES = 5;
 

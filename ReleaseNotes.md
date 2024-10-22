@@ -1,3 +1,13 @@
+# Release 7.0.4
+
+- add documentation for key rotation
+- allow multiple tls certs in entity statement for key rotation
+- refactoring of EntityStatementRpService into separate services
+- add test identities
+- add validation for optional claims parameter in par endpoint
+- update configuration: mTLS at par endpoint now required for gsi.dev and gsi-ref.dev
+- update dependencies
+
 # Release 7.0.3
 
 - skip jacoco by default

@@ -46,5 +46,5 @@ public class GsiConfiguration {
   private KeyConfig tokenSigPubKeyConfig;
   private String loglevel;
   private Integer requestUriTTL;
-  private boolean isRequiredClientCert;
+  private boolean clientCertRequired;
 }

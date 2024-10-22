@@ -41,7 +41,7 @@ class AssetLinksNegativeControllerTest {
   @InjectMocks private AssetLinksController assetLinksController;
 
   @Test
-  void getAssetLinksAndroid_fileNotFound() {
+  void test_getAssetLinksAndroid_404() {
     when(resourceLoader.getResource("classpath:assetlinks.json")).thenReturn(resource);
     when(resource.exists()).thenReturn(false);
 
@@ -52,7 +52,7 @@ class AssetLinksNegativeControllerTest {
   }
 
   @Test
-  void getAssetLinksIos_fileNotFound() {
+  void test_getAssetLinksIos_404() {
     when(resourceLoader.getResource("classpath:apple-app-site-association")).thenReturn(resource);
     when(resource.exists()).thenReturn(false);
 

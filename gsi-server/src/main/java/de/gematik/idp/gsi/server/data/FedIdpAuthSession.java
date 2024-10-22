@@ -34,7 +34,10 @@ public class FedIdpAuthSession {
   private final String fachdienstCodeChallenge;
   private final String fachdienstCodeChallengeMethod;
   private final String fachdienstNonce;
-  private final Set<String> requestedScopes;
+  private final Set<String> requestedOptionalClaims;
+  private final Set<String> requestedEssentialClaims;
+  private final Set<String> essentialRequestedAcr;
+  private final Set<String> essentialRequestedAmr;
   // will be sent in message nr.7
   private final String fachdienstRedirectUri;
   private final String authorizationCode;
@@ -55,8 +58,14 @@ public class FedIdpAuthSession {
         + fachdienstCodeChallengeMethod
         + "\n fachdienstNonce: "
         + fachdienstNonce
-        + "\n requestedScopes: "
-        + requestedScopes
+        + "\n requestedOptionalClaims: "
+        + requestedOptionalClaims
+        + "\n requestedEssentialClaims: "
+        + requestedEssentialClaims
+        + "\n essentialRequestedAcr: "
+        + essentialRequestedAcr
+        + "\n essentialRequestedAmr: "
+        + essentialRequestedAmr
         + "\n fachdienstRedirectUri: "
         + fachdienstRedirectUri
         + "\n authorizationCode: "

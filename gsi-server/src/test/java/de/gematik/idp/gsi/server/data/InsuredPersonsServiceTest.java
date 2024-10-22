@@ -39,30 +39,30 @@ class InsuredPersonsServiceTest {
   @Autowired InsuredPersonsService insuredPersonsService;
 
   @Test
-  void getPersonFromService() {
+  void test_getPersonFromService_VALID() {
     assertThat(insuredPersonsService.getPersons().get("X110411675")).isNotNull();
   }
 
   @Test
-  void getPersons() {
+  void test_getPersons_VALID() {
     assertDoesNotThrow(() -> new InsuredPersonsService("versicherte.gesundheitsid.json"));
   }
 
   @Test
-  void getPersonX110411675() {
+  void test_getPersonX110411675_VALID() {
     final InsuredPersonsService iPr = new InsuredPersonsService("versicherte.gesundheitsid.json");
     assertThat(iPr.getPersons().get("X110411675")).isNotNull();
   }
 
   @Test
-  void getFamilyNameOfPersonX110411675() {
+  void test_getFamilyNameOfPersonX110411675_VALID() {
     final InsuredPersonsService iPr = new InsuredPersonsService("versicherte.gesundheitsid.json");
     assertThat(iPr.getPersons().get("X110411675"))
         .containsEntry(ClaimName.TELEMATIK_FAMILY_NAME.getJoseName(), "Bödefeld");
   }
 
   @Test
-  void checkInsuredPersonsList() {
+  void test_checkInsuredPersonsList_VALID() {
     final InsuredPersonsService iPr = new InsuredPersonsService("versicherte.gesundheitsid.json");
     iPr.getPersons()
         .values()
@@ -78,7 +78,7 @@ class InsuredPersonsServiceTest {
   }
 
   @Test
-  void getPersonFileNotFound() {
+  void test_getPersonFileNotFound_INVALID() {
     final String invalidFilePath = "invalidFilePath";
     final InsuredPersonsService iPr = new InsuredPersonsService(invalidFilePath);
     assertThatThrownBy(iPr::getPersons)
@@ -87,7 +87,7 @@ class InsuredPersonsServiceTest {
   }
 
   @Test
-  void getPersonFileNotJson() {
+  void test_getPersonFileNotJson_INVALID() {
     final String invalidFilePath = "application.yml";
     final InsuredPersonsService iPr = new InsuredPersonsService(invalidFilePath);
     assertThatThrownBy(iPr::getPersons)

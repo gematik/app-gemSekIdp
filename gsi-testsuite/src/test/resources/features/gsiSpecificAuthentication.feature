@@ -188,7 +188,7 @@ Feature: Test GSI specific authentication
     Then TGR current response at "$.body" matches as JSON:
         """
           {
-            "requested_claims":        "${json-unit.ignore}"
+            "requested_claims":       "${json-unit.ignore}"
           }
         """
     And TGR current response with attribute "$.body.requested_claims.0" matches "urn:telematik:claims:profession"

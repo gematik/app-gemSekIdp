@@ -33,7 +33,7 @@ class SektoralIdpAuthenticatorTest {
   @Autowired SektoralIdpAuthenticator sektoralIdpAuthenticator;
 
   @Test
-  void testCreateLocationForAuthorizationResponse() {
+  void test_createLocationForAuthorizationResponse_VALID() {
     final AtomicReference<String> location = new AtomicReference<>();
 
     Assertions.assertDoesNotThrow(
@@ -45,7 +45,7 @@ class SektoralIdpAuthenticatorTest {
   }
 
   @Test
-  void testCreateLocationForAuthorizationResponseUriSyntaxException() {
+  void test_createLocationForAuthorizationResponse_UriSyntaxException_INVALID() {
     final AtomicReference<String> location = new AtomicReference<>();
 
     assertThatThrownBy(

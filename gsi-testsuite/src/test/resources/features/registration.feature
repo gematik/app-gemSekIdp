@@ -24,6 +24,7 @@ Feature: Test Fed Master's Entity Statement about IdpSektoral
     And TGR find request to path "/.well-known/openid-federation"
     Then TGR set local variable "fedmasterFederationFetchEndpoint" to "!{rbel:currentResponseAsString('$..federation_fetch_endpoint')}"
     Then TGR set local variable "fedmasterIdpListEndpoint" to "!{rbel:currentResponseAsString('$..idp_list_endpoint')}"
+    And TGR HttpClient followRedirects Konfiguration deaktiviert
 
   @TCID:IDPSEKTORAL_FEDM_ENTITY_STATEMENT_001
   @PRIO:1
