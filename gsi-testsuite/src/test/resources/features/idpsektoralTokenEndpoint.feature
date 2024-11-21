@@ -439,13 +439,15 @@ Feature: Test IdpSektoral's Token Endpoint
       "urn:telematik:claims:organization": "<organization>",
       "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
       "urn:telematik:claims:display_name": "<displayName>",
-      "amr": '<amr>',
+      "amr": "${json-unit.ignore}",
       "iss": '.*',
       "exp": "${json-unit.ignore}",
       "iat": "${json-unit.ignore}",
       "nonce": '.*'
       }
     """
+    And TGR current response with attribute "$.body.id_token.content.body.body.amr.0" matches "<amr>"
+
     Examples:
       | userId     | id         | organization | displayName                                 | acr_values                      | amr                    |
       | 12345678   | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld | gematik-ehealth-loa-high        | urn:telematik:auth:eGK |

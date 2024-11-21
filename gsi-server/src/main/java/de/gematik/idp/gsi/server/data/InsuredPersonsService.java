@@ -34,17 +34,17 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class InsuredPersonsService {
   private final String insuredPersonsJsonFilePath;
-  private Map<String, Map<String, String>> persons;
+  private Map<String, Map<String, Object>> persons;
 
-  public Map<String, String> getPerson(final String kvnr) {
+  public Map<String, Object> getPerson(final String kvnr) {
     return Optional.ofNullable(getPersons().get(kvnr)).orElse(getPersonFallback());
   }
 
-  private Map<String, String> getPersonFallback() {
+  private Map<String, Object> getPersonFallback() {
     return getPersons().get("X110411675");
   }
 
-  public Map<String, Map<String, String>> getPersons() {
+  public Map<String, Map<String, Object>> getPersons() {
     initPersons();
     return persons;
   }
@@ -55,16 +55,16 @@ public class InsuredPersonsService {
     }
   }
 
-  private Map<String, Map<String, String>> readInsuredPersons(final String filePath) {
+  private Map<String, Map<String, Object>> readInsuredPersons(final String filePath) {
     try {
-      final List<Map<String, String>> dataList = readJsonFileToList(filePath);
+      final List<Map<String, Object>> dataList = readJsonFileToList(filePath);
       return convertListToKvnrMap(dataList);
     } catch (final IOException e) {
       throw new GsiException("Could not read insured persons from file.", e);
     }
   }
 
-  private static List<Map<String, String>> readJsonFileToList(final String filePath)
+  private static List<Map<String, Object>> readJsonFileToList(final String filePath)
       throws IOException {
     final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -77,15 +77,15 @@ public class InsuredPersonsService {
     }
 
     // Read the JSON file into a List of Map<String, String>
-    return objectMapper.readValue(inputStream, new TypeReference<List<Map<String, String>>>() {});
+    return objectMapper.readValue(inputStream, new TypeReference<List<Map<String, Object>>>() {});
   }
 
-  private static Map<String, Map<String, String>> convertListToKvnrMap(
-      final List<Map<String, String>> dataList) {
-    final Map<String, Map<String, String>> resultMap = new HashMap<>();
+  private static Map<String, Map<String, Object>> convertListToKvnrMap(
+      final List<Map<String, Object>> dataList) {
+    final Map<String, Map<String, Object>> resultMap = new HashMap<>();
 
-    for (final Map<String, String> dataMap : dataList) {
-      final String id = dataMap.get(TELEMATIK_ID.getJoseName());
+    for (final Map<String, Object> dataMap : dataList) {
+      final String id = (String) dataMap.get(TELEMATIK_ID.getJoseName());
       if (id != null) {
         resultMap.put(id, dataMap);
       }

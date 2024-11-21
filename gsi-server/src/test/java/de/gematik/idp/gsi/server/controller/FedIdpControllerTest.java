@@ -21,14 +21,18 @@ import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
 import static de.gematik.idp.data.Oauth2ErrorCode.UNAUTHORIZED_CLIENT;
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
-import static de.gematik.idp.gsi.server.data.GsiConstants.*;
+import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_HIGH;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.TLS_CLIENT_CERT_HEADER_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
@@ -43,10 +47,15 @@ import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.data.ClaimsResponse;
 import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
-import de.gematik.idp.gsi.server.services.*;
+import de.gematik.idp.gsi.server.services.EntityStatementRpReader;
+import de.gematik.idp.gsi.server.services.RequestValidator;
+import de.gematik.idp.gsi.server.services.TokenRepositoryRp;
 import de.gematik.idp.token.IdpJwe;
 import de.gematik.idp.token.JsonWebToken;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.HttpStatus;
@@ -56,7 +65,12 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.awaitility.Awaitility;
 import org.jose4j.jwk.PublicJsonWebKey;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -1074,7 +1088,10 @@ class FedIdpControllerTest {
                     .param("code_challenge_method", CodeChallengeMethod.S256.toString())
                     .param("response_type", "code")
                     .param("nonce", "42")
-                    .param("scope", "urn:telematik:given_name openid")
+                    .param(
+                        "scope",
+                        "urn:telematik:given_name urn:telematik:display_name"
+                            + " urn:telematik:versicherter openid")
                     .param("acr_values", "gematik-ehealth-loa-high")
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
             .andReturn()

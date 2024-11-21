@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ *  Copyright 2024 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
 import java.security.PublicKey;
-import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +68,7 @@ public class TokenRepositoryRp {
 
   private void updateStatementAboutRpIfExpiredAndNewIsAvailable(final String sub) {
     if (entityStmtsAboutRp.containsKey(sub)) {
-      if (!entityStmtsAboutRp.get(sub).getExpiresAt().isBefore(ZonedDateTime.now())) {
+      if (entityStmtsAboutRp.get(sub).isExpired()) {
         log.debug("Entitystatement about RP [{}] is in storage but expired. Fetching...", sub);
         fetchAndStoreEntityStmntAboutRp(sub);
       } else {

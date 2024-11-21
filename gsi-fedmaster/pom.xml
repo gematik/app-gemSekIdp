@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>gemSekIdp-global</artifactId>
-    <version>7.0.4</version>
+    <version>7.0.6</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>gsi-fedmaster</artifactId>
-  <version>7.0.4</version>
+  <version>7.0.6</version>
   <packaging>jar</packaging>
 
   <name>gsi-fedmaster</name>
@@ -95,7 +95,7 @@
     <dependency>
       <groupId>org.jmdns</groupId>
       <artifactId>jmdns</artifactId>
-      <version>3.5.12</version>
+      <version>3.6.0</version>
     </dependency>
   </dependencies>
 

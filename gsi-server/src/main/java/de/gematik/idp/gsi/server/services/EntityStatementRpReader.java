@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ *  Copyright 2024 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -185,15 +185,15 @@ public abstract class EntityStatementRpReader {
         if (encKeyAsMap.isPresent()) {
           return Optional.of(PublicJsonWebKey.Factory.newPublicJwk(encKeyAsMap.get()));
         }
-      } catch (JoseException e) {
+      } catch (final JoseException e) {
         return Optional.empty();
       }
     }
     return Optional.empty();
   }
 
-  private static X509Certificate extractX5cValueFromCert(Map<String, Object> certKey) {
-    List<String> x5cValues = (List<String>) certKey.get("x5c");
+  private static X509Certificate extractX5cValueFromCert(final Map<String, Object> certKey) {
+    final List<String> x5cValues = (List<String>) certKey.get("x5c");
     if (x5cValues.isEmpty()) {
       throw new GsiException(
           INVALID_REQUEST, "No x5c certificate found in jwk", HttpStatus.UNAUTHORIZED);

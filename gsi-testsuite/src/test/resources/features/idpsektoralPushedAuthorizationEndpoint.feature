@@ -154,7 +154,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   Die Response muss als Body eine passende Fehlermeldung enthalten:
 
     Given TGR clear recorded messages
-    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+    When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id   | state       | redirect_uri   | code_challenge                              | code_challenge_method   | response_type   | nonce                | scope   | acr_values   |
       | <client_id> | yyystateyyy | <redirect_uri> | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | <code_challenge_method> | <response_type> | vy7rM801AQw1or22GhrZ | <scope> | <acr_values> |
     And TGR find request to path ".*"

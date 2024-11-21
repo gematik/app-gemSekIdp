@@ -6,22 +6,22 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gsi-testsuite</artifactId>
-  <version>7.0.4</version>
+  <version>7.0.6</version>
   <packaging>jar</packaging>
   <description>Testsuite fuer sektorale IDPs</description>
 
   <properties>
-    <version.idp-commons>29.0.2</version.idp-commons>
+    <version.idp-commons>29.0.4</version.idp-commons>
     <java.version>21</java.version>
-    <version.lombok>1.18.34</version.lombok>
+    <version.lombok>1.18.36</version.lombok>
     <version.maven-compiler-plugin>3.13.0</version.maven-compiler-plugin>
     <version.maven-enforcer-plugin>3.5.0</version.maven-enforcer-plugin>
-    <version.maven-failsafe-plugin>3.5.1</version.maven-failsafe-plugin>
+    <version.maven-failsafe-plugin>3.5.2</version.maven-failsafe-plugin>
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
-    <version.maven-surefire-plugin>3.5.1</version.maven-surefire-plugin>
+    <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
     <version.spotless-maven-plugin>2.43.0</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
-    <version.tiger>3.4.2</version.tiger>
+    <version.tiger>3.4.5</version.tiger>
     <version.jacoco-maven-plugin>0.8.12</version.jacoco-maven-plugin>
   </properties>
 
@@ -30,7 +30,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.5.11</version>
+        <version>1.5.12</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -50,18 +50,6 @@
           <artifactId>jetty-client</artifactId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>io.cucumber</groupId>
-      <artifactId>cucumber-junit-platform-engine</artifactId>
-      <version>7.19.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.vintage</groupId>
-      <artifactId>junit-vintage-engine</artifactId>
-      <version>5.11.3</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>de.gematik.idp</groupId>
@@ -254,7 +242,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.4.1</version>
+        <version>3.5.0</version>
         <executions>
           <execution>
             <id>check-file-existence</id>

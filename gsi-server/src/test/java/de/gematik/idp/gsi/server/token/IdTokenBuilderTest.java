@@ -39,6 +39,8 @@ import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.PrivateKey;
 import java.security.Security;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import lombok.SneakyThrows;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -77,7 +79,8 @@ class IdTokenBuilderTest {
                 Map.entry(
                     AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH),
                 Map.entry(
-                    AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "urn:telematik:auth:eID")));
+                    AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
+                    new String[] {"urn:telematik:auth:eID"})));
   }
 
   @Test
@@ -92,7 +95,9 @@ class IdTokenBuilderTest {
         .containsEntry(AUDIENCE.getJoseName(), "http://NonSmokersFachdienst.de")
         .containsKey(NONCE.getJoseName())
         .containsEntry(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH)
-        .containsEntry(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), "urn:telematik:auth:eID")
+        .containsEntry(
+            AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
+            new ArrayList<>(List.of("urn:telematik:auth:eID")))
         .containsEntry(TELEMATIK_PROFESSION.getJoseName(), "Smoker")
         .containsEntry(TELEMATIK_ORGANIZATION.getJoseName(), "NonSmokersWorldWide")
         .containsEntry(TELEMATIK_ID.getJoseName(), "47119")
