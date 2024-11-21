@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ *  Copyright 2024 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import de.gematik.idp.gsi.server.services.EntityStatementRpReader;
 import de.gematik.idp.gsi.server.services.EntityStatementRpVerifier;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.cert.X509Certificate;
-import java.time.ZonedDateTime;
 import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +34,7 @@ public class RpToken {
   private final JsonWebToken token;
 
   public boolean isExpired() {
-    return !token.getExpiresAt().isBefore(ZonedDateTime.now());
+    return token.isExpired();
   }
 
   public void verify(final JsonWebKeySet jwks) {

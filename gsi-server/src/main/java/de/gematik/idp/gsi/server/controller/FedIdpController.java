@@ -21,7 +21,9 @@ import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_TYP;
 import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
-import static de.gematik.idp.gsi.server.data.GsiConstants.*;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.TLS_CLIENT_CERT_HEADER_NAME;
 import static de.gematik.idp.gsi.server.util.ClaimHelper.getClaimsForScopeSet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +34,11 @@ import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.data.ParResponse;
 import de.gematik.idp.data.TokenResponse;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
-import de.gematik.idp.gsi.server.data.*;
+import de.gematik.idp.gsi.server.data.ClaimsInfo;
+import de.gematik.idp.gsi.server.data.ClaimsResponse;
+import de.gematik.idp.gsi.server.data.FedIdpAuthSession;
+import de.gematik.idp.gsi.server.data.QRCodeGenerator;
+import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.gsi.server.services.AuthenticationService;
 import de.gematik.idp.gsi.server.services.EntityStatementBuilder;
@@ -42,6 +48,7 @@ import de.gematik.idp.gsi.server.services.SektoralIdpAuthenticator;
 import de.gematik.idp.gsi.server.services.ServerUrlService;
 import de.gematik.idp.gsi.server.services.TokenRepositoryRp;
 import de.gematik.idp.gsi.server.token.IdTokenBuilder;
+import de.gematik.idp.token.JsonWebToken;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -50,8 +57,14 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
@@ -169,7 +182,7 @@ public class FedIdpController {
               regexp =
                   "urn:telematik:auth:eGK|urn:telematik:auth:eID|urn:telematik:auth:sso|urn:telematik:auth:mEW|urn:telematik:auth:guest:eGK|urn:telematik:auth:other")
           final String amr,
-      @RequestParam(name = "claims", defaultValue = "") ClaimsInfo claimsInfo,
+      @RequestParam(name = "claims", defaultValue = "") final ClaimsInfo claimsInfo,
       @RequestHeader(name = TLS_CLIENT_CERT_HEADER_NAME, required = false) final String clientCert,
       final HttpServletResponse respMsgNr3) {
 
@@ -357,16 +370,17 @@ public class FedIdpController {
 
     final String idToken;
     try {
-      idToken =
+      final JsonWebToken idTokenPlain =
           new IdTokenBuilder(
                   jwtProcessorTokenSigPrivKey,
                   serverUrlService.determineServerUrl(),
                   session.getFachdienstNonce(),
                   clientId,
                   session.getUserData())
-              .buildIdToken()
-              .encryptAsJwt(token.getRpEncKey())
-              .getRawString();
+              .buildIdToken();
+      log.info("id-token: {}", idTokenPlain.getRawString());
+
+      idToken = idTokenPlain.encryptAsJwt(token.getRpEncKey()).getRawString();
     } catch (final JoseException e) {
       throw new GsiException(e);
     }

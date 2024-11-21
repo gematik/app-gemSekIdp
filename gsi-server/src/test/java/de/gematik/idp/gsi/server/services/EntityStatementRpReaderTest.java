@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ *  Copyright 2024 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 
 package de.gematik.idp.gsi.server.services;
 
-import static de.gematik.idp.gsi.server.common.Constants.*;
+import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_FACHDIENST_WITH_OPTIONAL_JWKS;
+import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
+import static de.gematik.idp.gsi.server.common.Constants.SIGNED_JWKS;
+import static de.gematik.idp.gsi.server.common.Constants.SIGNED_JWKS_TWO_CERTS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -108,7 +111,8 @@ class EntityStatementRpReaderTest {
           .when(() -> HttpClient.fetchSignedJwks(any()))
           .thenReturn(Optional.of(new JsonWebToken(SIGNED_JWKS_TWO_CERTS)));
       assertDoesNotThrow(() -> EntityStatementRpReader.getRpTlsClientCerts(VALID_ENTITY_STMNT));
-      List<X509Certificate> certs = EntityStatementRpReader.getRpTlsClientCerts(VALID_ENTITY_STMNT);
+      final List<X509Certificate> certs =
+          EntityStatementRpReader.getRpTlsClientCerts(VALID_ENTITY_STMNT);
       assertThat(certs).isNotNull();
       assertThat(certs).hasSize(2);
     }

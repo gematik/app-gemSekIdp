@@ -1006,7 +1006,9 @@
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "G839948921",
     "urn:telematik:claims:organization": "104401207",
-    "amr": "urn:telematik:auth:sso",
+    "amr": [
+      "urn:telematik:auth:sso"
+    ],
     "acr": "gematik-ehealth-loa-high"
   },
   {
@@ -1068,7 +1070,9 @@
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "O018753329",
     "urn:telematik:claims:organization": "106589300",
-    "amr": "urn:telematik:auth:mEW",
+    "amr": [
+      "urn:telematik:auth:mEW"
+    ],
     "acr": "gematik-ehealth-loa-substantial"
   },
   {
@@ -1154,7 +1158,9 @@
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "D162565246",
     "urn:telematik:claims:organization": "101592612",
-    "amr": "urn:telematik:auth:eID",
+    "amr": [
+      "urn:telematik:auth:eID"
+    ],
     "acr": "gematik-ehealth-loa-high"
   },
   {
@@ -1216,7 +1222,9 @@
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110411675",
     "urn:telematik:claims:organization": "109500969",
-    "amr": "urn:telematik:auth:eGK",
+    "amr": [
+      "urn:telematik:auth:eGK"
+    ],
     "acr": "gematik-ehealth-loa-high"
   },
   {
@@ -1266,7 +1274,9 @@
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110542925",
     "urn:telematik:claims:organization": "109500969",
-    "amr": "urn:telematik:auth:eGK",
+    "amr": [
+      "urn:telematik:auth:eGK"
+    ],
     "acr": "gematik-ehealth-loa-high"
   },
   {
@@ -1280,7 +1290,9 @@
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110401369",
     "urn:telematik:claims:organization": "109500969",
-    "amr": "urn:telematik:auth:eGK",
+    "amr": [
+      "urn:telematik:auth:eGK"
+    ],
     "acr": "gematik-ehealth-loa-high"
   },
   {
@@ -1509,6 +1521,90 @@
     "urn:telematik:claims:email": "Lukas@mail.Caner.de",
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110503240",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-16",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Groß",
+    "urn:telematik:claims:display_name": "Maria Nora Gräfin GroßTEST-ONLY",
+    "urn:telematik:claims:given_name": "Maria Nora Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "maria_nora@mail.gross.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110568591",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-16",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Düsterbehn",
+    "urn:telematik:claims:display_name": "Lorette Freifrau DüsterbehnTEST-ONLY",
+    "urn:telematik:claims:given_name": "Lorette Freifrau",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "Lorette@mail.duesterbehn.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110574946",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-16",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Groß",
+    "urn:telematik:claims:display_name": "Larissa A. T. P. T. DüsterbehnTEST-ONLY",
+    "urn:telematik:claims:given_name": "Larissa Alice Tamara Paula Tatjana",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "Larissa_alice@mail.gross.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110557966",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-16",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Özdemir",
+    "urn:telematik:claims:display_name": "Prof. Dr. Vera Steffi N. L. J. ÖzdemirTEST-ONLY",
+    "urn:telematik:claims:given_name": "Vera Steffi Nora Laura Johanna",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "vsnlj_oezdemir@mail.oez.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110535489",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-16",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Nullmayr",
+    "urn:telematik:claims:display_name": "Dr. Lisa NullmayrTEST-ONLY",
+    "urn:telematik:claims:given_name": "Lisa",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "lisa@mail.nullmayr.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110573375",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-16",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Müller",
+    "urn:telematik:claims:display_name": "Vera Melissa A.-H. A. Gräfin von MüllerTEST-ONLY",
+    "urn:telematik:claims:given_name": "Vera Melissa Annegret-Heidemarie Annika Gräfin von",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "vera-melissa@mail.mueller.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110591094",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-16",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Frankenstein",
+    "urn:telematik:claims:display_name": "Feli Marie-Ella Hanna Freifrau von FrankensteinTEST-ONLY",
+    "urn:telematik:claims:given_name": "Feli Marie-Ella Hanna Freifrau von",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "feli-marie@mail.frankenstein.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110509256",
     "urn:telematik:claims:organization": "109500969"
   }
 ]

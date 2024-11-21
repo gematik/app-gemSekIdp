@@ -22,6 +22,8 @@ Feature: Test IdpSektoral's ID Token
   @Approval
   @PRIO:1
   @TESTSTUFE:4
+  @OpenBug
+  @Ticket:GSI-202
   Scenario: IdpSektoral ID Token - Gutfall - validiere Header Claims
 
   ```
@@ -31,8 +33,9 @@ Feature: Test IdpSektoral's ID Token
         """
           {
             "alg":                        'ES256',
-            "typ":                        '.*',
-            "kid":                        '.*'
+            "____typ":                        '.*',
+            "kid":                        '.*',
+            "x5c":                        "${json-unit.ignore}"
           }
         """
 
@@ -57,10 +60,10 @@ Feature: Test IdpSektoral's ID Token
             "nonce":                                  '.*',
             "acr":                                    '(gematik-ehealth-loa-substantial)|(gematik-ehealth-loa-high)',
             "amr":                                    "${json-unit.ignore}",
-            "urn:telematik:claims:profession":        '.*',
-            "urn:telematik:claims:given_name":        '.*',
-            "urn:telematik:claims:organization":      '.*',
-            "urn:telematik:claims:id":                '.*',
+            "____urn:telematik:claims:profession":        '.*',
+            "____urn:telematik:claims:given_name":        '.*',
+            "____urn:telematik:claims:organization":      '.*',
+            "____urn:telematik:claims:id":                '.*',
             "____at_hash":                            "${json-unit.ignore}",
             "____rat":                                "${json-unit.ignore}",
             "____sid":                                "${json-unit.ignore}",

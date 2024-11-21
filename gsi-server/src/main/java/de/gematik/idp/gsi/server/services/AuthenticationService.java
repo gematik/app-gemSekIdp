@@ -39,7 +39,7 @@ public class AuthenticationService {
       final Map<String, Object> userData,
       final String userId,
       final Set<String> selectedClaimsSet) {
-    final Map<String, String> user = insuredPersonsService.getPerson(userId);
+    final Map<String, Object> user = insuredPersonsService.getPerson(userId);
 
     selectedClaimsSet.forEach(claim -> userData.put(claim, user.get(claim)));
     userData.put(
@@ -51,6 +51,6 @@ public class AuthenticationService {
         AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
         user.containsKey(AUTHENTICATION_METHODS_REFERENCE.getJoseName())
             ? user.get(AUTHENTICATION_METHODS_REFERENCE.getJoseName())
-            : "urn:telematik:auth:eGK");
+            : new String[] {"urn:telematik:auth:eGK"});
   }
 }

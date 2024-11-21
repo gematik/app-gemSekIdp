@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ *  Copyright 2024 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_SUBSTANTIAL;
 import static de.gematik.idp.gsi.server.util.ClaimHelper.getClaimsForScopeSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

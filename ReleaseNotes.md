@@ -1,3 +1,10 @@
+# Release 7.0.6
+
+- fix expiry date validation of entity statement (fixes caching issue)
+- adapt server and testsuite to set/expect amr as array
+- add test identities
+- update dependencies
+
 # Release 7.0.4
 
 - add documentation for key rotation

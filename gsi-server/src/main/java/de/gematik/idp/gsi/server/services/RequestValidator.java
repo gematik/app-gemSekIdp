@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ *  Copyright 2024 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,15 @@
 
 package de.gematik.idp.gsi.server.services;
 
-import static de.gematik.idp.data.Oauth2ErrorCode.*;
-import static de.gematik.idp.gsi.server.data.GsiConstants.*;
+import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
+import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_SCOPE;
+import static de.gematik.idp.data.Oauth2ErrorCode.UNAUTHORIZED_CLIENT;
+import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_HIGH;
+import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_SUBSTANTIAL;
+import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_VALUES;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_HIGH;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_SUBSTANTIAL;
 
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
