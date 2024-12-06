@@ -33,6 +33,8 @@ import de.gematik.idp.gsi.server.data.FedIdpAuthSession;
 import de.gematik.idp.gsi.server.data.GsiConstants;
 import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -163,6 +165,15 @@ public abstract class RequestValidator {
                   HttpStatus.BAD_REQUEST);
             }
           });
+    }
+  }
+
+  public static void validateRedirectUri(final String redirectUri) {
+    try {
+      new URI(redirectUri);
+    } catch (final URISyntaxException e) {
+      throw new GsiException(
+          INVALID_REQUEST, "Invalid redirect uri: " + e.getMessage(), HttpStatus.BAD_REQUEST);
     }
   }
 }

@@ -17,6 +17,7 @@
 package de.gematik.idp.gsi.server;
 
 import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.KeyUtility;
 import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.data.FederationPrivKey;
@@ -27,37 +28,43 @@ import de.gematik.idp.file.ResourceReader;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.util.StreamUtils;
 
 @Configuration
 @RequiredArgsConstructor
 public class KeyConfiguration implements KeyConfigurationBase {
 
+  private final ResourceLoader resourceLoader;
   private final GsiConfiguration gsiConfiguration;
 
   @Bean
   public FederationPrivKey esSigPrivKey() {
-    return getFederationPrivKey(gsiConfiguration.getEsSigPrivKeyConfig());
+    return getFederationPrivKeyFromPem(gsiConfiguration.getEsSigPrivKeyConfig());
   }
 
   @Bean
   public FederationPubKey esSigPubKey() {
-    return getFederationPubkey(gsiConfiguration.getEsSigPubKeyConfig());
+    return getFederationPubkeyFromPem(gsiConfiguration.getEsSigPubKeyConfig());
   }
 
   @Bean
   public FederationPrivKey tokenSigPrivKey() {
-    return getFederationPrivKey(gsiConfiguration.getTokenSigPrivKeyConfig());
+    return getFederationPrivKeyFromP12(gsiConfiguration.getTokenSigKeyConfig());
   }
 
   @Bean
   public FederationPubKey tokenSigPubKey() {
-    return getFederationPubkey(gsiConfiguration.getTokenSigPubKeyConfig());
+    return getFederationPubkeyFromP12(gsiConfiguration.getTokenSigKeyConfig());
   }
 
   @Bean
@@ -67,9 +74,9 @@ public class KeyConfiguration implements KeyConfigurationBase {
   }
 
   @Bean
-  public IdpJwtProcessor jwtProcessorTokenSigPrivKey() {
+  public IdpJwtProcessor jwtProcessorTokenSigKey() {
     return new IdpJwtProcessor(
-        tokenSigPrivKey().getIdentity().getPrivateKey(), tokenSigPrivKey().getKeyId());
+        tokenSigPrivKey().getIdentity(), Optional.of(tokenSigPrivKey().getKeyId()));
   }
 
   @Bean
@@ -79,7 +86,42 @@ public class KeyConfiguration implements KeyConfigurationBase {
             gsiConfiguration.getFedmasterSigPubKeyFilePath()));
   }
 
-  private FederationPrivKey getFederationPrivKey(final KeyConfig keyConfiguration) {
+  private FederationPrivKey getFederationPrivKeyFromP12(final KeyConfig keyConfiguration) {
+    final Resource resource = resourceLoader.getResource(keyConfiguration.getFileName());
+    try (final InputStream inputStream = resource.getInputStream()) {
+      final PkiIdentity pkiIdentity =
+          CryptoLoader.getIdentityFromP12(StreamUtils.copyToByteArray(inputStream), "00");
+      return getFederationPrivKey(keyConfiguration, pkiIdentity);
+    } catch (final IOException e) {
+      throw new GsiException(
+          "Error while loading Gsi-Server Key from resource '"
+              + keyConfiguration.getFileName()
+              + "'",
+          e);
+    }
+  }
+
+  private FederationPubKey getFederationPubkeyFromP12(final KeyConfig keyConfiguration) {
+    final Resource resource = resourceLoader.getResource(keyConfiguration.getFileName());
+    try (final InputStream inputStream = resource.getInputStream()) {
+      final PkiIdentity pkiIdentity =
+          CryptoLoader.getIdentityFromP12(StreamUtils.copyToByteArray(inputStream), "00");
+      final X509Certificate cert = pkiIdentity.getCertificate();
+      return new FederationPubKey(
+          Optional.of(cert),
+          Optional.empty(),
+          keyConfiguration.getKeyId(),
+          Optional.of(keyConfiguration.getUse()));
+    } catch (final IOException e) {
+      throw new GsiException(
+          "Error while loading Gsi-Server Key from resource '"
+              + keyConfiguration.getFileName()
+              + "'",
+          e);
+    }
+  }
+
+  private FederationPrivKey getFederationPrivKeyFromPem(final KeyConfig keyConfiguration) {
     try {
       final PrivateKey privateKey =
           KeyUtility.readX509PrivateKeyPlain(
@@ -100,7 +142,7 @@ public class KeyConfiguration implements KeyConfigurationBase {
     }
   }
 
-  private FederationPubKey getFederationPubkey(final KeyConfig keyConfiguration) {
+  private FederationPubKey getFederationPubkeyFromPem(final KeyConfig keyConfiguration) {
     try {
       final PublicKey publicKey =
           KeyUtility.readX509PublicKey(

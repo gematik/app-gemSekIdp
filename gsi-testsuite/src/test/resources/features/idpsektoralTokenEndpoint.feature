@@ -21,9 +21,9 @@ Feature: Test IdpSektoral's Token Endpoint
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
     And TGR find request to path ".*/.well-known/openid-federation"
-    Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
-    Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$..authorization_endpoint')}"
-    Then TGR set local variable "token_endpoint" to "!{rbel:currentResponseAsString('$..token_endpoint')}"
+    Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$.body.body.metadata.openid_provider.pushed_authorization_request_endpoint')}"
+    Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$.body.body.metadata.openid_provider.authorization_endpoint')}"
+    Then TGR set local variable "token_endpoint" to "!{rbel:currentResponseAsString('$.body.body.metadata.openid_provider.token_endpoint')}"
     And TGR HttpClient followRedirects Konfiguration deaktiviert
 
 
@@ -403,7 +403,7 @@ Feature: Test IdpSektoral's Token Endpoint
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_010
     @Approval
     @GematikSekIdpOnly
-  Scenario Outline: IdpSektoral Token Endpoint - Gutfall ohne userConsent - validiere ID_TOKEN Body Claims
+  Scenario Outline: IdpSektoral Token Endpoint - Gutfall ohne userConsent - validiere acr/amr in ID_TOKEN Body Claims
 
   ```
   Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint, um anschließend den Flow über mit der

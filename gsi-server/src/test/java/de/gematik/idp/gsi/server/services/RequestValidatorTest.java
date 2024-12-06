@@ -324,4 +324,19 @@ class RequestValidatorTest {
         .isInstanceOf(GsiException.class)
         .hasMessageContaining("invalid amr value");
   }
+
+  @Test
+  void test_validateRedirectUri_VALID() {
+    assertDoesNotThrow(
+        () -> RequestValidator.validateRedirectUri("https://diga-dashboard.anydiga.com/code/ce"));
+  }
+
+  @Test
+  void test_validateRedirectUri_INVALID() {
+    assertThatThrownBy(
+            () ->
+                RequestValidator.validateRedirectUri(" https://diga-dashboard.anydiga.com/code/ce"))
+        .isInstanceOf(GsiException.class)
+        .hasMessageContaining("Invalid redirect uri");
+  }
 }

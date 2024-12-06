@@ -39,7 +39,7 @@ class GsiConfigurationTest {
   void fullIntTestComponent() {
     assertThat(gsiConfiguration).isNotNull();
     assertThat(gsiConfiguration.getEsSigPrivKeyConfig()).isNotNull();
-    assertThat(gsiConfiguration.getTokenSigPrivKeyConfig()).isNotNull();
+    assertThat(gsiConfiguration.getTokenSigKeyConfig()).isNotNull();
   }
 
   @Test
@@ -47,7 +47,7 @@ class GsiConfigurationTest {
     final GsiConfiguration gsiConfig =
         GsiConfiguration.builder()
             .esSigPrivKeyConfig(new KeyConfig("a", "b", "c", false))
-            .tokenSigPrivKeyConfig(new KeyConfig("d", "e", "f", false))
+            .tokenSigKeyConfig(new KeyConfig("g", "h", "i", true))
             .serverUrl("serverurl")
             .fedmasterSigPubKeyFilePath("anyCerts/myFedmasterSigCert.pem")
             .build();
@@ -56,10 +56,9 @@ class GsiConfigurationTest {
     assertThat(gsiConfig.getServerUrl()).isEqualTo("newUrl");
     assertThat(gsiConfig.getFedmasterSigPubKeyFilePath()).isNotNull();
     assertThat(gsiConfig.getEsSigPrivKeyConfig()).isNotNull();
-    assertThat(gsiConfig.getTokenSigPrivKeyConfig()).isNotNull();
     assertThat(GsiConfiguration.builder().toString()).hasSizeGreaterThan(0);
 
-    assertThatThrownBy(() -> new KeyConfiguration(gsiConfig).esSigPrivKey())
+    assertThatThrownBy(() -> new KeyConfiguration(resourceLoader, gsiConfig).esSigPrivKey())
         .isInstanceOf(NullPointerException.class);
   }
 }

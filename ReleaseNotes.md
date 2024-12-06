@@ -1,3 +1,12 @@
+# Release 7.1.0
+
+- add x5c element to signature-header of idtoken
+- improve validation when missing essential claims
+- add validation for redirect uri
+- add test identities
+- update dependencies
+
+
 # Release 7.0.6
 
 - fix expiry date validation of entity statement (fixes caching issue)

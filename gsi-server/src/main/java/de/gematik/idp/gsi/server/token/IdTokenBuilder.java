@@ -56,6 +56,9 @@ public class IdTokenBuilder {
     headerClaims.put(TYPE.getJoseName(), "JWT");
 
     return jwtProcessor.buildJwt(
-        new JwtBuilder().addAllBodyClaims(claimsMap).addAllHeaderClaims(headerClaims));
+        new JwtBuilder()
+            .addAllBodyClaims(claimsMap)
+            .addAllHeaderClaims(headerClaims)
+            .includeSignerCertificateInHeader(true));
   }
 }

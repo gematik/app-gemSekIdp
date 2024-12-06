@@ -100,7 +100,7 @@ public class FedIdpController {
   private final AuthenticationService authenticationService;
   private final ServerUrlService serverUrlService;
   private final IdpJwtProcessor jwtProcessorEsSigPrivKey;
-  private final IdpJwtProcessor jwtProcessorTokenSigPrivKey;
+  private final IdpJwtProcessor jwtProcessorTokenSigKey;
   private final ObjectMapper objectMapper;
   private final GsiConfiguration gsiConfiguration;
   private final JwksBuilder jwksBuilder;
@@ -189,6 +189,8 @@ public class FedIdpController {
     log.info(
         "App2App-Flow: RX message nr 2 (Pushed Authorization Request) received at {}",
         serverUrlService.determineServerUrl());
+
+    RequestValidator.validateRedirectUri(fachdienstRedirectUri);
 
     claimsInfo.addClaimsFromScopeToClaimsSet(
         getClaimsForScopeSet(Arrays.stream(scope.split(" ")).collect(Collectors.toSet())));
@@ -306,14 +308,11 @@ public class FedIdpController {
         serverUrlService.determineServerUrl());
     final FedIdpAuthSession session = getSessionByRequestUri(requestUri);
 
-    final Set<String> requestedClaims =
-        Stream.concat(
-                session.getRequestedOptionalClaims().stream(),
-                session.getRequestedEssentialClaims().stream())
-            .collect(Collectors.toSet());
-
-    final Set<String> selectedClaimsSet;
-    selectedClaimsSet = getSelectedClaimsSet(selectedClaims, requestedClaims);
+    final Set<String> selectedClaimsSet =
+        getSelectedClaimsSet(
+            selectedClaims,
+            session.getRequestedEssentialClaims(),
+            session.getRequestedOptionalClaims());
 
     // bind user to session (fill user data of session)
     authenticationService.doAuthentication(session.getUserData(), userId, selectedClaimsSet);
@@ -352,6 +351,8 @@ public class FedIdpController {
         "App2App-Flow: RX message nr 10 (Authorization Code) at {}",
         serverUrlService.determineServerUrl());
 
+    RequestValidator.validateRedirectUri(redirectUri);
+
     final String sessionKey =
         getSessionKeyByAuthCode(URLDecoder.decode(code, StandardCharsets.UTF_8));
     final FedIdpAuthSession session = fedIdpAuthSessions.get(sessionKey);
@@ -372,7 +373,7 @@ public class FedIdpController {
     try {
       final JsonWebToken idTokenPlain =
           new IdTokenBuilder(
-                  jwtProcessorTokenSigPrivKey,
+                  jwtProcessorTokenSigKey,
                   serverUrlService.determineServerUrl(),
                   session.getFachdienstNonce(),
                   clientId,
@@ -427,17 +428,30 @@ public class FedIdpController {
   }
 
   private static Set<String> getSelectedClaimsSet(
-      final String selectedClaims, final Set<String> requestedClaims) {
+      final String selectedClaims,
+      final Set<String> essentialClaims,
+      final Set<String> optionalClaims) {
     final Set<String> selectedClaimsSet;
     if (selectedClaims == null) {
-      selectedClaimsSet = requestedClaims;
+      selectedClaimsSet = new HashSet<>();
     } else {
-      selectedClaimsSet = Arrays.stream(selectedClaims.split(" ")).collect(Collectors.toSet());
-      if (!new HashSet<>(requestedClaims).containsAll(selectedClaimsSet)) {
+      selectedClaimsSet = new HashSet<>(Arrays.asList(selectedClaims.split(" ")));
+    }
+    if (essentialClaims != null) {
+      if (!selectedClaimsSet.containsAll(essentialClaims)) {
+        throw new GsiException(
+            INVALID_REQUEST,
+            "selected claims are missing essential claims in PAR",
+            HttpStatus.BAD_REQUEST);
+      }
+      if (!Stream.concat(essentialClaims.stream(), optionalClaims.stream())
+          .collect(Collectors.toSet())
+          .containsAll(selectedClaimsSet)) {
         throw new GsiException(
             INVALID_REQUEST, "selected claims exceed scopes in PAR", HttpStatus.BAD_REQUEST);
       }
     }
+    selectedClaimsSet.addAll(optionalClaims);
     return selectedClaimsSet;
   }
 }
