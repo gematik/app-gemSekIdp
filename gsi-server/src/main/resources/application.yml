@@ -8,15 +8,11 @@ gsi:
     fileName: keys/ref-gsi-sig-pubkey.pem
     keyId: puk_idp_sig
     use: sig
-  tokenSigPrivKeyConfig:
-    fileName: keys/ref-gsi-sig-privkey.pem
-    keyId: puk_fed_idp_token
+  tokenSigKeyConfig:
+    fileName: classpath:certs/ref-gsi-sig.p12
+    key_Id: puk_fed_idp_token
     use: sig
-    addX5c: false
-  tokenSigPubKeyConfig:
-    fileName: keys/ref-gsi-sig-pubkey.pem
-    keyId: puk_fed_idp_token
-    use: sig
+    addX5c: true
   serverUrl: "${GSI_SERVER_URL:http://127.0.0.1:8085}"
   serverUrlMtls: "${GSI_SERVER_URL_MTLS:http://127.0.0.1:8085}"
   fedmasterUrl: "${FEDMASTER_SERVER_URL:http://127.0.0.1:8083}"

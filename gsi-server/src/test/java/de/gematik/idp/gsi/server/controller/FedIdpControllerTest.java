@@ -357,15 +357,16 @@ class FedIdpControllerTest {
   void test_signedJwksResponse_Keys() {
     final List<Map<String, Object>> keyList =
         (List<Map<String, Object>>) signedJwks.getBodyClaims().get("keys");
-    assertThat(keyList.get(0).keySet())
+    final List<Map<String, Object>> keyWithX5c =
+        keyList.stream().filter(key -> key.containsKey("x5c")).toList();
+    final List<Map<String, Object>> keyWithoutX5c =
+        keyList.stream().filter(key -> !key.containsKey("x5c")).toList();
+    assertThat(keyWithX5c).hasSize(1);
+    assertThat(keyWithoutX5c).hasSize(1);
+    assertThat(keyWithX5c.stream().findFirst().get().keySet())
+        .containsExactlyInAnyOrder("use", "kid", "kty", "crv", "x", "y", "alg", "x5c");
+    assertThat(keyWithoutX5c.stream().findFirst().get().keySet())
         .containsExactlyInAnyOrder("use", "kid", "kty", "crv", "x", "y", "alg");
-  }
-
-  @Test
-  void test_signedJwksResponse_NumberOfKeys() {
-    final List<Map<String, Object>> keyList =
-        (List<Map<String, Object>>) signedJwks.getBodyClaims().get("keys");
-    assertThat(keyList).hasSize(2);
   }
 
   /************************** FEDIDP_PUSHED AUTH_ENDPOINT *****************/

@@ -22,7 +22,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
     And TGR find request to path ".*/.well-known/openid-federation"
-    Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
+    Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$.body.body.metadata.openid_provider.pushed_authorization_request_endpoint')}"
     And TGR HttpClient followRedirects Konfiguration deaktiviert
     And Wait for 1 Seconds
 
@@ -222,8 +222,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
     Given TGR clear recorded messages
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
-      | client_id   | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
-      | <client_id> | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
+      | client_id   | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               |
+      | <client_id> | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high |
     And TGR find request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
     And TGR current response at "$.body" matches as JSON:
@@ -494,4 +494,5 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     Examples:
       | claims                                                                                                                                     |
       | {"id_token":{"acr":{"essential":true,"value":"gematik-ehealth-loa-high"},"amr":{"essential":true,"value":"urn:telematik:auth:guest:eGK"}}} |
+      | {"id_token":{"acr":{"essential":true,"value":"gematik-ehealth-loa-high"}}}                                                                 |
       | {"id_token":{"acr":{"value":"gematik-ehealth-loa-invalid"}}}                                                                               |

@@ -16,37 +16,28 @@
 
 package de.gematik.idp.gsi.server.token;
 
-import static de.gematik.idp.field.ClaimName.ALGORITHM;
-import static de.gematik.idp.field.ClaimName.AUDIENCE;
-import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
-import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
-import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
-import static de.gematik.idp.field.ClaimName.ISSUED_AT;
-import static de.gematik.idp.field.ClaimName.ISSUER;
-import static de.gematik.idp.field.ClaimName.NONCE;
-import static de.gematik.idp.field.ClaimName.SUBJECT;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_GIVEN_NAME;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_ORGANIZATION;
-import static de.gematik.idp.field.ClaimName.TELEMATIK_PROFESSION;
+import static de.gematik.idp.field.ClaimName.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.crypto.KeyUtility;
-import de.gematik.idp.file.ResourceReader;
+import de.gematik.idp.crypto.CryptoLoader;
+import de.gematik.idp.crypto.model.PkiIdentity;
 import de.gematik.idp.tests.PkiKeyResolver;
 import de.gematik.idp.token.JsonWebToken;
-import java.security.PrivateKey;
+import java.io.InputStream;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.SneakyThrows;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.util.StreamUtils;
 
 @ExtendWith(PkiKeyResolver.class)
 class IdTokenBuilderTest {
@@ -61,26 +52,30 @@ class IdTokenBuilderTest {
   @SneakyThrows
   @BeforeEach
   public void init() {
-    final PrivateKey clientPrivateKey =
-        KeyUtility.readX509PrivateKeyPlain(
-            ResourceReader.getFileFromResourceAsTmpFile("keys/ref-gsi-sig-privkey.pem"));
 
-    idTokenBuilder =
-        new IdTokenBuilder(
-            new IdpJwtProcessor(clientPrivateKey, "ref-es-sig"),
-            uriIdpServer,
-            "NONCE123456",
-            "http://NonSmokersFachdienst.de",
-            Map.ofEntries(
-                Map.entry(TELEMATIK_GIVEN_NAME.getJoseName(), "Vincent Vega"),
-                Map.entry(TELEMATIK_ID.getJoseName(), "47119"),
-                Map.entry(TELEMATIK_ORGANIZATION.getJoseName(), "NonSmokersWorldWide"),
-                Map.entry(TELEMATIK_PROFESSION.getJoseName(), "Smoker"),
-                Map.entry(
-                    AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH),
-                Map.entry(
-                    AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
-                    new String[] {"urn:telematik:auth:eID"})));
+    try (final InputStream inputStream =
+        getClass().getClassLoader().getResourceAsStream("certs/ref-gsi-sig.p12")) {
+      assertNotNull(inputStream, "The p12 file should exist in resources");
+      final PkiIdentity pkiIdentity =
+          CryptoLoader.getIdentityFromP12(StreamUtils.copyToByteArray(inputStream), "00");
+
+      idTokenBuilder =
+          new IdTokenBuilder(
+              new IdpJwtProcessor(pkiIdentity, Optional.of("puk_fed_idp_token")),
+              uriIdpServer,
+              "NONCE123456",
+              "http://NonSmokersFachdienst.de",
+              Map.ofEntries(
+                  Map.entry(TELEMATIK_GIVEN_NAME.getJoseName(), "Vincent Vega"),
+                  Map.entry(TELEMATIK_ID.getJoseName(), "47119"),
+                  Map.entry(TELEMATIK_ORGANIZATION.getJoseName(), "NonSmokersWorldWide"),
+                  Map.entry(TELEMATIK_PROFESSION.getJoseName(), "Smoker"),
+                  Map.entry(
+                      AUTHENTICATION_CLASS_REFERENCE.getJoseName(), IdpConstants.EIDAS_LOA_HIGH),
+                  Map.entry(
+                      AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
+                      new String[] {"urn:telematik:auth:eID"})));
+    }
   }
 
   @Test
@@ -104,8 +99,10 @@ class IdTokenBuilderTest {
         .containsEntry(TELEMATIK_GIVEN_NAME.getJoseName(), "Vincent Vega");
 
     assertThat(idToken.getHeaderClaims())
-        .containsKey(ALGORITHM.getJoseName())
-        .doesNotContainKey(EXPIRES_AT.getJoseName())
-        .doesNotContainKey("headerNotCopy");
+        .containsOnlyKeys(
+            ALGORITHM.getJoseName(),
+            KEY_ID.getJoseName(),
+            TYPE.getJoseName(),
+            X509_CERTIFICATE_CHAIN.getJoseName());
   }
 }

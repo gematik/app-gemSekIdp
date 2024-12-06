@@ -21,8 +21,8 @@ Feature: Test IdpSektoral's Auth Endpoint
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
     And TGR find request to path ".*/.well-known/openid-federation"
-    Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
-    Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$..authorization_endpoint')}"
+    Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$.body.body.metadata.openid_provider.pushed_authorization_request_endpoint')}"
+    Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$.body.body.metadata.openid_provider.authorization_endpoint')}"
     And TGR HttpClient followRedirects Konfiguration deaktiviert
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_001

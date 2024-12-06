@@ -42,8 +42,7 @@ public class GsiConfiguration {
   private String fedmasterSigPubKeyFilePath;
   private KeyConfig esSigPrivKeyConfig;
   private KeyConfig esSigPubKeyConfig;
-  private KeyConfig tokenSigPrivKeyConfig;
-  private KeyConfig tokenSigPubKeyConfig;
+  private KeyConfig tokenSigKeyConfig;
   private String loglevel;
   private Integer requestUriTTL;
   private boolean clientCertRequired;

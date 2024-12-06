@@ -23,6 +23,7 @@ Feature: Test GSI specific authentication
     And TGR find request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
     Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$..authorization_endpoint')}"
+    And TGR HttpClient followRedirects Konfiguration deaktiviert
 
   @TCID:GSI_AUTH_001
   @Approval

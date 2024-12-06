@@ -1076,6 +1076,22 @@
     "acr": "gematik-ehealth-loa-substantial"
   },
   {
+    "birthdate": "1929-06-02",
+    "urn:telematik:claims:alter": "94",
+    "urn:telematik:claims:family_name": "Sso",
+    "urn:telematik:claims:display_name": "Substantial Sso",
+    "urn:telematik:claims:given_name": "Substantial",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "sub.sso@example.com",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "O018753330",
+    "urn:telematik:claims:organization": "106589300",
+    "amr": [
+      "urn:telematik:auth:sso"
+    ],
+    "acr": "gematik-ehealth-loa-substantial"
+  },
+  {
     "birthdate": "1960-05-12",
     "urn:telematik:claims:alter": "63",
     "urn:telematik:claims:family_name": "Passy",
@@ -1605,6 +1621,178 @@
     "urn:telematik:claims:email": "feli-marie@mail.frankenstein.de",
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110509256",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-16",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Bülow-Bogen",
+    "urn:telematik:claims:display_name": "Johanna Freifrau von und zu Bülow-BogenTEST-ONLY",
+    "urn:telematik:claims:given_name": "Johanna Freifrau von und zu",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "johanna-freifrau@mail.buelow.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110566484",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1984-09-16",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Doering",
+    "urn:telematik:claims:display_name": "Benjamin Daniel Freiherr von DoeringTEST-ONLY",
+    "urn:telematik:claims:given_name": "Benjamin Daniel Freiherr von",
+    "urn:telematik:claims:geschlecht": "M",
+    "urn:telematik:claims:email": "benjamin-freiherr@mail.doering.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "G320916835",
+    "urn:telematik:claims:organization": "109500969",
+    "amr": [
+      "urn:telematik:auth:sso"
+    ],
+    "acr": "gematik-ehealth-loa-substantial"
+  },
+  {
+    "birthdate": "1984-09-16",
+    "urn:telematik:claims:alter": "39",
+    "urn:telematik:claims:family_name": "Schölz",
+    "urn:telematik:claims:display_name": "Hillary Steffi Gräfin SchölzTEST-ONLY",
+    "urn:telematik:claims:given_name": "Hillary Steffi Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "hillary-graefin@mail.schoelz.de",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110542925",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1992-04-04",
+    "urn:telematik:claims:alter": "22",
+    "urn:telematik:claims:family_name": "Godofsky-Witzigmann",
+    "urn:telematik:claims:display_name": "Brunhild H.M.A.N.Gräfin Godofsky-Witzigmann",
+    "urn:telematik:claims:given_name": "Brunhild",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "qa+egk1@quickbird.io",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110557978",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1992-04-04",
+    "urn:telematik:claims:alter": "22",
+    "urn:telematik:claims:family_name": "Popowitsch",
+    "urn:telematik:claims:display_name": "Aphrodite Gräfin Popowitsch",
+    "urn:telematik:claims:given_name": "Aphrodite",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "qa+egk2@quickbird.io",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110562004",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1992-04-04",
+    "urn:telematik:claims:alter": "22",
+    "urn:telematik:claims:family_name": "Gomez",
+    "urn:telematik:claims:display_name": "Josefine Hanna Virginia Nora Freifrau y Nino Gomez",
+    "urn:telematik:claims:given_name": "Josefine",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "qa+egk3@quickbird.io",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110523432",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1992-04-04",
+    "urn:telematik:claims:alter": "22",
+    "urn:telematik:claims:family_name": "Doria-Bödefeld",
+    "urn:telematik:claims:display_name": "Sophie Annika Freifrau Doria-Bödefeld",
+    "urn:telematik:claims:given_name": "Sophie",
+    "urn:telematik:claims:geschlecht": "M",
+    "urn:telematik:claims:email": "qa+egk4@quickbird.io",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110524030",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1992-04-04",
+    "urn:telematik:claims:alter": "22",
+    "urn:telematik:claims:family_name": "Äppler",
+    "urn:telematik:claims:display_name": "Barney Darius Graf Äppler",
+    "urn:telematik:claims:given_name": "Barney",
+    "urn:telematik:claims:geschlecht": "M",
+    "urn:telematik:claims:email": "qa+egk5@quickbird.io",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110535960",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1992-04-04",
+    "urn:telematik:claims:alter": "22",
+    "urn:telematik:claims:family_name": "Müller-Lügenscheidt",
+    "urn:telematik:claims:display_name": "Paula Gräfin Müller-Lügenscheidt",
+    "urn:telematik:claims:given_name": "Paula",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "qa+egk6@quickbird.io",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110519612",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1992-04-04",
+    "urn:telematik:claims:alter": "22",
+    "urn:telematik:claims:family_name": "Szczypanskij",
+    "urn:telematik:claims:display_name": "Swantje Franziska Gräfin Szczypanskij",
+    "urn:telematik:claims:given_name": "Swantje",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "qa+egk7@quickbird.io",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110528611",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1992-04-04",
+    "urn:telematik:claims:alter": "22",
+    "urn:telematik:claims:family_name": "Klön",
+    "urn:telematik:claims:display_name": "Prof. Dr. Lilo Nora Melissa S. N. Klön",
+    "urn:telematik:claims:given_name": "Nora",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "qa+egk8@quickbird.io",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110550252",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1992-04-04",
+    "urn:telematik:claims:alter": "22",
+    "urn:telematik:claims:family_name": "Bödefeld",
+    "urn:telematik:claims:display_name": "Prof. Dr. Felicitas K. K. M. Gräfin von Bödefeld",
+    "urn:telematik:claims:given_name": "Felicitas",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "qa+egk9@quickbird.io",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110502743",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1992-04-04",
+    "urn:telematik:claims:alter": "22",
+    "urn:telematik:claims:family_name": "Bruser",
+    "urn:telematik:claims:display_name": "Xenia Leonie E. T. A. Bruser",
+    "urn:telematik:claims:given_name": "Xenia",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "qa+egk10@quickbird.io",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110555909",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1992-04-04",
+    "urn:telematik:claims:alter": "22",
+    "urn:telematik:claims:family_name": "Schürmann",
+    "urn:telematik:claims:display_name": "Siegfried Freiherr Schürmann",
+    "urn:telematik:claims:given_name": "Siegfried",
+    "urn:telematik:claims:geschlecht": "M",
+    "urn:telematik:claims:email": "qa+egk11@quickbird.io",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110545579",
     "urn:telematik:claims:organization": "109500969"
   }
 ]

@@ -21,7 +21,9 @@ import de.gematik.idp.data.Oauth2ErrorResponse;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -44,6 +46,13 @@ public class GsiExceptionHandler {
   @ExceptionHandler(GsiException.class)
   public ResponseEntity<Oauth2ErrorResponse> handleGsiException(final GsiException exc) {
     log.info("GsiException: {}", exc.getMessage());
+    if (exc.getStatusCode().equals(HttpStatus.INTERNAL_SERVER_ERROR)) {
+      log.debug(
+          "Exception stacktrace: {}",
+          Arrays.stream(exc.getStackTrace())
+              .map(StackTraceElement::toString)
+              .collect(Collectors.joining("\n")));
+    }
     final Oauth2ErrorResponse body = getBody(exc);
     return new ResponseEntity<>(body, getHeader(), exc.getStatusCode());
   }
