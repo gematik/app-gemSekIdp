@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.4.0</version>
+    <version>3.4.3</version>
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gemSekIdp-global</artifactId>
-  <version>7.1.0</version>
+  <version>8.0.0</version>
   <packaging>pom</packaging>
 
   <description>gsi - gematik sektoraler IDP</description>
@@ -68,7 +68,6 @@
     </docker.image.name.gsifedmaster>
     <java.version>21</java.version>
     <mpir.skip>true</mpir.skip>
-    <skip.jacoco>true</skip.jacoco>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -81,34 +80,29 @@
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.language>java</sonar.language>
 
-    <sonar.cpd.exclusions>
-      gsi-server/src/main/java/de/gematik/idp/gsi/server/services/StaticHostResolverProvider.java,
-      gsi-fedmaster/src/main/java/de/gematik/idp/gsi/fedmaster/services/StaticHostResolverProvider.java
-    </sonar.cpd.exclusions>
-
-    <version.bouncycastle.bcpkix>1.79</version.bouncycastle.bcpkix>
+    <version.bouncycastle.bcpkix>1.80</version.bouncycastle.bcpkix>
     <version.commons-io>2.18.0</version.commons-io>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
-    <version.json>20240303</version.json>
-    <version.log4j2>2.24.2</version.log4j2>
+    <version.json>20250107</version.json>
+    <version.log4j2>2.24.3</version.log4j2>
     <version.unirest.java.core>4.4.5</version.unirest.java.core>
     <version.unirest.objectmapper.jackson>4.2.9</version.unirest.objectmapper.jackson>
-    <version.httpcore5>5.3.1</version.httpcore5>
+    <version.httpcore5>5.3.3</version.httpcore5>
     <version.docker-maven-plugin>0.45.1</version.docker-maven-plugin>
-    <version.idp-commons>29.0.4</version.idp-commons>
-    <version.idp-crypto>29.0.4</version.idp-crypto>
-    <version.idp-test>29.0.4</version.idp-test>
+    <version.idp-commons>29.1.5</version.idp-commons>
+    <version.idp-crypto>29.1.5</version.idp-crypto>
+    <version.idp-test>29.1.5</version.idp-test>
 
     <version.jacoco-maven-plugin>0.8.12</version.jacoco-maven-plugin>
     <version.jakarta.ws.rs-api>4.0.0</version.jakarta.ws.rs-api>
     <version.lombok>1.18.36</version.lombok>
     <version.maven>3.8.6</version.maven>
-    <version.maven-clean-plugin>3.4.0</version.maven-clean-plugin>
-    <version.maven-compiler-plugin>3.13.0</version.maven-compiler-plugin>
+    <version.maven-clean-plugin>3.4.1</version.maven-clean-plugin>
+    <version.maven-compiler-plugin>3.14.0</version.maven-compiler-plugin>
     <version.maven-enforcer-plugin>3.5.0</version.maven-enforcer-plugin>
     <version.maven-failsafe-plugin>3.2.5</version.maven-failsafe-plugin>
     <version.maven-gpg-plugin>3.2.7</version.maven-gpg-plugin>
-    <version.maven-project-info-reports-plugin>3.8.0</version.maven-project-info-reports-plugin>
+    <version.maven-project-info-reports-plugin>3.9.0</version.maven-project-info-reports-plugin>
     <!-- only needed for mvn site to avoid stack traces flooding the console -->
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
     <version.maven-site-plugin>3.21.0</version.maven-site-plugin>
@@ -116,7 +110,7 @@
     <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
     <version.nexus-staging-maven-plugin>1.7.0</version.nexus-staging-maven-plugin>
     <version.sonar-maven-plugin>5.0.0.4389</version.sonar-maven-plugin>
-    <version.spotless-maven-plugin>2.43.0</version.spotless-maven-plugin>
+    <version.spotless-maven-plugin>2.44.3</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
@@ -173,7 +167,7 @@
       <dependency>
         <groupId>jakarta.validation</groupId>
         <artifactId>jakarta.validation-api</artifactId>
-        <version>3.1.0</version>
+        <version>3.1.1</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/jakarta.persistence/jakarta.persistence-api -->
       <dependency>
@@ -230,13 +224,6 @@
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-core</artifactId>
         <version>${version.log4j2}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jacoco</groupId>
-        <artifactId>org.jacoco.agent</artifactId>
-        <classifier>runtime</classifier>
-        <version>0.8.12</version>
-        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -337,7 +324,6 @@
           <includes>
             <include>de/gematik/**/*</include>
           </includes>
-          <skip>${skip.jacoco}</skip>
           <haltOnFailure>false</haltOnFailure>
           <dataFile>${project.basedir}/../gsi-coverage-report/target/jacoco.exec</dataFile>
           <rules>
@@ -361,26 +347,6 @@
               <append>true</append>
               <destFile>${project.basedir}/../gsi-coverage-report/target/jacoco.exec</destFile>
             </configuration>
-          </execution>
-          <execution>
-            <id>default-instrument</id>
-            <goals>
-              <goal>instrument</goal>
-            </goals>
-            <configuration>
-              <includes>
-                <include>**/StaticHostResolverProvider*</include>
-              </includes>
-            </configuration>
-          </execution>
-          <execution>
-            <!-- bind restore-instrumented-classes to prepare-package phase, so report-generation
-                 sees uninstrumented classes in report-aggregation goal (verify phase) -->
-            <id>restore-instrumented-classes</id>
-            <goals>
-              <goal>restore-instrumented-classes</goal>
-            </goals>
-            <phase>prepare-package</phase>
           </execution>
           <execution>
             <id>default-report-integration</id>
@@ -458,6 +424,18 @@
           </markdown>
         </configuration>
       </plugin>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <version>2.5.0</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>aggregate-third-party-report</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
     </plugins>
   </build>
 

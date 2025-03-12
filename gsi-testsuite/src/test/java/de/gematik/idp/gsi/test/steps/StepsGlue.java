@@ -31,6 +31,7 @@ import de.gematik.test.tiger.common.config.TigerGlobalConfiguration;
 import de.gematik.test.tiger.lib.TigerDirector;
 import de.gematik.test.tiger.lib.json.JsonChecker;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.de.Wenn;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -81,14 +82,9 @@ public class StepsGlue {
         TigerGlobalConfiguration.resolvePlaceholders(url), "POST", params);
   }
 
-  @When("Send Post Request with invalid Client Cert to {string} with")
-  public void sendPostRequestViaTigerProxyInvalidCertTo(final String url, final DataTable params) {
-    SerenityRest.proxy(
-        "127.0.0.1",
-        Integer.valueOf(TigerGlobalConfiguration.readString("tiger.ports.invalidCertPort")));
+  @Wenn("HttpClient use relaxed https validation")
+  public void disableHttpClientFollowRedirects() {
     SerenityRest.useRelaxedHTTPSValidation();
-    idpSektoralSteps.sendRequestTo(
-        TigerGlobalConfiguration.resolvePlaceholders(url), "POST", params);
   }
 
   @And("Expect JWKS in last message and add its keys to truststore")
@@ -165,15 +161,6 @@ public class StepsGlue {
     final Long issuedAt = (Long) jwt.getBodyClaim(ClaimName.ISSUED_AT).orElseThrow();
     assertThat(expiresAt - issuedAt)
         .isBetween(TimeUnit.SECONDS.toSeconds(minSeconds), TimeUnit.SECONDS.toSeconds(maxSeconds));
-  }
-
-  @SneakyThrows
-  @When("Wait for {int} Seconds")
-  public void waitForSeconds(final int seconds) {
-    Awaitility.await()
-        .atMost(seconds + 1, TimeUnit.SECONDS)
-        .pollDelay(seconds, TimeUnit.SECONDS)
-        .until(() -> true);
   }
 
   @SneakyThrows

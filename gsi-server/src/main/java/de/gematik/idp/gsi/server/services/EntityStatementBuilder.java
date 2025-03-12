@@ -38,9 +38,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 @RequiredArgsConstructor
 public class EntityStatementBuilder {
 
-  private static final int ENTITY_STATEMENT_TTL_DAYS = 7;
+  private static final int ENTITY_STATEMENT_TTL_HOURS = 2;
   @Autowired FederationPubKey esSigPubKey;
-  @Autowired FederationPubKey tokenSigPubKey;
 
   public EntityStatement buildEntityStatement(
       final String serverUrl, final String serverUrlMtls, final String fedmasterUrl) {
@@ -49,7 +48,7 @@ public class EntityStatementBuilder {
         serverUrl,
         serverUrlMtls,
         fedmasterUrl,
-        currentTime.plusDays(ENTITY_STATEMENT_TTL_DAYS).toEpochSecond());
+        currentTime.plusHours(ENTITY_STATEMENT_TTL_HOURS).toEpochSecond());
   }
 
   public EntityStatement buildEntityStatement(
@@ -63,13 +62,13 @@ public class EntityStatementBuilder {
         .iat(currentTime.toEpochSecond())
         .iss(serverUrl)
         .sub(serverUrl)
-        .jwks(JwtHelper.getJwks(esSigPubKey, tokenSigPubKey))
+        .jwks(JwtHelper.getJwks(esSigPubKey))
         .authorityHints(new String[] {fedmasterUrl})
-        .metadata(getMetadata(serverUrl, serverUrlMtls))
+        .metadata(buildMetadata(serverUrl, serverUrlMtls))
         .build();
   }
 
-  private Metadata getMetadata(final String serverUrl, final String serverUrlMtls) {
+  private Metadata buildMetadata(final String serverUrl, final String serverUrlMtls) {
     final OpenidProvider openidProvider =
         OpenidProvider.builder()
             .issuer(serverUrl)

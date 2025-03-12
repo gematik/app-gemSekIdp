@@ -16,6 +16,7 @@
 
 package de.gematik.idp.gsi.server.services;
 
+import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2044;
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
 import static de.gematik.idp.gsi.server.controller.FedIdpController.AUTH_CODE_LENGTH;
 import static de.gematik.idp.gsi.server.data.GsiConstants.*;
@@ -64,6 +65,9 @@ class RequestValidatorTest {
   private static final RpToken VALID_RPTOKEN =
       new RpToken(new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
 
+  private static final JsonWebToken VALID_TOKEN_ABOUT_RP =
+      new JsonWebToken(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2044);
+
   private X509Certificate cert1FromEntityStmtRpService;
   private X509Certificate cert2FromEntityStmtRpService;
 
@@ -87,7 +91,7 @@ class RequestValidatorTest {
     assertDoesNotThrow(
         () ->
             RequestValidator.validateParParams(
-                VALID_RPTOKEN, correctRedirectUri, "urn:telematik:versicherter openid"));
+                VALID_TOKEN_ABOUT_RP, correctRedirectUri, "urn:telematik:versicherter openid"));
   }
 
   @ValueSource(
@@ -102,7 +106,8 @@ class RequestValidatorTest {
     final String correctRedirectUri = "https://redirect.testsuite.gsi";
 
     assertThatThrownBy(
-            () -> RequestValidator.validateParParams(VALID_RPTOKEN, correctRedirectUri, scope))
+            () ->
+                RequestValidator.validateParParams(VALID_TOKEN_ABOUT_RP, correctRedirectUri, scope))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining(
             "Content of parameter scope [" + scope + "] exceeds scopes found in entity statement.");

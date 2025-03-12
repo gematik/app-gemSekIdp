@@ -555,7 +555,6 @@ class FedIdpControllerTest {
     assertThat(resp.getStatus()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
   }
 
-  /** Increase Test coverage of Landing page endpoint */
   @SneakyThrows
   @Test
   void test_postPar_invalidClientId_400() {
@@ -814,20 +813,12 @@ class FedIdpControllerTest {
   }
 
   /*
-   *  message nr.2 ... message nr.7
+   *  message nr.2 ... message nr.6
    * do auto registration and send invalid authorization request
    */
   @SneakyThrows
   @Test
-  void test_getLandingPage_invalidClientId_invalidRequestUri_400() {
-
-    requestValidatorMockedStatic
-        .when(() -> RequestValidator.validateAuthRequestParams(any(), any()))
-        .thenThrow(
-            new GsiException(
-                INVALID_REQUEST,
-                "invalid code_verifier",
-                org.springframework.http.HttpStatus.BAD_REQUEST));
+  void test_getLandingPage_invalidClientId_mockedValidation_testErrorResponse_400() {
 
     final MockHttpServletResponse respMsg3 =
         mockMvc
@@ -849,21 +840,77 @@ class FedIdpControllerTest {
     assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
     final String requestUri = JsonPath.read(respMsg3.getContentAsString(), "$.request_uri");
 
-    // variant invalid request_uri
-    mockMvc
-        .perform(
-            get(testHostUrl + FED_AUTH_ENDPOINT)
-                .param("request_uri", "InvalidRequestUri")
-                .param("client_id", testHostUrl))
-        .andExpect(status().isBadRequest());
+    requestValidatorMockedStatic
+        .when(() -> RequestValidator.validateAuthRequestParams(any(), any()))
+        .thenThrow(
+            new GsiException(
+                INVALID_REQUEST,
+                "unknown client_id",
+                org.springframework.http.HttpStatus.BAD_REQUEST));
 
-    // variant invalid client_id
     mockMvc
         .perform(
             get(testHostUrl + FED_AUTH_ENDPOINT)
                 .param("request_uri", requestUri)
                 .param("client_id", "InvalidClientId"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error_description").value("unknown client_id"));
+    ;
+  }
+
+  /*
+   * message nr.6
+   * send invalid authorization request
+   */
+  @SneakyThrows
+  @Test
+  void test_getLandingPage_invalidRequestUri_400() {
+
+    mockMvc
+        .perform(
+            get(testHostUrl + FED_AUTH_ENDPOINT)
+                .param("request_uri", "InvalidRequestUri")
+                .param("client_id", testHostUrl))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error_description").value("unknown request_uri, no session found"));
+  }
+
+  /*
+   *  message nr.2 ... message nr.6
+   * do auto registration and send invalid authorization request
+   */
+  @SneakyThrows
+  @Test
+  void test_getLandingPage_expiredRequestUri_400() {
+    final MockHttpServletResponse respMsg3 =
+        mockMvc
+            .perform(
+                post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
+                    .param("client_id", testHostUrl)
+                    .param("state", "state_Fachdienst")
+                    .param("redirect_uri", testHostUrl + "/AS")
+                    .param("code_challenge", "P62rd1KSUnScGIEs1WrpYj3g_poTqmx8mM4msxehNdk")
+                    .param("code_challenge_method", CodeChallengeMethod.S256.toString())
+                    .param("response_type", "code")
+                    .param("nonce", "42")
+                    .param("scope", "urn:telematik:given_name openid")
+                    .param("acr_values", "gematik-ehealth-loa-high")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+            .andReturn()
+            .getResponse();
+
+    assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
+    final String requestUri = JsonPath.read(respMsg3.getContentAsString(), "$.request_uri");
+
+    waitForSeconds(6);
+
+    mockMvc
+        .perform(
+            get(testHostUrl + FED_AUTH_ENDPOINT)
+                .param("request_uri", requestUri)
+                .param("client_id", testHostUrl))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error_description").value("request_uri expired"));
   }
 
   @SneakyThrows

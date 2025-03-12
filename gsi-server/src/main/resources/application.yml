@@ -30,11 +30,12 @@ management:
     web:
       exposure:
         include: "health"
-    enabled-by-default: false
+    access:
+      default: read_only
   endpoint:
     health:
-      enabled: true
+      access: read_only
     metrics:
-      enabled: true
+      access: read_only
     logfile:
-      enabled: true
+      access: read_only

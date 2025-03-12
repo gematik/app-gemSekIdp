@@ -20,7 +20,7 @@ Feature: Test IdpSektoral's Auth Endpoint
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$.body.body.metadata.openid_provider.pushed_authorization_request_endpoint')}"
     Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$.body.body.metadata.openid_provider.authorization_endpoint')}"
     And TGR HttpClient followRedirects Konfiguration deaktiviert
@@ -43,14 +43,14 @@ Feature: Test IdpSektoral's Auth Endpoint
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
       | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "(200|302)"
 
 
@@ -69,14 +69,14 @@ Feature: Test IdpSektoral's Auth Endpoint
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
       | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | client_id   |
       | <request_uri> | <client_id> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
     And TGR current response at "$.body" matches as JSON:
         """
@@ -109,14 +109,14 @@ Feature: Test IdpSektoral's Auth Endpoint
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
       | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | client_id   |
       | <request_uri> | <client_id> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
     And TGR current response at "$.body" matches as JSON:
         """
@@ -150,7 +150,7 @@ Feature: Test IdpSektoral's Auth Endpoint
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
       | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
@@ -158,7 +158,7 @@ Feature: Test IdpSektoral's Auth Endpoint
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "400"
     And TGR current response at "$.body" matches as JSON:
         """

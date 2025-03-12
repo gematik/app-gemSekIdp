@@ -20,7 +20,7 @@ Feature: Test GSI specific authentication
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$..pushed_authorization_request_endpoint')}"
     Then TGR set local variable "authorization_endpoint" to "!{rbel:currentResponseAsString('$..authorization_endpoint')}"
     And TGR HttpClient followRedirects Konfiguration deaktiviert
@@ -41,20 +41,20 @@ Feature: Test GSI specific authentication
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
       | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | user_id  |
       | ${requestUri} | 12345678 |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
 
 
@@ -74,20 +74,20 @@ Feature: Test GSI specific authentication
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
       | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | user_id  |
       | ${requestUri} | 12345678 |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.header.Location" matches ".*code=.*"
 
   @TCID:GSI_AUTH_003
@@ -105,20 +105,20 @@ Feature: Test GSI specific authentication
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
       | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri       | user_id       |
       | <requestUriExmpl> | <userIdExmpl> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.header.Location" matches "<errorExmpl>"
 
     Examples:
@@ -143,20 +143,20 @@ Feature: Test GSI specific authentication
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
       | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | user_id  |
       | 12345678 |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.header.Location" matches ".*error=invalid_request.*"
 
 
@@ -176,14 +176,14 @@ Feature: Test GSI specific authentication
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
       | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | device_type |
       | ${requestUri} | testsuite   |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR current response with attribute "$.header.Content-Type" matches "application/json.*"
     Then TGR current response at "$.body" matches as JSON:
@@ -214,19 +214,19 @@ Feature: Test GSI specific authentication
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
       | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | device_type |
       | ${requestUri} | testsuite   |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri   | user_id  | selected_claims                 |
       | ${requestUri} | 12345678 | urn:telematik:claims:profession |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
     Then TGR current response with attribute "$.header.Location" matches ".*code=.*"

@@ -1,17 +1,11 @@
 gsi:
   requestUriTTL: 90
 
-ports:
-  invalidCertPort: ${free.port.100}
-  invalidCertAdminPort: ${free.port.101}
-
 tigerProxy:
   adminPort: ${free.port.201}
   proxyPort: ${free.port.200}
   tls:
     forwardMutualTlsIdentity: "src/test/resources/certs/fachdienst-tls-c.p12;00"
-#  trafficEndpoints:
-#    - http://127.0.0.1:${tiger.ports.invalidCertAdminPort}
 
 lib:
   activateWorkflowUI: false
@@ -21,18 +15,6 @@ additionalConfigurationFiles:
     baseKey: gsi
 
 servers:
-  tigerProxyInvalidCert:
-    type: tigerProxy
-    active: true
-    tigerProxyConfiguration:
-      rewriteHostHeader: true
-      proxyPort: ${tiger.ports.invalidCertPort}
-      adminPort: ${tiger.ports.invalidCertAdminPort}
-      proxyLogLevel: WARN
-      activateAsn1Parsing: false
-      tls:
-        forwardMutualTlsIdentity: "src/test/resources/certs/fachdienst-tls-c-invalid.p12;00"
-
   gsiserver:
     type: externalUrl
     startupTimeoutSec: 1

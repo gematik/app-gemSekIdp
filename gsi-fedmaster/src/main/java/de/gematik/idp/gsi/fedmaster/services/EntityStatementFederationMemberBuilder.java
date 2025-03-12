@@ -20,9 +20,7 @@ import de.gematik.idp.data.FederationPrivKey;
 import de.gematik.idp.data.FederationPubKey;
 import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.gsi.fedmaster.KeyConfiguration;
-import de.gematik.idp.gsi.fedmaster.data.EntityStatementFederationMember;
-import de.gematik.idp.gsi.fedmaster.data.IdentityProviderConfig;
-import de.gematik.idp.gsi.fedmaster.data.RelyingPartyConfig;
+import de.gematik.idp.gsi.fedmaster.data.*;
 import de.gematik.idp.gsi.fedmaster.exceptions.FedmasterException;
 import jakarta.annotation.Resource;
 import java.time.ZonedDateTime;
@@ -49,6 +47,7 @@ public class EntityStatementFederationMemberBuilder {
             .iss(serverUrl)
             .sub(sub)
             .jwks(JwtHelper.getJwks(getKey(sub)))
+            .metadata(buildMetadataForFederationMember(sub, serverUrl))
             .build();
     if (aud != null) {
       entityStatementFederationMember.setAud(aud);
@@ -69,5 +68,45 @@ public class EntityStatementFederationMemberBuilder {
     }
     throw new FedmasterException(
         "Subject [" + sub + "] is unknown", HttpStatus.BAD_REQUEST, "6011");
+  }
+
+  private Metadata buildMetadataForFederationMember(final String sub, final String serverUrl) {
+    for (final RelyingPartyConfig relyingPartyConfig : relyingPartyConfigs) {
+      if (relyingPartyConfig.getIssuer().equals(sub)) {
+        return buildMetadataForRelyingParty(serverUrl);
+      }
+    }
+    for (final IdentityProviderConfig identityProviderConfig : identityProviderConfigs) {
+      if (identityProviderConfig.getIssuer().equals(sub)) {
+        return buildMetadataForIdp(serverUrl);
+      }
+    }
+    throw new FedmasterException(
+        "Subject [" + sub + "] is unknown", HttpStatus.BAD_REQUEST, "6011");
+  }
+
+  private Metadata buildMetadataForRelyingParty(final String serverUrl) {
+    final OpenidRelyingParty openidRelyingParty =
+        OpenidRelyingParty.builder()
+            .clientRegistrationTypes(new String[] {"automatic"})
+            .claims(new String[] {})
+            .redirectUris(
+                new String[] {
+                  serverUrl + "/auth",
+                  "https://Fachdienst007.de/client",
+                  "https://redirect.testsuite.gsi",
+                  "https://idpfadi.dev.gematik.solutions/auth"
+                })
+            .scope("urn:telematik:display_name urn:telematik:versicherter openid")
+            .build();
+    return Metadata.builder().openidRelyingParty(openidRelyingParty).build();
+  }
+
+  private Metadata buildMetadataForIdp(final String serverUrl) {
+    final OpenidProvider openidProvider =
+        OpenidProvider.builder()
+            .clientRegistrationTypesSupported(new String[] {"automatic"})
+            .build();
+    return Metadata.builder().openidProvider(openidProvider).build();
   }
 }

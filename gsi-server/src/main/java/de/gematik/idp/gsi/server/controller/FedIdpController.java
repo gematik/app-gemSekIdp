@@ -195,13 +195,15 @@ public class FedIdpController {
     claimsInfo.addClaimsFromScopeToClaimsSet(
         getClaimsForScopeSet(Arrays.stream(scope.split(" ")).collect(Collectors.toSet())));
 
-    final RpToken entityStmntRp = rpTokenRepository.getEntityStatementRp(fachdienstClientId);
+    final JsonWebToken entityStmntABoutRp =
+        rpTokenRepository.getEntityStatementAboutRp(fachdienstClientId);
+    final RpToken entityStmntOfRp = rpTokenRepository.getEntityStatementRp(fachdienstClientId);
     log.info("Autoregistration done");
 
     RequestValidator.validateCertificate(
-        clientCert, entityStmntRp, gsiConfiguration.isClientCertRequired());
+        clientCert, entityStmntOfRp, gsiConfiguration.isClientCertRequired());
 
-    RequestValidator.validateParParams(entityStmntRp, fachdienstRedirectUri, scope);
+    RequestValidator.validateParParams(entityStmntABoutRp, fachdienstRedirectUri, scope);
 
     log.info("Amount of stored fedIdpAuthSessions: {}", fedIdpAuthSessions.size());
 
@@ -258,11 +260,16 @@ public class FedIdpController {
     RequestValidator.validateAuthRequestParams(getSessionByRequestUri(requestUri), clientId);
     log.info("request_uri: {}, client_id: {}", requestUri, clientId);
 
+    final FedIdpAuthSession session = getSessionByRequestUri(requestUri);
     model.addAttribute("requestUri", requestUri);
     model.addAttribute("clientId", clientId);
     model.addAttribute("fedAuthEndpointUrl", thisEndpointUrl);
     final String dataUri = QRCodeGenerator.generate("https://tbd/tbd?tbd=tbd&tbd=tbd");
     model.addAttribute("dynamicImageDataUri", dataUri);
+    model.addAttribute("acr", session.getEssentialRequestedAcr());
+    model.addAttribute("amr", session.getEssentialRequestedAmr());
+    model.addAttribute("essentialClaims", session.getRequestedEssentialClaims());
+    model.addAttribute("optionalClaims", session.getRequestedOptionalClaims());
     return "landingTemplate";
   }
 

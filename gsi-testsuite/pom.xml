@@ -6,22 +6,24 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gsi-testsuite</artifactId>
-  <version>7.1.0</version>
+  <version>8.0.0</version>
   <packaging>jar</packaging>
+  <!--kal: hier könnt ihr eurer Testsuite einen Namen geben der später im Grafana angezeigt werden soll -->
+  <!--<name>TODO</name>-->
   <description>Testsuite fuer sektorale IDPs</description>
 
   <properties>
-    <version.idp-commons>29.0.4</version.idp-commons>
+    <version.idp-commons>29.1.5</version.idp-commons>
     <java.version>21</java.version>
     <version.lombok>1.18.36</version.lombok>
-    <version.maven-compiler-plugin>3.13.0</version.maven-compiler-plugin>
+    <version.maven-compiler-plugin>3.14.0</version.maven-compiler-plugin>
     <version.maven-enforcer-plugin>3.5.0</version.maven-enforcer-plugin>
     <version.maven-failsafe-plugin>3.5.2</version.maven-failsafe-plugin>
     <version.maven-resources-plugin>3.3.1</version.maven-resources-plugin>
     <version.maven-surefire-plugin>3.5.2</version.maven-surefire-plugin>
-    <version.spotless-maven-plugin>2.43.0</version.spotless-maven-plugin>
+    <version.spotless-maven-plugin>2.44.3</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
-    <version.tiger>3.4.5</version.tiger>
+    <version.tiger>3.7.0</version.tiger>
     <version.jacoco-maven-plugin>0.8.12</version.jacoco-maven-plugin>
   </properties>
 
@@ -30,7 +32,7 @@
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.5.12</version>
+        <version>1.5.17</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -120,6 +122,33 @@
       <!-- optional plugin to dynamically create JUnit driver classes on the fly.
                   You may omit this plugin if you have written your driver classes manually.
                   -->
+      <!-- create serenity-summary.json file for DWH import -->
+      <plugin>
+        <groupId>net.serenity-bdd.maven.plugins</groupId>
+        <artifactId>serenity-maven-plugin</artifactId>
+        <version>4.2.17</version>
+        <configuration>
+          <!-- tiger-maven-plugin does not generate the json-summary report which is required for DWH import -->
+          <reports>json-summary</reports>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>net.serenity-bdd</groupId>
+            <artifactId>serenity-json-summary-report</artifactId>
+            <version>4.2.17</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>serenity-reports</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>aggregate</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>de.gematik.test</groupId>
         <artifactId>tiger-maven-plugin</artifactId>
@@ -262,16 +291,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${version.jacoco-maven-plugin}</version>
-        <configuration>
-          <skip>true</skip>
-          <rules>
-          </rules>
-        </configuration>
       </plugin>
     </plugins>
   </build>
