@@ -20,7 +20,7 @@ Feature: Test Entity Statement of IdpSektoral
 
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     And Expect JWKS in last message and add its keys to truststore
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_001
@@ -35,7 +35,7 @@ Feature: Test Entity Statement of IdpSektoral
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     And Check signature of JWS in last message
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_002
@@ -54,7 +54,7 @@ Feature: Test Entity Statement of IdpSektoral
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR current response with attribute "$.header.Content-Type" matches "application/entity-statement\+jwt.*"
 
@@ -72,7 +72,7 @@ Feature: Test Entity Statement of IdpSektoral
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     Then TGR current response at "$.body.header" matches as JSON:
             """
           {
@@ -95,7 +95,7 @@ Feature: Test Entity Statement of IdpSektoral
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     Then TGR current response at "$.body.body" matches as JSON:
             """
           {
@@ -122,7 +122,7 @@ Feature: Test Entity Statement of IdpSektoral
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     Then TGR current response at "$.body.body.metadata" matches as JSON:
     """
           {
@@ -188,7 +188,7 @@ Feature: Test Entity Statement of IdpSektoral
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     Then TGR current response at "$.body.body.jwks.keys.[?(@.kid.content =='${gsi.sigKeyKid}')]" matches as JSON:
         """
           {
@@ -216,7 +216,7 @@ Feature: Test Entity Statement of IdpSektoral
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:given_name.*"
     And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:geburtsdatum.*"
     And TGR current response with attribute "$.body.body.metadata.openid_provider.scopes_supported" matches ".*urn:telematik:alter.*"
@@ -241,5 +241,5 @@ Feature: Test Entity Statement of IdpSektoral
 
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     And TGR current response with attribute "$.body.body.metadata.openid_provider.response_types_supported" matches ".*code.*"

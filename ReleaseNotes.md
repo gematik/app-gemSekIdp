@@ -1,3 +1,17 @@
+# Release 8.0.0
+
+- remove static host name resolving
+- change exp time of entity statement to 2 hours 
+- remove token signing key from jwks in entity statement
+- add openid provider to metadata of idp entity statement
+- add metadata to EntityStatementAboutRp, validate PAR parameters against EntityStatementAboutRp
+- fail fast if clientID is not registered at fedmaster
+- change token signing certificate
+- disable certificate validation in testsuite and remove tiger proxy for invalid client certificate
+- add cert rotation test to idpsektoralPushedAuthorizationEndpoint.feature
+- add claims for selection to landing page
+- update dependencies
+
 # Release 7.1.0
 
 - add x5c element to signature-header of idtoken

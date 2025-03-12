@@ -19,13 +19,47 @@
 <head>
   <title>GSI - landing page</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <script>
+  <script th:inline="javascript">
+    let essentialClaims = /*[[${essentialClaims}]]*/ [];
+    let optionalClaims = /*[[${optionalClaims}]]*/ [];
+    let selectedClaims = essentialClaims.concat(optionalClaims)
+    document.addEventListener("DOMContentLoaded", setUp);
+
+    function setUp(){
+      let amrFromSession = /*[[${amr}]]*/ [];
+      let acrFromSession = /*[[${acr}]]*/ [];
+      let acrValueIfOnlyOne = ""
+      if(acrFromSession.length === 1){
+        acrValueIfOnlyOne = acrFromSession[0].split("-")[3]
+        document.getElementById(acrValueIfOnlyOne).checked = true
+        setAmrOptions(acrFromSession[0])
+      }
+      if(amrFromSession.length === 1){
+        if(amrFromSession[0].includes("mEW") && (acrValueIfOnlyOne === "substantial" || acrValueIfOnlyOne === "")){
+            document.getElementById("substantial").checked = true
+            setAmrOptions("gematik-ehealth-loa-substantial")
+            document.getElementById("amr-select").value = amrFromSession[0]
+            setAmrValue()
+        } else if(!amrFromSession[0].includes("mEW") && (acrValueIfOnlyOne === "high" || acrValueIfOnlyOne === "")) {
+            document.getElementById("high").checked = true
+            setAmrOptions("gematik-ehealth-loa-high")
+            document.getElementById("amr-select").value = amrFromSession[0]
+            setAmrValue()
+        }
+      }
+    }
+
     function submitForm(){
       let kvnrValue = document.getElementById("kvnr").value.trim();
-      document.getElementById("userid").value = kvnrValue != "" ? kvnrValue : "X110411675";
+      document.getElementById("userid").value = kvnrValue !== "" ? kvnrValue : "X110411675";
 
       document.getElementById("acrValue").value = (document.getElementById("acrValue").value === "") ? "gematik-ehealth-loa-high" : document.getElementById("acrValue").value
       document.getElementById("amrValue").value = (document.getElementById("amrValue").value === "") ? "urn:telematik:auth:eGK" : document.getElementById("amrValue").value
+        if(selectedClaims.length > 0){
+            document.getElementById("selectedClaims").disabled = false;
+            document.getElementById("selectedClaims").value = selectedClaims.join(" ")
+        }
+
     }
 
     function setAmrOptions(acr){
@@ -54,6 +88,17 @@
 
     function setAmrValue() {
       document.getElementById("amrValue").value = document.getElementById("amr-select").value;
+    }
+
+    function setClaim(claim){
+        let claimTrimmed = claim.replace(/^"|"$/g, '');
+      if(selectedClaims.includes(claimTrimmed)){
+          let index = selectedClaims.indexOf(claimTrimmed);
+        selectedClaims.splice(index, 1)
+      }else {
+        selectedClaims.push(claimTrimmed)
+      }
+
     }
   </script>
 </head>
@@ -84,12 +129,23 @@
 <select id="amr-select" onchange="setAmrValue()">
 <option disabled selected>Select Value</option>
 </select>
+<br><br>
+<label><b>Claims</b></label>
+<p th:each="claim : ${essentialClaims}">
+  <input type="checkbox" th:id="${claim}" th:value="${claim}" checked disabled>
+  <label th:for="${claim}" th:text="${claim}"></label>
+</p>
+<p th:each="claim : ${optionalClaims}">
+  <input type="checkbox" th:id="${claim}" th:value="${claim}" checked th:onchange="setClaim('[[${claim}]]')">
+  <label th:for="${claim}" th:text="${claim}"></label>
+</p>
 <form th:action="${fedAuthEndpointUrl}" onsubmit="submitForm()">
   <br>
   <input type="hidden" id="requesturi" name="request_uri" th:value="${requestUri}">
   <input type="hidden" id="userid" name="user_id">
   <input type="hidden" id="amrValue" name="amr_value">
   <input type="hidden" id="acrValue" name="acr_value">
+  <input type="hidden" id="selectedClaims" name="selected_claims" disabled>
   <br>
   <input type="submit" value="Login">
 </form>

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2024 gematik GmbH
+ *  Copyright 2025 gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,28 +18,14 @@ package de.gematik.idp.gsi.fedmaster.data;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import de.gematik.idp.data.IdpJwksDocument;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
 
-/**
- * Entity statement related to other federation members (relying parties and identity providers)
- * issued by Federation Master
- */
-@Data
+@Getter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class EntityStatementFederationMember {
-
-  private String iss;
-  private String sub;
-  private String aud;
-  private long iat;
-  private long exp;
-  private IdpJwksDocument jwks;
-  private Metadata metadata;
+public class OpenidProvider {
+  private String[] clientRegistrationTypesSupported;
 }

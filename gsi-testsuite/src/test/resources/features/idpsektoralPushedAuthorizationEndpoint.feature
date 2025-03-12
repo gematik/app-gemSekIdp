@@ -21,10 +21,12 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   Background: Initialisiere Testkontext durch Abfrage des Entity Statements
     Given TGR clear recorded messages
     When TGR sende eine leere GET Anfrage an "${gsi.fachdienstEntityStatementEndpoint}"
-    And TGR find request to path ".*/.well-known/openid-federation"
+    And TGR find first request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$.body.body.metadata.openid_provider.pushed_authorization_request_endpoint')}"
     And TGR HttpClient followRedirects Konfiguration deaktiviert
-    And Wait for 1 Seconds
+    And HttpClient use relaxed https validation
+
+    And Wait for "1" Seconds
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_001
     @Approval
@@ -45,7 +47,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values   |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | <acr_values> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR current response with attribute "$.header.Content-Type" matches "application/json.*"
 
@@ -72,7 +74,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response at "$.body" matches as JSON:
         """
           {
@@ -92,10 +94,11 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   Die Response muss als Body eine passende Fehlermeldung enthalten:
 
     Given TGR clear recorded messages
+
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id   | state       | redirect_uri   | code_challenge                              | code_challenge_method   | response_type   | nonce                | scope   | acr_values   |
       | <client_id> | yyystateyyy | <redirect_uri> | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | <code_challenge_method> | <response_type> | vy7rM801AQw1or22GhrZ | <scope> | <acr_values> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
     And TGR current response at "$.body" matches as JSON:
         """
@@ -132,7 +135,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When Send Get Request to "${pushed_authorization_request_endpoint}" with
       | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope      | acr_values               |
       | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scoped | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "40.*"
     And TGR current response at "$.body" matches as JSON:
         """
@@ -157,7 +160,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When Send Post Request to "${pushed_authorization_request_endpoint}" with
       | client_id   | state       | redirect_uri   | code_challenge                              | code_challenge_method   | response_type   | nonce                | scope   | acr_values   |
       | <client_id> | yyystateyyy | <redirect_uri> | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | <code_challenge_method> | <response_type> | vy7rM801AQw1or22GhrZ | <scope> | <acr_values> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
     And TGR current response at "$.body" matches as JSON:
         """
@@ -181,6 +184,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_006
   @PRIO:1
   @TESTSTUFE:4
+  @OpenBug
+  @Approval
   Scenario: IdpSektoral Pushed Auth Endpoint - Negativfall - invalid TLS Client Cert
 
   ```
@@ -193,13 +198,14 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
+    When TGR change the local TigerProxy forwardMutualTlsIdentity to "certs/fachdienst-tls-c-invalid.p12"
     And TGR clear recorded messages
-    When Send Post Request with invalid Client Cert to "${pushed_authorization_request_endpoint}" with
-      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
-      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high |
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "401"
     And TGR current response at "$.body" matches as JSON:
         """
@@ -224,7 +230,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id   | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               |
       | <client_id> | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
     And TGR current response at "$.body" matches as JSON:
         """
@@ -256,7 +262,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope   | acr_values               |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | <scope> | gematik-ehealth-loa-high |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
 
     Examples:
@@ -279,7 +285,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | <param_name>  |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <param_value> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "<responseCode>"
 
     Examples:
@@ -304,7 +310,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values   | amr   |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | <acr_values> | <amr> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
 
     Examples:
@@ -336,7 +342,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | amr   |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <amr> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "400"
     And TGR current response at "$.body" matches as JSON:
         """
@@ -367,7 +373,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | prompt   |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <prompt> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
 
     Examples:
@@ -393,7 +399,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | prompt   |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <prompt> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "(201|400)"
 
     Examples:
@@ -415,7 +421,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | max_age   |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <max_age> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
 
     Examples:
@@ -438,7 +444,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | max_age   |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <max_age> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "(201|400)"
 
     Examples:
@@ -462,7 +468,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | claims   |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <claims> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "400"
 
     Examples:
@@ -488,7 +494,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
       | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               | claims   |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high | <claims> |
-    And TGR find request to path ".*"
+    And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
 
     Examples:
@@ -496,3 +502,28 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
       | {"id_token":{"acr":{"essential":true,"value":"gematik-ehealth-loa-high"},"amr":{"essential":true,"value":"urn:telematik:auth:guest:eGK"}}} |
       | {"id_token":{"acr":{"essential":true,"value":"gematik-ehealth-loa-high"}}}                                                                 |
       | {"id_token":{"acr":{"value":"gematik-ehealth-loa-invalid"}}}                                                                               |
+
+  @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_019
+  @PRIO:1
+  @TESTSTUFE:4
+  Scenario: IdpSektoral Pushed Auth Endpoint - Positivfall - cert rotation
+
+  ```
+  Wir senden einen PAR an mit gültigem TLS-C-Zertifikat an den sektoralen IDP, um die Autoregistrierung zu erledigen. Dann senden wir einen weiteren PAR aber verwenden ein
+  anderes TLS Client Zertifikat, das ebenfalls im Entity Statement zu der client_id hinterlegt ist.
+
+  Die Response auf den zweiten PAR muss als Body eine passende Fehlermeldung enthalten:
+
+    Given TGR clear recorded messages
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high |
+    And TGR find first request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "201"
+    And TGR clear recorded messages
+    When TGR change the local TigerProxy forwardMutualTlsIdentity to "certs/fachdienst-tls-c-rotation.p12"
+    When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
+      | client_id             | state       | redirect_uri    | code_challenge                                 | code_challenge_method | response_type | nonce                | scope        | acr_values               |
+      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high |
+    And TGR find first request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "201"

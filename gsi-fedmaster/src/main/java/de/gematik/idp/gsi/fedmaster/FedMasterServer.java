@@ -17,33 +17,17 @@
 package de.gematik.idp.gsi.fedmaster;
 
 import de.gematik.idp.gsi.fedmaster.configuration.FedMasterConfiguration;
-import de.gematik.idp.gsi.fedmaster.services.StaticHostResolverProvider;
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.security.Security;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import javax.jmdns.JmDNS;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.util.StackLocatorUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
@@ -62,14 +46,7 @@ public class FedMasterServer {
     SpringApplication.run(FedMasterServer.class, args);
   }
 
-  private final ApplicationContext context;
   private final FedMasterConfiguration fedMasterConfiguration;
-
-  @Value(
-      "#{T(de.gematik.idp.gsi.fedmaster.FedMasterServer).deserializeCommaSeparatedKeyValueMapping('${hosts:}')}")
-  private Map<String, String> dnsMappings;
-
-  private JmDNS jmdns;
 
   @PostConstruct
   public void setFedmasterLogLevel() {
@@ -83,72 +60,6 @@ public class FedMasterServer {
     final LoggerContext loggerContext =
         LoggerContext.getContext(StackLocatorUtil.getCallerClassLoader(2), false, null);
     log.info("loglevel: {}", loggerContext.getLogger(loggerServer).getLevel());
-    if (isSpringProfileActive("mdns")) {
-      setupMDNS();
-    }
-    if (isSpringProfileActive("hostsmap")) {
-      configureStaticHostResolver();
-    } else {
-      if (!dnsMappings.isEmpty()) {
-        log.warn(
-            "spring profile `hostsmap` is not active but host map is configured to {}",
-            dnsMappings);
-      }
-    }
-  }
-
-  private boolean isSpringProfileActive(final String profileName) {
-    return Arrays.asList(context.getEnvironment().getActiveProfiles()).contains(profileName);
-  }
-
-  /**
-   * A multicast dns listener is configured with hostname part of fedmaster.serverUrl, so mdns
-   * requests will be answered with ip/ipv6 address of the system running fedmaster server.
-   */
-  private void setupMDNS() {
-    try {
-      final String hostname = readMdnsHostnameFromConfig();
-      jmdns = JmDNS.create(null, hostname);
-      log.info("Created mDNS listener for hostname: {}.local", hostname);
-    } catch (final IOException e) {
-      throw new RuntimeException("Error while creating jmdns instance", e);
-    }
-  }
-
-  private void configureStaticHostResolver() {
-    if (dnsMappings == null) {
-      return;
-    }
-
-    for (final Entry<String, String> elem : dnsMappings.entrySet()) {
-      try {
-        StaticHostResolverProvider.setMapping(
-            elem.getKey(), InetAddress.getByName(elem.getValue()));
-      } catch (final UnknownHostException e) {
-        throw new IllegalArgumentException(
-            "Unable to parse IPaddress from mapping "
-                + elem.getKey()
-                + "="
-                + elem.getValue()
-                + " ");
-      }
-    }
-  }
-
-  /** Checks configured fedmaster.serverUrl for `.local` domain suffix. */
-  private String readMdnsHostnameFromConfig() {
-    try {
-      final URL url = new URI(fedMasterConfiguration.getServerUrl()).toURL();
-      final String[] domainNameParts = url.getHost().split("\\.");
-      if (domainNameParts.length == 2 && "local".equals(domainNameParts[1])) {
-        return domainNameParts[0];
-      } else {
-        throw new RuntimeException("Configured serverUrl is not a valid multicast DNS name.");
-      }
-    } catch (final MalformedURLException | URISyntaxException e) {
-      throw new RuntimeException(
-          "Configured serverUrl is malformed: " + fedMasterConfiguration.getServerUrl(), e);
-    }
   }
 
   @Bean
@@ -161,18 +72,5 @@ public class FedMasterServer {
     loggingFilter.setMaxPayloadLength(64000);
     loggingFilter.setIncludeHeaders(true);
     return loggingFilter;
-  }
-
-  public static Map<String, String> deserializeCommaSeparatedKeyValueMapping(
-      final String strValue) {
-    return Pattern.compile(",")
-        .splitAsStream(
-            strValue
-                .replaceAll("\\p{C}", "") // drop non printable characters
-                .replaceAll("\\s+", "") // trim whitespaces
-            )
-        .map(elem -> elem.split("="))
-        .filter(parts -> parts.length == 2)
-        .collect(Collectors.toMap(parts -> parts[0], parts -> parts[1]));
   }
 }

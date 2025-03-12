@@ -83,3 +83,6 @@ You can receive the OpenAPI Specification under the following paths
 | JSON    | http://127.0.0.1:port/v3/api-docs      |
 | YAML    | http://127.0.0.1:port/v3/api-docs.yaml |
 | SWAGGER | http://127.0.0.1:port/swagger-ui.html  |
+
+### gsi-server logs
+Logs are written via log4j2 to console.

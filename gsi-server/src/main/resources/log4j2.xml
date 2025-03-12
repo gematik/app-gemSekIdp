@@ -8,6 +8,7 @@
   </Properties>
 
   <Appenders>
+
     <Console name="CONSOLE" target="SYSTEM_OUT">
       <PatternLayout>
         <Pattern>${LOG_PATTERN}</Pattern>
@@ -16,11 +17,11 @@
   </Appenders>
 
   <Loggers>
-    <Root level="error" additivity="{l4j.additivity}">
+    <Root level="error" additivity="${l4j.additivity}">
       <AppenderRef ref="CONSOLE"/>
     </Root>
 
-    <logger name="de.gematik" level="${l4j.level}" additivity="{l4j.additivity}">
+    <logger name="de.gematik" level="${l4j.level}" additivity="${l4j.additivity}">
       <AppenderRef ref="CONSOLE"/>
     </logger>
 

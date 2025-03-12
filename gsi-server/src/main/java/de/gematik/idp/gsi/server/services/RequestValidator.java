@@ -33,6 +33,7 @@ import de.gematik.idp.gsi.server.data.FedIdpAuthSession;
 import de.gematik.idp.gsi.server.data.GsiConstants;
 import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
+import de.gematik.idp.token.JsonWebToken;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -48,11 +49,11 @@ import org.springframework.http.HttpStatus;
 public abstract class RequestValidator {
 
   public static void validateParParams(
-      final RpToken entityStmntRp, final String redirectUri, final String scope) {
+      final JsonWebToken entityStmntAboutRp, final String redirectUri, final String scope) {
     // Msg 2a and 2b
     // Msg 2c and 2d
-    entityStmntRp.verifyRedirectUriExistsInEntityStmnt(redirectUri);
-    entityStmntRp.verifyRequestedScopesListedInEntityStmnt(scope);
+    EntityStatementRpVerifier.verifyRedirectUriExistsInEntityStmnt(entityStmntAboutRp, redirectUri);
+    EntityStatementRpVerifier.verifyRequestedScopesListedInEntityStmnt(entityStmntAboutRp, scope);
     verifyIdpDoesSupportRequestedScopes(scope);
   }
 

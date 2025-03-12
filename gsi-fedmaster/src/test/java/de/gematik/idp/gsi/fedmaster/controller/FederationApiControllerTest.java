@@ -21,6 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import de.gematik.idp.gsi.fedmaster.common.ConfigReader;
 import de.gematik.idp.token.JsonWebToken;
+import java.util.Map;
+import java.util.Objects;
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.HttpStatus;
 import kong.unirest.core.Unirest;
@@ -172,9 +174,27 @@ class FederationApiControllerTest {
   }
 
   @Test
-  void EntityStatementFd_NotContainsMetadata() {
+  void EntityStatementFd_containsMetadata() {
     final JsonWebToken jwtInResponse = retrieveJwtFromEntityStatementFd();
-    assertThat(jwtInResponse.extractBodyClaims().get("metadata")).isNull();
+    assertThat(jwtInResponse.extractBodyClaims().get("metadata")).isNotNull();
+    final Map<String, Object> metadata =
+        getInnerClaimMap(jwtInResponse.extractBodyClaims(), "metadata");
+    assertThat(metadata).containsOnlyKeys("openid_relying_party");
+    final Map<String, Object> openIdRelyingParty =
+        getInnerClaimMap(metadata, "openid_relying_party");
+    assertThat(openIdRelyingParty)
+        .containsOnlyKeys("client_registration_types", "claims", "redirect_uris", "scope");
+  }
+
+  @Test
+  void EntityStatemenIdp_containsMetadata() {
+    final JsonWebToken jwtInResponse = retrieveJwtFromEntityStatementIdp();
+    assertThat(jwtInResponse.extractBodyClaims().get("metadata")).isNotNull();
+    final Map<String, Object> metadata =
+        getInnerClaimMap(jwtInResponse.extractBodyClaims(), "metadata");
+    assertThat(metadata).containsOnlyKeys("openid_provider");
+    final Map<String, Object> openIdRelyingParty = getInnerClaimMap(metadata, "openid_provider");
+    assertThat(openIdRelyingParty).containsOnlyKeys("client_registration_types_supported");
   }
 
   @Test
@@ -203,5 +223,10 @@ class FederationApiControllerTest {
         .queryString("iss", fedMasterUrl)
         .queryString("sub", sub)
         .asString();
+  }
+
+  private Map<String, Object> getInnerClaimMap(
+      final Map<String, Object> claimMap, final String key) {
+    return Objects.requireNonNull((Map<String, Object>) claimMap.get(key), "missing claim: " + key);
   }
 }

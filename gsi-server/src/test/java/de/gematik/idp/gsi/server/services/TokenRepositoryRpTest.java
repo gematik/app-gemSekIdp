@@ -16,7 +16,7 @@
 
 package de.gematik.idp.gsi.server.services;
 
-import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
+import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2044;
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -65,7 +65,7 @@ class TokenRepositoryRpTest {
         .thenReturn(VALID_RPTOKEN);
     httpClientMockedStatic
         .when(() -> HttpClient.fetchEntityStatementAboutRp(any(), any(), any()))
-        .thenReturn(new JsonWebToken(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
+        .thenReturn(new JsonWebToken(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2044));
   }
 
   @AfterEach

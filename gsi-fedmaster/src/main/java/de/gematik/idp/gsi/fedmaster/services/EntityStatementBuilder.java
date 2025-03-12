@@ -43,11 +43,11 @@ public class EntityStatementBuilder {
         .iss(serverUrl)
         .sub(serverUrl)
         .jwks(JwtHelper.getJwks(esSigPubKey))
-        .metadata(getMetadata(serverUrl))
+        .metadata(buildMetadataForFedmaster(serverUrl))
         .build();
   }
 
-  private Metadata getMetadata(final String serverUrl) {
+  private Metadata buildMetadataForFedmaster(final String serverUrl) {
     final FederationEntity federationEntity =
         FederationEntity.builder()
             .federationFetchEndpoint(serverUrl + FEDMASTER_FEDERATION_FETCH_ENDPOINT)
