@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.test.steps;
@@ -35,7 +39,6 @@ public class IdpSektoralSteps {
   static final String ENTITY_STATEMENT_ENDPOINT = "/.well-known/openid-federation";
 
   public void sendRequestTo(final String url, final String httpMethod, final DataTable params) {
-    SerenityRest.useRelaxedHTTPSValidation();
     final RequestSpecification reqSpec = SerenityRest.rest();
     reqSpec.redirects().follow(false);
     final Optional<String> xAuthHeaderInConfig =

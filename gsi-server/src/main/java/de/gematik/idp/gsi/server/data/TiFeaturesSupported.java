@@ -18,24 +18,18 @@
  * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-package de.gematik.idp.gsi.fedmaster;
+package de.gematik.idp.gsi.server.data;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
-import de.gematik.idp.gsi.fedmaster.configuration.FedMasterConfiguration;
-import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-
-@Slf4j
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class FedMasterServerTest {
-
-  @Autowired private FedMasterConfiguration fedMasterConfiguration;
-
-  @Test
-  void configLoads() {
-    assertThat(fedMasterConfiguration).isNotNull();
-  }
+@Getter
+@Builder
+@AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class TiFeaturesSupported {
+  private String[] idTokenVersionSupported;
 }

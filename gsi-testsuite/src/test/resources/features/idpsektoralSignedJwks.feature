@@ -1,5 +1,5 @@
 #
-# Copyright 2023 gematik GmbH
+# Copyright (Date see Readme), gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# *******
+#
+# For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
 #
 
 @SignedJwks
@@ -101,6 +105,26 @@ Feature: Test signed Jwks of IdpSektoral
             kty:                           'EC',
             crv:                           'P-256',
             x:                             "${json-unit.ignore}",
-            y:                             "${json-unit.ignore}",
+            y:                             "${json-unit.ignore}"
           }
         """
+
+
+  @TCID:IDPSEKTORAL_SIGNED_JWKS_004
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
+  Scenario: IdpSektoral signedJwks - Gutfall - ID Token Signing Key aus Komp-PKI
+
+  ```
+  Wir rufen das signed jwks beim IdpSektoral ab
+
+  keys muss einen Schlüssel aus der Komponenten-PKI enthalten:
+
+    Given TGR clear recorded messages
+    And Send Get Request to "${signed_jwks_uri}"
+    And TGR find first request to path ".*"
+    Then TGR current response at "$.body.body.keys.*.x5c.0.content.issuer.CN" matches:
+"""
+GEM.KOMP-CA.*
+"""

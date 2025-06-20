@@ -1,5 +1,5 @@
 #
-# Copyright 2023 gematik GmbH
+# Copyright (Date see Readme), gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# *******
+#
+# For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
 #
 
 @AuthorizationEndpoint
@@ -52,8 +56,8 @@ Feature: Test GSI specific authentication
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
 
@@ -85,15 +89,15 @@ Feature: Test GSI specific authentication
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     Then TGR current response with attribute "$.header.Location" matches ".*code=.*"
 
   @TCID:GSI_AUTH_003
     @Approval
     @OpenBug
-  Scenario Outline: GSI Authentication - Negativfall - invalide Werter für die Parameter
+  Scenario Outline: GSI Authentication - Negativfall - invalide Werte für die Parameter
 
   ```
   Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint, um anschließend nochmal mit
@@ -122,10 +126,10 @@ Feature: Test GSI specific authentication
     Then TGR current response with attribute "$.header.Location" matches "<errorExmpl>"
 
     Examples:
-      | requestUriExmpl | userIdExmpl   | errorExmpl                |
-      | invalidReqUri   | 12345678      | .*error=invalid_request.* |
-      | ${requestUri}   | 12345678      | .*error=invalid_request.* |
-      | ${requestUri}   | invalidUserId | .*error=invalid_request.* |
+      | requestUriExmpl | userIdExmpl     | errorExmpl                |
+      | invalidReqUri   | X110411675      | .*error=invalid_request.* |
+      | ${requestUri}   | X110411675      | .*error=invalid_request.* |
+      | ${requestUri}   | invalidUserId   | .*error=invalid_request.* |
 
 
   @TCID:GSI_AUTH_004
@@ -154,8 +158,8 @@ Feature: Test GSI specific authentication
     Then TGR current response with attribute "$.responseCode" matches "302"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | user_id  |
-      | 12345678 |
+      | user_id    |
+      | X110411675 |
     And TGR find first request to path ".*"
     Then TGR current response with attribute "$.header.Location" matches ".*error=invalid_request.*"
 
@@ -225,8 +229,8 @@ Feature: Test GSI specific authentication
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  | selected_claims                 |
-      | ${requestUri} | 12345678 | urn:telematik:claims:profession |
+      | request_uri   | user_id    | selected_claims                 |
+      | ${requestUri} | X110411675 | urn:telematik:claims:profession |
     And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "302"
     Then TGR current response with attribute "$.header.Location" matches ".*code=.*"

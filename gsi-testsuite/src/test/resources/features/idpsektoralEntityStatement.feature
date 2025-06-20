@@ -1,5 +1,5 @@
 #
-# Copyright 2023 gematik GmbH
+# Copyright (Date see Readme), gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# *******
+#
+# For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
 #
 
 @EntityStatement
@@ -105,7 +109,7 @@ Feature: Test Entity Statement of IdpSektoral
             exp:                           "${json-unit.ignore}",
             jwks:                          "${json-unit.ignore}",
             authority_hints:               "${json-unit.ignore}",
-            metadata:                      "${json-unit.ignore}",
+            metadata:                      "${json-unit.ignore}"
           }
         """
 
@@ -153,14 +157,17 @@ Feature: Test Entity Statement of IdpSektoral
             id_token_encryption_enc_values_supported:     ["A256GCM"],
             token_endpoint_auth_methods_supported:        [self_signed_tls_client_auth],
             user_type_supported:                          ["IP"],
-            ____federation_registration_endpoint:         '.*'
+            ____federation_registration_endpoint:         '.*',
+            ti_features_supported:                        "${json-unit.ignore}"
           }
     """
     And TGR current response at "$.body.body.metadata.openid_provider.request_authentication_methods_supported" matches as JSON:
     """
           {
-            ar:               ["none"],
-            par:              ["self_signed_tls_client_auth"]
+            ____ar:                                       ["none"],
+            ____authorization_endpoint:                   ["none"],
+            ____par:                                      ["self_signed_tls_client_auth"],
+            ____pushed_authorization_request_endpoint:    ["self_signed_tls_client_auth"]
           }
     """
     And TGR current response at "$.body.body.metadata.federation_entity" matches as JSON:
@@ -171,6 +178,13 @@ Feature: Test Entity Statement of IdpSektoral
             ____homepage_uri:     'http.*'
           }
     """
+    And TGR current response at "$.body.body.metadata.openid_provider.ti_features_supported" matches as JSON:
+    """
+          {
+            id_token_version_supported:      ["1.0.0", "2.0.0"]
+          }
+    """
+
     And TGR current response with attribute "$.body.body.metadata.federation_entity.contacts.0" matches ".*"
 
 
@@ -197,7 +211,7 @@ Feature: Test Entity Statement of IdpSektoral
             kty:                           'EC',
             crv:                           'P-256',
             x:                             "${json-unit.ignore}",
-            y:                             "${json-unit.ignore}",
+            y:                             "${json-unit.ignore}"
           }
         """
 

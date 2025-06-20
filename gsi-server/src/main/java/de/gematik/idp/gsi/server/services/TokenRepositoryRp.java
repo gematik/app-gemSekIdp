@@ -1,5 +1,5 @@
 /*
- *  Copyright 2024 gematik GmbH
+ * Copyright (Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,11 +12,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.services;
 
+import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
+
+import de.gematik.idp.exceptions.IdpJwtSignatureInvalidException;
 import de.gematik.idp.gsi.server.data.RpToken;
+import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.idp.token.TokenClaimExtraction;
 import java.security.PublicKey;
@@ -25,6 +33,7 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jose4j.jwk.JsonWebKeySet;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -101,7 +110,14 @@ public class TokenRepositoryRp {
             serverUrlService.determineFedmasterUrl(),
             serverUrlService.determineFetchEntityStatementEndpoint());
 
-    entityStmntAboutRp.verify(fedmasterSigKey);
+    try {
+      entityStmntAboutRp.verify(fedmasterSigKey);
+    } catch (final IdpJwtSignatureInvalidException e) {
+      throw new GsiException(
+          INVALID_REQUEST,
+          "The JWT signature of the entity statement about the relying party was invalid.",
+          HttpStatus.BAD_REQUEST);
+    }
     entityStmtsAboutRp.put(sub, entityStmntAboutRp);
     log.debug(
         "Entitystatement about RP [{}] stored. JWT: {}",

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.services;
@@ -31,6 +35,7 @@ import de.gematik.idp.gsi.server.data.FederationEntity;
 import de.gematik.idp.gsi.server.data.Metadata;
 import de.gematik.idp.gsi.server.data.OpenidProvider;
 import de.gematik.idp.gsi.server.data.RequestAuthenticationMethodsSupported;
+import de.gematik.idp.gsi.server.data.TiFeaturesSupported;
 import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +102,7 @@ public class EntityStatementBuilder {
             .userTypeSupported(new String[] {"IP"})
             .claimsSupported(getClaimsForScopeSet(SCOPES_SUPPORTED).toArray(String[]::new))
             .claimsParameterSupported(true)
+            .tiFeaturesSupported(new TiFeaturesSupported(new String[] {"1.0.0", "2.0.0"}))
             .build();
     final FederationEntity federationEntity =
         FederationEntity.builder()

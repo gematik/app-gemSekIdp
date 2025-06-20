@@ -1,3 +1,17 @@
+# Release 8.1.0
+
+- refactor setting/printing log level - see [gsi-server logging](README.md#gsi-server logging)
+- add test case to verify the issuer of the token signing key
+- remove relaxedHTTPSValidation
+- skip docker build as default
+- add bde logging, disabled by default
+- handle unknown KVNR by throwing GSI-Exception instead of using a fallback
+- adapt management section in configuration to Spring Boot version >= 3.2
+- handle invalid signature of entity statement with error response 400
+- add claim ti_features_supported to openid_provider in entity_statement
+- remove dependency spring-boot-starter-jersey (CVE-2025-48988)
+- update dependencies
+
 # Release 8.0.0
 
 - remove static host name resolving

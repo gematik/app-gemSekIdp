@@ -1,5 +1,5 @@
 #
-# Copyright 2023 gematik GmbH
+# Copyright (Date see Readme), gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# *******
+#
+# For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
 #
 
 @TokenEndpoint
@@ -187,8 +191,8 @@ Feature: Test IdpSektoral's Token Endpoint
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     Given TGR clear recorded messages
@@ -228,8 +232,8 @@ Feature: Test IdpSektoral's Token Endpoint
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     Given TGR clear recorded messages
@@ -282,8 +286,8 @@ Feature: Test IdpSektoral's Token Endpoint
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     Given TGR clear recorded messages
@@ -349,7 +353,7 @@ Feature: Test IdpSektoral's Token Endpoint
     """
     Examples:
       | userId     | id         | organization | displayName                                 |
-      | 12345678   | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld |
+      | X110411675 | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld |
       | D162565246 | D162565246 | 101592612    | Imagina Handt                               |
 
 
@@ -379,8 +383,8 @@ Feature: Test IdpSektoral's Token Endpoint
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  | selected_claims                 |
-      | ${requestUri} | 12345678 | urn:telematik:claims:profession |
+      | request_uri   | user_id    | selected_claims                 |
+      | ${requestUri} | X110411675 | urn:telematik:claims:profession |
     And TGR find first request to path ".*"
     And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     Given TGR clear recorded messages
@@ -453,7 +457,7 @@ Feature: Test IdpSektoral's Token Endpoint
 
     Examples:
       | userId     | id         | organization | displayName                                 | acr_values                      | amr                    |
-      | 12345678   | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld | gematik-ehealth-loa-high        | urn:telematik:auth:eGK |
+      | X110411675 | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld | gematik-ehealth-loa-high        | urn:telematik:auth:eGK |
       | D162565246 | D162565246 | 101592612    | Imagina Handt                               | gematik-ehealth-loa-high        | urn:telematik:auth:eID |
       | O018753329 | O018753329 | 106589300    | Hildur Fürsich                              | gematik-ehealth-loa-substantial | urn:telematik:auth:mEW |
       | G839948921 | G839948921 | 104401207    | Jules Seeckt                                | gematik-ehealth-loa-high        | urn:telematik:auth:sso |

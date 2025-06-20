@@ -4,6 +4,8 @@ gsi:
 tigerProxy:
   adminPort: ${free.port.201}
   proxyPort: ${free.port.200}
+  activateRbelParsingFor:
+    - "X509"
   tls:
     forwardMutualTlsIdentity: "src/test/resources/certs/fachdienst-tls-c.p12;00"
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.controller;
@@ -22,6 +26,7 @@ import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
 import static de.gematik.idp.data.Oauth2ErrorCode.UNAUTHORIZED_CLIENT;
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
 import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_HIGH;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FALLBACK_KVNR;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.TLS_CLIENT_CERT_HEADER_NAME;
@@ -120,7 +125,8 @@ class FedIdpControllerTest {
           "id_token_encryption_enc_values_supported",
           "user_type_supported",
           "claims_supported",
-          "claims_parameter_supported");
+          "claims_parameter_supported",
+          "ti_features_supported");
 
   @DynamicPropertySource
   static void dynamicProperties(final DynamicPropertyRegistry registry) {
@@ -312,6 +318,23 @@ class FedIdpControllerTest {
         .containsExactlyInAnyOrder("A256GCM");
     assertThat((List) openidProvider.get("user_type_supported"))
         .isSubsetOf(List.of("HCI", "HP", "IP"));
+    assertThat(openidProvider.get("ti_features_supported"))
+        .asString()
+        .contains("id_token_version_supported");
+  }
+
+  @Test
+  void test_entityStatement_TiFeaturesSupportedCorrect() {
+    final Map<String, Object> metadata = getInnerClaimMap(entityStatementbodyClaims, "metadata");
+    final Map<String, Object> openidProvider =
+        Objects.requireNonNull(
+            (Map<String, Object>) metadata.get("openid_provider"),
+            "missing claim: openid_provider");
+
+    final Map<String, Object> tiFeaturesSupported =
+        getInnerClaimMap(openidProvider, "ti_features_supported");
+    assertThat((List<String>) tiFeaturesSupported.get("id_token_version_supported"))
+        .containsExactlyInAnyOrder("1.0.0", "2.0.0");
   }
 
   @SuppressWarnings("unchecked")
@@ -1030,9 +1053,99 @@ class FedIdpControllerTest {
         .perform(
             get(testHostUrl + FED_AUTH_ENDPOINT)
                 .param("request_uri", requestUri)
-                .param("user_id", "12345678")
+                .param("user_id", FALLBACK_KVNR)
                 .param("selected_claims", "urn:telematik:claims:id"))
         .andExpect(status().isFound());
+  }
+
+  @SneakyThrows
+  @Test
+  void test_getAuthorizationCode_invalidUserId() {
+
+    final MockHttpServletResponse respMsg3 =
+        mockMvc
+            .perform(
+                post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
+                    .param("client_id", fachdienstClientId)
+                    .param("state", "state_Fachdienst")
+                    .param("redirect_uri", redirectUri)
+                    .param("code_challenge", ClientUtilities.generateCodeChallenge(codeVerifier))
+                    .param("code_challenge_method", CodeChallengeMethod.S256.toString())
+                    .param("response_type", "code")
+                    .param("nonce", "42")
+                    .param("scope", "urn:telematik:versicherter openid")
+                    .param("acr_values", "gematik-ehealth-loa-high")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+            .andReturn()
+            .getResponse();
+    assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
+
+    final String requestUri = JsonPath.read(respMsg3.getContentAsString(), "request_uri");
+
+    mockMvc
+        .perform(
+            get(testHostUrl + FED_AUTH_ENDPOINT)
+                .param("request_uri", requestUri)
+                .param("device_type", "unittest"))
+        .andExpect(status().isOk());
+
+    final MockHttpServletResponse resp =
+        mockMvc
+            .perform(
+                get(testHostUrl + FED_AUTH_ENDPOINT)
+                    .param("request_uri", requestUri)
+                    .param("user_id", "12345678")
+                    .param("selected_claims", "urn:telematik:claims:id"))
+            .andReturn()
+            .getResponse();
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(JsonPath.read(resp.getContentAsString(), "error_description").toString())
+        .contains("userId: must match \"^[A-Z]\\d{9}$\"");
+  }
+
+  @SneakyThrows
+  @Test
+  void test_getAuthorizationCode_unknownUserId() {
+
+    final MockHttpServletResponse respMsg3 =
+        mockMvc
+            .perform(
+                post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
+                    .param("client_id", fachdienstClientId)
+                    .param("state", "state_Fachdienst")
+                    .param("redirect_uri", redirectUri)
+                    .param("code_challenge", ClientUtilities.generateCodeChallenge(codeVerifier))
+                    .param("code_challenge_method", CodeChallengeMethod.S256.toString())
+                    .param("response_type", "code")
+                    .param("nonce", "42")
+                    .param("scope", "urn:telematik:versicherter openid")
+                    .param("acr_values", "gematik-ehealth-loa-high")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+            .andReturn()
+            .getResponse();
+    assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
+
+    final String requestUri = JsonPath.read(respMsg3.getContentAsString(), "request_uri");
+
+    mockMvc
+        .perform(
+            get(testHostUrl + FED_AUTH_ENDPOINT)
+                .param("request_uri", requestUri)
+                .param("device_type", "unittest"))
+        .andExpect(status().isOk());
+
+    final MockHttpServletResponse resp =
+        mockMvc
+            .perform(
+                get(testHostUrl + FED_AUTH_ENDPOINT)
+                    .param("request_uri", requestUri)
+                    .param("user_id", "W123456789")
+                    .param("selected_claims", "urn:telematik:claims:id"))
+            .andReturn()
+            .getResponse();
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+    assertThat(JsonPath.read(resp.getContentAsString(), "error_description").toString())
+        .contains("Unknown KVNR");
   }
 
   @SneakyThrows
@@ -1070,7 +1183,7 @@ class FedIdpControllerTest {
         .perform(
             get(testHostUrl + FED_AUTH_ENDPOINT)
                 .param("request_uri", requestUri)
-                .param("user_id", "12345678")
+                .param("user_id", FALLBACK_KVNR)
                 .param("selected_claims", "urn:telematik:claims:given_name"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error_description").value("selected claims exceed scopes in PAR"));
@@ -1154,7 +1267,7 @@ class FedIdpControllerTest {
             .perform(
                 get(testHostUrl + FED_AUTH_ENDPOINT)
                     .param("request_uri", requestUri)
-                    .param("user_id", "12345678"))
+                    .param("user_id", FALLBACK_KVNR))
             .andReturn()
             .getResponse();
 
@@ -1228,7 +1341,7 @@ class FedIdpControllerTest {
             .perform(
                 get(testHostUrl + FED_AUTH_ENDPOINT)
                     .param("request_uri", requestUri)
-                    .param("user_id", "12345678")
+                    .param("user_id", FALLBACK_KVNR)
                     .param(
                         "selected_claims",
                         "urn:telematik:claims:profession urn:telematik:claims:id"))
@@ -1314,7 +1427,7 @@ class FedIdpControllerTest {
             .perform(
                 get(testHostUrl + FED_AUTH_ENDPOINT)
                     .param("request_uri", requestUri)
-                    .param("user_id", "12345678"))
+                    .param("user_id", FALLBACK_KVNR))
             .andReturn()
             .getResponse();
 
@@ -1382,7 +1495,7 @@ class FedIdpControllerTest {
             .perform(
                 get(testHostUrl + FED_AUTH_ENDPOINT)
                     .param("request_uri", requestUri)
-                    .param("user_id", "12345678"))
+                    .param("user_id", FALLBACK_KVNR))
             .andReturn()
             .getResponse();
 
