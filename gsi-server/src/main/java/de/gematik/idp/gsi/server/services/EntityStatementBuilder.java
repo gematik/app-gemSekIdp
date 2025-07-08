@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.services;
@@ -22,6 +26,7 @@ import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOI
 import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.LOGO_URI;
 import static de.gematik.idp.gsi.server.data.GsiConstants.SCOPES_SUPPORTED;
+import static de.gematik.idp.gsi.server.data.GsiConstants.SUPPORTED_ID_TOKEN_VERSIONS;
 import static de.gematik.idp.gsi.server.util.ClaimHelper.getClaimsForScopeSet;
 
 import de.gematik.idp.data.FederationPubKey;
@@ -31,6 +36,7 @@ import de.gematik.idp.gsi.server.data.FederationEntity;
 import de.gematik.idp.gsi.server.data.Metadata;
 import de.gematik.idp.gsi.server.data.OpenidProvider;
 import de.gematik.idp.gsi.server.data.RequestAuthenticationMethodsSupported;
+import de.gematik.idp.gsi.server.data.TiFeaturesSupported;
 import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +79,7 @@ public class EntityStatementBuilder {
         OpenidProvider.builder()
             .issuer(serverUrl)
             .signedJwksUri(serverUrl + FED_SIGNED_JWKS_ENDPOINT)
-            .organizationName("gematik sektoraler IDP")
+            .organizationName("deprecated gematik sektoraler IDP")
             .logoUri(LOGO_URI)
             .authorizationEndpoint(serverUrl + FED_AUTH_ENDPOINT)
             .tokenEndpoint(serverUrlMtls + TOKEN_ENDPOINT)
@@ -97,10 +103,13 @@ public class EntityStatementBuilder {
             .userTypeSupported(new String[] {"IP"})
             .claimsSupported(getClaimsForScopeSet(SCOPES_SUPPORTED).toArray(String[]::new))
             .claimsParameterSupported(true)
+            .tiFeaturesSupported(
+                new TiFeaturesSupported(SUPPORTED_ID_TOKEN_VERSIONS.toArray(String[]::new)))
             .build();
     final FederationEntity federationEntity =
         FederationEntity.builder()
-            .name("gematik sektoraler IDP")
+            .name("deprecated gematik sektoraler IDP")
+            .organizationName("gematik sektoraler IDP")
             .contacts(new String[] {"support@idp4711.de", "idm@gematik.de"})
             .homepageUri("https://idp4711.de")
             .build();

@@ -17,9 +17,6 @@ gsi:
   serverUrlMtls: "${GSI_SERVER_URL_MTLS:http://127.0.0.1:8085}"
   fedmasterUrl: "${FEDMASTER_SERVER_URL:http://127.0.0.1:8083}"
   fedmasterSigPubKeyFilePath: "keys/ref-fedmaster-sig-pubkey.pem"
-  debug:
-    requestLogging: true
-  loglevel: debug
   requestUriTTL: 90
 server:
   port: ${SERVER_PORT:8085}
@@ -31,11 +28,23 @@ management:
       exposure:
         include: "health"
     access:
+      max-permitted: read-only
       default: read_only
   endpoint:
     health:
       access: read_only
+      probes:
+        access: read-only
     metrics:
       access: read_only
     logfile:
       access: read_only
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+logging:
+  level:
+    de.gematik: ${LOG_LEVEL_GEMATIK:debug}
+  CommonsRequestLoggingEnabled: ${REQUEST_LOGGING_ENABLED:true}

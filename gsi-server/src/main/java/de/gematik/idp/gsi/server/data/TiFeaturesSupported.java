@@ -30,10 +30,6 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class FederationEntity {
-
-  private String name;
-  private String organizationName;
-  private String[] contacts;
-  private String homepageUri;
+public class TiFeaturesSupported {
+  private String[] idTokenVersionSupported;
 }

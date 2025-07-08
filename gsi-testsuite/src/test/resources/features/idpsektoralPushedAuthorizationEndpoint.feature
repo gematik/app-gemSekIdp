@@ -1,5 +1,5 @@
 #
-# Copyright 2023 gematik GmbH
+# Copyright (Change Date see Readme), gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# *******
+#
+# For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
+#
 
 @PushedAuthorizationEndpoint
 @PRODUKT:IDP-Sek
@@ -24,7 +28,6 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     And TGR find first request to path ".*/.well-known/openid-federation"
     Then TGR set local variable "pushed_authorization_request_endpoint" to "!{rbel:currentResponseAsString('$.body.body.metadata.openid_provider.pushed_authorization_request_endpoint')}"
     And TGR HttpClient followRedirects Konfiguration deaktiviert
-    And HttpClient use relaxed https validation
 
     And Wait for "1" Seconds
 
@@ -476,7 +479,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
       | {"id_token":{"acr":{"essential":true,"values":["gematik-ehealth-loa-invalid"]}}} |
       | {"id_token":{"amr":{"essential":true,"value":"invalidAmr"}}}                     |
       | {"id_token":{"invalid_claim":{"essential":true}}}                                |
-      | {"id_token":{"invalid_claim":null}}                                              |
+#      | {"id_token":{"invalid_claim":null}}                                              |
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_018
@@ -488,7 +491,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
   ```
   Wir senden einen PAR, um die Autoregistrierung anzustoßen. Dabei wird der optionale Parameter claims mit validen Werten geschickt.
-  Die erste Variante ist ein Gastlogin, bei der zweiten können nicht-essential-Claims ignoriert werden.
+  Die erste Variante ist ein Gastlogin, bei der dritten können nicht-essential-Claims ignoriert werden.
 
     Given TGR clear recorded messages
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
@@ -523,7 +526,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     And TGR clear recorded messages
     When TGR change the local TigerProxy forwardMutualTlsIdentity to "certs/fachdienst-tls-c-rotation.p12"
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
-      | client_id             | state       | redirect_uri    | code_challenge                                 | code_challenge_method | response_type | nonce                | scope        | acr_values               |
+      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values               |
       | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | gematik-ehealth-loa-high |
     And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"

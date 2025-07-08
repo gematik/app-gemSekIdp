@@ -1,5 +1,5 @@
 /*
- *  Copyright 2024 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.services;
@@ -26,10 +30,12 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.jose4j.jwk.PublicJsonWebKey;
@@ -83,6 +89,22 @@ public abstract class EntityStatementRpReader {
                 HttpStatus.BAD_REQUEST);
     final JsonWebToken signedJwks = getSignedJwks(entityStmntRp).orElseThrow(gsiExceptionSupplier);
     return getRpTlsClientCertsFromSignedJwks(signedJwks).orElseThrow(gsiExceptionSupplier);
+  }
+
+  public static Set<String> getIdTokenVersionSupported(final JsonWebToken entityStmntRp) {
+    final Map<String, Object> openidRelyingParty = getOpenidRelyingParty(entityStmntRp);
+    if (openidRelyingParty.containsKey("ti_features_supported")) {
+      final Map<String, Object> tiFeaturesSupported =
+          (Map<String, Object>) openidRelyingParty.get("ti_features_supported");
+      if (tiFeaturesSupported.containsKey("id_token_version_supported")) {
+        final List<String> idTokenVersionSupported =
+            (List<String>) tiFeaturesSupported.get("id_token_version_supported");
+        if (!idTokenVersionSupported.isEmpty()) {
+          return new HashSet<>(idTokenVersionSupported);
+        }
+      }
+    }
+    return Set.of("1.0.0");
   }
 
   private static Optional<PublicJsonWebKey> getRpEncKeyFromEntityStatement(

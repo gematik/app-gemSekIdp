@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.data;
@@ -50,7 +54,7 @@ public final class GsiConstants {
           "urn:telematik:family_name",
           "openid");
 
-  public static final Set<String> AMR_VALUES_HIGH =
+  public static final Set<String> AMR_VALUES_HIGH_V1 =
       Set.of(
           "urn:telematik:auth:eGK",
           "urn:telematik:auth:eID",
@@ -58,10 +62,22 @@ public final class GsiConstants {
           "urn:telematik:auth:guest:eGK",
           "urn:telematik:auth:other");
 
-  public static final Set<String> AMR_VALUES_SUBSTANTIAL = Set.of("urn:telematik:auth:mEW");
+  public static final Set<String> AMR_VALUES_HIGH_V2 =
+      Set.of(
+          "urn:telematik:auth:eGK",
+          "urn:telematik:auth:eID",
+          "urn:telematik:auth:guest:eGK",
+          "urn:telematik:auth:other");
 
-  public static final Set<String> AMR_VALUES =
-      Stream.concat(AMR_VALUES_HIGH.stream(), AMR_VALUES_SUBSTANTIAL.stream())
+  public static final Set<String> AMR_VALUES_SUBSTANTIAL_V1 = Set.of("urn:telematik:auth:mEW");
+  public static final Set<String> AMR_VALUES_SUBSTANTIAL_V2 = Set.of("urn:telematik:auth:other");
+
+  public static final Set<String> AMR_VALUES_V1 =
+      Stream.concat(AMR_VALUES_HIGH_V1.stream(), AMR_VALUES_SUBSTANTIAL_V1.stream())
+          .collect(Collectors.toSet());
+
+  public static final Set<String> AMR_VALUES_V2 =
+      Stream.concat(AMR_VALUES_HIGH_V2.stream(), AMR_VALUES_SUBSTANTIAL_V2.stream())
           .collect(Collectors.toSet());
 
   public static final String ACR_HIGH = "gematik-ehealth-loa-high";
@@ -78,4 +94,8 @@ public final class GsiConstants {
   public static final String TLS_CLIENT_CERT_HEADER_NAME = "X-SSL-CERT";
   public static final String LOGO_URI =
       "https://raw.githubusercontent.com/gematik/zero-lab/main/static/images/GID_App_light_mode.svg";
+
+  public static final String FALLBACK_KVNR = "X110411675";
+
+  public static final Set<String> SUPPORTED_ID_TOKEN_VERSIONS = Set.of("1.0.0", "2.0.0");
 }
