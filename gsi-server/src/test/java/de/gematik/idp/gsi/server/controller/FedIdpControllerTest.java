@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.controller;
@@ -22,6 +26,7 @@ import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
 import static de.gematik.idp.data.Oauth2ErrorCode.UNAUTHORIZED_CLIENT;
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
 import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_HIGH;
+import static de.gematik.idp.gsi.server.data.GsiConstants.FALLBACK_KVNR;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.TLS_CLIENT_CERT_HEADER_NAME;
@@ -79,13 +84,13 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -120,7 +125,8 @@ class FedIdpControllerTest {
           "id_token_encryption_enc_values_supported",
           "user_type_supported",
           "claims_supported",
-          "claims_parameter_supported");
+          "claims_parameter_supported",
+          "ti_features_supported");
 
   @DynamicPropertySource
   static void dynamicProperties(final DynamicPropertyRegistry registry) {
@@ -131,7 +137,7 @@ class FedIdpControllerTest {
 
   private MockMvc mockMvc;
   @Autowired private WebApplicationContext context;
-  @MockBean private TokenRepositoryRp rpTokenRepository;
+  @MockitoBean private TokenRepositoryRp rpTokenRepository;
   private static MockedStatic<RequestValidator> requestValidatorMockedStatic;
   private static MockedStatic<EntityStatementRpReader> esReaderMockedStatic;
 
@@ -312,6 +318,23 @@ class FedIdpControllerTest {
         .containsExactlyInAnyOrder("A256GCM");
     assertThat((List) openidProvider.get("user_type_supported"))
         .isSubsetOf(List.of("HCI", "HP", "IP"));
+    assertThat(openidProvider.get("ti_features_supported"))
+        .asString()
+        .contains("id_token_version_supported");
+  }
+
+  @Test
+  void test_entityStatement_TiFeaturesSupportedCorrect() {
+    final Map<String, Object> metadata = getInnerClaimMap(entityStatementbodyClaims, "metadata");
+    final Map<String, Object> openidProvider =
+        Objects.requireNonNull(
+            (Map<String, Object>) metadata.get("openid_provider"),
+            "missing claim: openid_provider");
+
+    final Map<String, Object> tiFeaturesSupported =
+        getInnerClaimMap(openidProvider, "ti_features_supported");
+    assertThat((List<String>) tiFeaturesSupported.get("id_token_version_supported"))
+        .containsExactlyInAnyOrder("1.0.0", "2.0.0");
   }
 
   @SuppressWarnings("unchecked")
@@ -326,7 +349,8 @@ class FedIdpControllerTest {
     contacts.add("support@idp4711.de");
     contacts.add("idm@gematik.de");
     assertThat(federationEntity)
-        .containsEntry("name", "gematik sektoraler IDP")
+        .containsEntry("name", "deprecated gematik sektoraler IDP")
+        .containsEntry("organization_name", "gematik sektoraler IDP")
         .containsEntry("contacts", contacts)
         .containsEntry("homepage_uri", "https://idp4711.de");
   }
@@ -782,8 +806,13 @@ class FedIdpControllerTest {
 
   /************************** FEDIDP AUTH_ENDPOINT *****************/
   @SneakyThrows
-  @Test
-  void test_getLandingPage_200() {
+  @ValueSource(strings = {"1.0.0", "2.0.0"})
+  @ParameterizedTest(name = "test_getLandingPage_200 idTokenVersion: {0}")
+  void test_getLandingPage_200(final String idTokenVersion) {
+
+    requestValidatorMockedStatic
+        .when(() -> RequestValidator.validateAndSelectCompatibleIdTokenVersion(any()))
+        .thenReturn(idTokenVersion);
 
     final MockHttpServletResponse respMsg3 =
         mockMvc
@@ -855,7 +884,6 @@ class FedIdpControllerTest {
                 .param("client_id", "InvalidClientId"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error_description").value("unknown client_id"));
-    ;
   }
 
   /*
@@ -996,8 +1024,13 @@ class FedIdpControllerTest {
   }
 
   @SneakyThrows
-  @Test
-  void test_getAuthorizationCode_validSelectedClaims_302() {
+  @ValueSource(strings = {"1.0.0", "2.0.0"})
+  @ParameterizedTest(name = "test_getAuthorizationCode_validSelectedClaims_302 idTokenVersion: {0}")
+  void test_getAuthorizationCode_validSelectedClaims_302(final String idTokenVersion) {
+
+    requestValidatorMockedStatic
+        .when(() -> RequestValidator.validateAndSelectCompatibleIdTokenVersion(any()))
+        .thenReturn(idTokenVersion);
 
     final MockHttpServletResponse respMsg3 =
         mockMvc
@@ -1030,9 +1063,99 @@ class FedIdpControllerTest {
         .perform(
             get(testHostUrl + FED_AUTH_ENDPOINT)
                 .param("request_uri", requestUri)
-                .param("user_id", "12345678")
+                .param("user_id", FALLBACK_KVNR)
                 .param("selected_claims", "urn:telematik:claims:id"))
         .andExpect(status().isFound());
+  }
+
+  @SneakyThrows
+  @Test
+  void test_getAuthorizationCode_invalidUserId() {
+
+    final MockHttpServletResponse respMsg3 =
+        mockMvc
+            .perform(
+                post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
+                    .param("client_id", fachdienstClientId)
+                    .param("state", "state_Fachdienst")
+                    .param("redirect_uri", redirectUri)
+                    .param("code_challenge", ClientUtilities.generateCodeChallenge(codeVerifier))
+                    .param("code_challenge_method", CodeChallengeMethod.S256.toString())
+                    .param("response_type", "code")
+                    .param("nonce", "42")
+                    .param("scope", "urn:telematik:versicherter openid")
+                    .param("acr_values", "gematik-ehealth-loa-high")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+            .andReturn()
+            .getResponse();
+    assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
+
+    final String requestUri = JsonPath.read(respMsg3.getContentAsString(), "request_uri");
+
+    mockMvc
+        .perform(
+            get(testHostUrl + FED_AUTH_ENDPOINT)
+                .param("request_uri", requestUri)
+                .param("device_type", "unittest"))
+        .andExpect(status().isOk());
+
+    final MockHttpServletResponse resp =
+        mockMvc
+            .perform(
+                get(testHostUrl + FED_AUTH_ENDPOINT)
+                    .param("request_uri", requestUri)
+                    .param("user_id", "12345678")
+                    .param("selected_claims", "urn:telematik:claims:id"))
+            .andReturn()
+            .getResponse();
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST);
+    assertThat(JsonPath.read(resp.getContentAsString(), "error_description").toString())
+        .contains("userId: must match \"^[A-Z]\\d{9}$\"");
+  }
+
+  @SneakyThrows
+  @Test
+  void test_getAuthorizationCode_unknownUserId() {
+
+    final MockHttpServletResponse respMsg3 =
+        mockMvc
+            .perform(
+                post(testHostUrl + FEDIDP_PAR_AUTH_ENDPOINT)
+                    .param("client_id", fachdienstClientId)
+                    .param("state", "state_Fachdienst")
+                    .param("redirect_uri", redirectUri)
+                    .param("code_challenge", ClientUtilities.generateCodeChallenge(codeVerifier))
+                    .param("code_challenge_method", CodeChallengeMethod.S256.toString())
+                    .param("response_type", "code")
+                    .param("nonce", "42")
+                    .param("scope", "urn:telematik:versicherter openid")
+                    .param("acr_values", "gematik-ehealth-loa-high")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+            .andReturn()
+            .getResponse();
+    assertThat(respMsg3.getStatus()).isEqualTo(HttpStatus.CREATED);
+
+    final String requestUri = JsonPath.read(respMsg3.getContentAsString(), "request_uri");
+
+    mockMvc
+        .perform(
+            get(testHostUrl + FED_AUTH_ENDPOINT)
+                .param("request_uri", requestUri)
+                .param("device_type", "unittest"))
+        .andExpect(status().isOk());
+
+    final MockHttpServletResponse resp =
+        mockMvc
+            .perform(
+                get(testHostUrl + FED_AUTH_ENDPOINT)
+                    .param("request_uri", requestUri)
+                    .param("user_id", "W123456789")
+                    .param("selected_claims", "urn:telematik:claims:id"))
+            .andReturn()
+            .getResponse();
+    assertThat(resp.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+    assertThat(JsonPath.read(resp.getContentAsString(), "error_description").toString())
+        .contains("Unknown KVNR");
   }
 
   @SneakyThrows
@@ -1070,7 +1193,7 @@ class FedIdpControllerTest {
         .perform(
             get(testHostUrl + FED_AUTH_ENDPOINT)
                 .param("request_uri", requestUri)
-                .param("user_id", "12345678")
+                .param("user_id", FALLBACK_KVNR)
                 .param("selected_claims", "urn:telematik:claims:given_name"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error_description").value("selected claims exceed scopes in PAR"));
@@ -1122,8 +1245,13 @@ class FedIdpControllerTest {
   }
 
   @SneakyThrows
-  @Test
-  void test_getTokensForCode_200() {
+  @ValueSource(strings = {"1.0.0", "2.0.0"})
+  @ParameterizedTest(name = "test_getTokensForCode_200 idTokenVersion: {0}")
+  void test_getTokensForCode_200(final String idTokenVersion) {
+
+    requestValidatorMockedStatic
+        .when(() -> RequestValidator.validateAndSelectCompatibleIdTokenVersion(any()))
+        .thenReturn(idTokenVersion);
 
     final MockHttpServletResponse respMsg3 =
         mockMvc
@@ -1154,7 +1282,7 @@ class FedIdpControllerTest {
             .perform(
                 get(testHostUrl + FED_AUTH_ENDPOINT)
                     .param("request_uri", requestUri)
-                    .param("user_id", "12345678"))
+                    .param("user_id", FALLBACK_KVNR))
             .andReturn()
             .getResponse();
 
@@ -1188,8 +1316,13 @@ class FedIdpControllerTest {
   }
 
   @SneakyThrows
-  @Test
-  void test_getTokensForCode_withSelectedClaims_200() {
+  @ValueSource(strings = {"1.0.0", "2.0.0"})
+  @ParameterizedTest(name = "test_getTokensForCode_withSelectedClaims_200 idTokenVersion: {0}")
+  void test_getTokensForCode_withSelectedClaims_200(final String idTokenVersion) {
+
+    requestValidatorMockedStatic
+        .when(() -> RequestValidator.validateAndSelectCompatibleIdTokenVersion(any()))
+        .thenReturn(idTokenVersion);
 
     final MockHttpServletResponse respMsg3 =
         mockMvc
@@ -1228,10 +1361,11 @@ class FedIdpControllerTest {
             .perform(
                 get(testHostUrl + FED_AUTH_ENDPOINT)
                     .param("request_uri", requestUri)
-                    .param("user_id", "12345678")
+                    .param("user_id", FALLBACK_KVNR)
                     .param(
                         "selected_claims",
-                        "urn:telematik:claims:profession urn:telematik:claims:id"))
+                        "urn:telematik:claims:profession urn:telematik:claims:id")
+                    .param("acr_value", "gematik-ehealth-loa-substantial"))
             .andReturn()
             .getResponse();
 
@@ -1259,15 +1393,17 @@ class FedIdpControllerTest {
 
     final String idTokenEncrypted = JsonPath.read(resp.getContentAsString(), "$.id_token");
     final IdpJwe idpJwe = new IdpJwe(idTokenEncrypted);
-
     // verify that token is encrypted and check kid
     assertThat(idpJwe.extractHeaderClaims()).containsEntry("kid", KEY_ID);
   }
 
   /** Increase Test coverage of Token endpoint */
   @SneakyThrows
-  @Test
-  void test_getTokensForCode_invalidRedirectUri_invalidCodeVerifier_400() {
+  @ValueSource(strings = {"1.0.0", "2.0.0"})
+  @ParameterizedTest(
+      name = "test_getTokensForCode_invalidRedirectUri_invalidCodeVerifier_400 idTokenVersion: {0}")
+  void test_getTokensForCode_invalidRedirectUri_invalidCodeVerifier_400(
+      final String idTokenVersion) {
 
     requestValidatorMockedStatic
         .when(() -> RequestValidator.verifyRedirectUri("invalidRedirectUri", redirectUri))
@@ -1287,6 +1423,10 @@ class FedIdpControllerTest {
                 INVALID_REQUEST,
                 "invalid redirect_uri",
                 org.springframework.http.HttpStatus.BAD_REQUEST));
+
+    requestValidatorMockedStatic
+        .when(() -> RequestValidator.validateAndSelectCompatibleIdTokenVersion(any()))
+        .thenReturn(idTokenVersion);
 
     final MockHttpServletResponse respMsg3 =
         mockMvc
@@ -1314,7 +1454,7 @@ class FedIdpControllerTest {
             .perform(
                 get(testHostUrl + FED_AUTH_ENDPOINT)
                     .param("request_uri", requestUri)
-                    .param("user_id", "12345678"))
+                    .param("user_id", FALLBACK_KVNR))
             .andReturn()
             .getResponse();
 
@@ -1352,8 +1492,13 @@ class FedIdpControllerTest {
   }
 
   @SneakyThrows
-  @Test
-  void test_getTokensForCode_tlsCertificateHeader_200() {
+  @ValueSource(strings = {"1.0.0", "2.0.0"})
+  @ParameterizedTest(name = "test_getTokensForCode_tlsCertificateHeader_200 idTokenVersion: {0}")
+  void test_getTokensForCode_tlsCertificateHeader_200(final String idTokenVersion) {
+
+    requestValidatorMockedStatic
+        .when(() -> RequestValidator.validateAndSelectCompatibleIdTokenVersion(any()))
+        .thenReturn(idTokenVersion);
 
     final MockHttpServletResponse respMsg3 =
         mockMvc
@@ -1382,7 +1527,7 @@ class FedIdpControllerTest {
             .perform(
                 get(testHostUrl + FED_AUTH_ENDPOINT)
                     .param("request_uri", requestUri)
-                    .param("user_id", "12345678"))
+                    .param("user_id", FALLBACK_KVNR))
             .andReturn()
             .getResponse();
 

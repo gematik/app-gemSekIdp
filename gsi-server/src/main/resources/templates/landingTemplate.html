@@ -22,29 +22,40 @@
   <script th:inline="javascript">
     let essentialClaims = /*[[${essentialClaims}]]*/ [];
     let optionalClaims = /*[[${optionalClaims}]]*/ [];
+    let idTokenVersion = /*[[${idTokenVersion}]]*/ "1.0.0";
     let selectedClaims = essentialClaims.concat(optionalClaims)
     document.addEventListener("DOMContentLoaded", setUp);
 
-    function setUp(){
-      let amrFromSession = /*[[${amr}]]*/ [];
-      let acrFromSession = /*[[${acr}]]*/ [];
+    function setUp() {
+      const amrFromSession = /*[[${amr}]]*/ [];
+      const acrFromSession = /*[[${acr}]]*/ [];
       let acrValueIfOnlyOne = ""
-      if(acrFromSession.length === 1){
+      if (acrFromSession.length === 1) {
         acrValueIfOnlyOne = acrFromSession[0].split("-")[3]
         document.getElementById(acrValueIfOnlyOne).checked = true
-        setAmrOptions(acrFromSession[0])
+        idTokenVersion === "1.0.0" ? setAmrOptions(acrFromSession[0]) : setAmrOptionsForV2(
+            acrFromSession[0]);
       }
-      if(amrFromSession.length === 1){
-        if(amrFromSession[0].includes("mEW") && (acrValueIfOnlyOne === "substantial" || acrValueIfOnlyOne === "")){
+      if (amrFromSession.length === 1) {
+        if (idTokenVersion === "1.0.0") {
+          if (amrFromSession[0].includes("mEW") && (acrValueIfOnlyOne === "substantial"
+              || acrValueIfOnlyOne === "")) {
             document.getElementById("substantial").checked = true
             setAmrOptions("gematik-ehealth-loa-substantial")
             document.getElementById("amr-select").value = amrFromSession[0]
             setAmrValue()
-        } else if(!amrFromSession[0].includes("mEW") && (acrValueIfOnlyOne === "high" || acrValueIfOnlyOne === "")) {
+          } else if (!amrFromSession[0].includes("mEW") && (acrValueIfOnlyOne === "high"
+              || acrValueIfOnlyOne === "")) {
             document.getElementById("high").checked = true
             setAmrOptions("gematik-ehealth-loa-high")
             document.getElementById("amr-select").value = amrFromSession[0]
             setAmrValue()
+          }
+        } else {
+          setAmrOptionsForV2(acrValueIfOnlyOne === "substantial" ? "gematik-ehealth-loa-substantial"
+              : "gematik-ehealth-loa-high");
+          document.getElementById("amr-select").value = amrFromSession[0]
+          setAmrValue()
         }
       }
     }
@@ -63,6 +74,31 @@
     }
 
     function setAmrOptions(acr){
+      if (idTokenVersion === "1.0.0"){
+        setAmrOptionsForV1(acr);
+      } else {
+        setAmrOptionsForV2(acr);
+      }
+    }
+
+    function setAmrOptionsForV2(acr) {
+      document.getElementById("acrValue").value = acr
+      let amrValues = ["urn:telematik:auth:other", "urn:telematik:auth:eGK", "urn:telematik:auth:eID", "urn:telematik:auth:guest:eGK"]
+      let amrSelectElement = document.getElementById("amr-select")
+      while (amrSelectElement.lastChild) {
+        if (amrSelectElement.children.length === 1) break
+        amrSelectElement.removeChild(amrSelectElement.lastChild);
+      }
+      if (acr === "gematik-ehealth-loa-substantial") {
+        addAmrOption(amrValues[0], amrSelectElement)
+      } else if (acr === "gematik-ehealth-loa-high" || "") {
+        amrValues.forEach(amrValue => {
+          addAmrOption(amrValue, amrSelectElement)
+        })
+      }
+    }
+
+    function setAmrOptionsForV1(acr){
       document.getElementById("acrValue").value = acr
       let amrValues = ["urn:telematik:auth:mEW", "urn:telematik:auth:eGK", "urn:telematik:auth:eID", "urn:telematik:auth:sso", "urn:telematik:auth:guest:eGK", "urn:telematik:auth:other"]
       let amrSelectElement = document.getElementById("amr-select")

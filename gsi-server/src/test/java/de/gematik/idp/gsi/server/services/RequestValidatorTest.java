@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.services;
@@ -19,8 +23,14 @@ package de.gematik.idp.gsi.server.services;
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2044;
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
 import static de.gematik.idp.gsi.server.controller.FedIdpController.AUTH_CODE_LENGTH;
-import static de.gematik.idp.gsi.server.data.GsiConstants.*;
+import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_HIGH;
+import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_SUBSTANTIAL;
+import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_VALUES;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_HIGH_V1;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_SUBSTANTIAL_V1;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_V1;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -281,13 +291,15 @@ class RequestValidatorTest {
   void test_validateAcrAmrCombination_validAcr_High_VALID() {
     final Set<String> acrHigh = Set.of(ACR_HIGH);
 
-    assertDoesNotThrow(() -> RequestValidator.validateAmrAcrCombination(acrHigh, AMR_VALUES_HIGH));
+    assertDoesNotThrow(
+        () -> RequestValidator.validateAmrAcrCombination(acrHigh, AMR_VALUES_HIGH_V1, "1.0.0"));
   }
 
   @Test
   void test_validateAcrAmrCombination_invalidAcr_High_INVALID() {
     final Set<String> acrHigh = Set.of(ACR_HIGH);
-    assertThatThrownBy(() -> RequestValidator.validateAmrAcrCombination(acrHigh, AMR_VALUES))
+    assertThatThrownBy(
+            () -> RequestValidator.validateAmrAcrCombination(acrHigh, AMR_VALUES_V1, "1.0.0"))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining("invalid combination of essential values acr and amr");
   }
@@ -296,27 +308,34 @@ class RequestValidatorTest {
   void test_validateAcrAmrCombination_validAcr_Substantial_VALID() {
     final Set<String> acrSubstantial = Set.of(ACR_SUBSTANTIAL);
     assertDoesNotThrow(
-        () -> RequestValidator.validateAmrAcrCombination(acrSubstantial, AMR_VALUES_SUBSTANTIAL));
+        () ->
+            RequestValidator.validateAmrAcrCombination(
+                acrSubstantial, AMR_VALUES_SUBSTANTIAL_V1, "1.0.0"));
   }
 
   @Test
   void test_validateAcrAmrCombination_invalidAcr_Substantial_INVALID() {
     final Set<String> acrSubstantial = Set.of(ACR_SUBSTANTIAL);
-    assertThatThrownBy(() -> RequestValidator.validateAmrAcrCombination(acrSubstantial, AMR_VALUES))
+    assertThatThrownBy(
+            () ->
+                RequestValidator.validateAmrAcrCombination(acrSubstantial, AMR_VALUES_V1, "1.0.0"))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining("invalid combination of essential values acr and amr");
   }
 
   @Test
   void test_validateAcrAmrCombination_validAcr_SubstantialAndHigh_VALID() {
-    assertDoesNotThrow(() -> RequestValidator.validateAmrAcrCombination(ACR_VALUES, AMR_VALUES));
+    assertDoesNotThrow(
+        () -> RequestValidator.validateAmrAcrCombination(ACR_VALUES, AMR_VALUES_V1, "1.0.0"));
   }
 
   @Test
   void test_validateAcrAmrCombination_invalidAcr_INVALID() {
     final Set<String> acrInvalid = Set.of(ACR_SUBSTANTIAL, "invalidAcr");
     assertThatThrownBy(
-            () -> RequestValidator.validateAmrAcrCombination(acrInvalid, AMR_VALUES_SUBSTANTIAL))
+            () ->
+                RequestValidator.validateAmrAcrCombination(
+                    acrInvalid, AMR_VALUES_SUBSTANTIAL_V1, "1.0.0"))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining("invalid acr value");
   }
@@ -325,7 +344,8 @@ class RequestValidatorTest {
   void test_validateAcrAmrCombination_invalidAmr_INVALID() {
     final Set<String> acrHigh = Set.of(ACR_HIGH);
     final Set<String> amrInvalid = Set.of("urn:telematik:auth:eGK", "urn:telematik:auth:invalid");
-    assertThatThrownBy(() -> RequestValidator.validateAmrAcrCombination(acrHigh, amrInvalid))
+    assertThatThrownBy(
+            () -> RequestValidator.validateAmrAcrCombination(acrHigh, amrInvalid, "1.0.0"))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining("invalid amr value");
   }
@@ -343,5 +363,28 @@ class RequestValidatorTest {
                 RequestValidator.validateRedirectUri(" https://diga-dashboard.anydiga.com/code/ce"))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining("Invalid redirect uri");
+  }
+
+  @Test
+  void test_validateAndSelectCompatibleIdTokenVersion_VALID() {
+    assertThat(RequestValidator.validateAndSelectCompatibleIdTokenVersion(Set.of("1.0.0", "2.0.0")))
+        .isEqualTo("2.0.0");
+    assertThat(RequestValidator.validateAndSelectCompatibleIdTokenVersion(Set.of("2.0.0", "1.0.0")))
+        .isEqualTo("2.0.0");
+    assertThat(RequestValidator.validateAndSelectCompatibleIdTokenVersion(Set.of("1.0.0")))
+        .isEqualTo("1.0.0");
+    assertThat(RequestValidator.validateAndSelectCompatibleIdTokenVersion(Set.of("2.0.0")))
+        .isEqualTo("2.0.0");
+    assertThat(RequestValidator.validateAndSelectCompatibleIdTokenVersion(Set.of("1.0.0", "3.0.0")))
+        .isEqualTo("1.0.0");
+  }
+
+  @Test
+  void test_validateAndSelectCompatibleIdTokenVersion_INVALID() {
+    assertThatThrownBy(
+            () -> RequestValidator.validateAndSelectCompatibleIdTokenVersion(Set.of("3.0.0")))
+        .isInstanceOf(GsiException.class)
+        .hasMessageContaining(
+            "Invalid metadata: incompatible versions for id_token_version_supported");
   }
 }

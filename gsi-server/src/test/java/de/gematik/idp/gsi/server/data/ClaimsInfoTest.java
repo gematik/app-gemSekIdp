@@ -1,5 +1,5 @@
 /*
- *  Copyright 2024 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.data;
@@ -144,64 +148,6 @@ class ClaimsInfoTest {
     assertThatThrownBy(() -> new ClaimsInfo(noClaimsObject.toString()))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining("parameter claims has invalid structure");
-  }
-
-  @Test
-  void test_constructor_invalidAcrValue_INVALID() {
-    final JsonObject invalidClaims = validClaims.deepCopy();
-    invalidClaims
-        .getAsJsonObject("id_token")
-        .getAsJsonObject("acr")
-        .getAsJsonArray("values")
-        .add("invalid-acr-value");
-
-    assertThatThrownBy(() -> new ClaimsInfo(invalidClaims.toString()))
-        .isInstanceOf(GsiException.class)
-        .hasMessageContaining("invalid acr value: invalid-acr-value");
-  }
-
-  @Test
-  void test_constructor_invalidAmrValue_INVALID() {
-    final JsonObject invalidClaims = validClaims.deepCopy();
-    invalidClaims
-        .getAsJsonObject("id_token")
-        .getAsJsonObject("amr")
-        .getAsJsonArray("values")
-        .add("invalid:amr:value");
-
-    assertThatThrownBy(() -> new ClaimsInfo(invalidClaims.toString()))
-        .isInstanceOf(GsiException.class)
-        .hasMessageContaining("invalid amr value: invalid:amr:value");
-  }
-
-  @Test
-  void test_constructor_invalidAcrAmrCombination_acrSubstantial_INVALID() {
-    final JsonObject invalidClaims = validClaims.deepCopy();
-    final JsonArray acr =
-        invalidClaims.getAsJsonObject("id_token").getAsJsonObject("acr").getAsJsonArray("values");
-    acr.remove(0);
-    acr.add(ACR_SUBSTANTIAL);
-    final JsonArray amr =
-        invalidClaims.getAsJsonObject("id_token").getAsJsonObject("amr").getAsJsonArray("values");
-    amr.add("urn:telematik:auth:mEW");
-
-    assertThatThrownBy(() -> new ClaimsInfo(invalidClaims.toString()))
-        .isInstanceOf(GsiException.class)
-        .hasMessageContaining("invalid combination of essential values acr and amr");
-  }
-
-  @Test
-  void test_constructor_invalidAcrAmrCombination_acrHigh_INVALID() {
-    final JsonObject invalidClaims = validClaims.deepCopy();
-    invalidClaims
-        .getAsJsonObject("id_token")
-        .getAsJsonObject("amr")
-        .getAsJsonArray("values")
-        .add("urn:telematik:auth:mEW");
-
-    assertThatThrownBy(() -> new ClaimsInfo(invalidClaims.toString()))
-        .isInstanceOf(GsiException.class)
-        .hasMessageContaining("invalid combination of essential values acr and amr");
   }
 
   @Test

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.data;
@@ -24,7 +28,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
-import de.gematik.idp.gsi.server.services.RequestValidator;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.*;
@@ -67,7 +70,6 @@ public class ClaimsInfo {
   private void setAmrAcrSets(final JsonObject claimsForIdToken) {
     setValueIfEssential(claimsForIdToken.get("amr"), amrValues);
     setValueIfEssential(claimsForIdToken.get("acr"), acrValues);
-    RequestValidator.validateAmrAcrCombination(acrValues, amrValues);
   }
 
   private void setClaimSets(final JsonObject claimsForIdToken) {

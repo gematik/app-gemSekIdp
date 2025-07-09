@@ -26,9 +26,6 @@ fedmaster:
         use: "sig"
         x5cInJwks: false
   serverUrl: "${FEDMASTER_SERVER_URL:http://127.0.0.1:8083}"
-  debug:
-    requestLogging: true
-  loglevel: debug
 server:
   port: ${SERVER_PORT:8083}
 management:
@@ -39,11 +36,23 @@ management:
       exposure:
         include: "health"
     access:
+      max-permitted: read-only
       default: read_only
   endpoint:
     health:
       access: read_only
+      probes:
+        access: read-only
     metrics:
       access: read_only
     logfile:
       access: read_only
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+logging:
+  level:
+    de.gematik: ${LOG_LEVEL_GEMATIK:debug}
+  CommonsRequestLoggingEnabled: ${REQUEST_LOGGING_ENABLED:true}
