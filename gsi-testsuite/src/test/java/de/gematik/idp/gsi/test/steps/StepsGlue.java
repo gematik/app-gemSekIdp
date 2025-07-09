@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.test.steps;
@@ -25,13 +29,12 @@ import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.rbellogger.RbelLogger;
 import de.gematik.rbellogger.data.RbelElement;
-import de.gematik.rbellogger.data.facet.RbelJsonFacet;
-import de.gematik.rbellogger.data.facet.RbelJwtFacet;
+import de.gematik.rbellogger.facets.jackson.RbelJsonFacet;
+import de.gematik.rbellogger.facets.jose.RbelJwtFacet;
 import de.gematik.test.tiger.common.config.TigerGlobalConfiguration;
 import de.gematik.test.tiger.lib.TigerDirector;
 import de.gematik.test.tiger.lib.json.JsonChecker;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.de.Wenn;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -44,7 +47,6 @@ import java.util.regex.Pattern;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.annotations.Steps;
-import net.serenitybdd.rest.SerenityRest;
 import org.awaitility.Awaitility;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwt.consumer.InvalidJwtException;
@@ -80,11 +82,6 @@ public class StepsGlue {
   public void sendPostRequestTo(final String url, final DataTable params) {
     idpSektoralSteps.sendRequestTo(
         TigerGlobalConfiguration.resolvePlaceholders(url), "POST", params);
-  }
-
-  @Wenn("HttpClient use relaxed https validation")
-  public void disableHttpClientFollowRedirects() {
-    SerenityRest.useRelaxedHTTPSValidation();
   }
 
   @And("Expect JWKS in last message and add its keys to truststore")
@@ -152,8 +149,8 @@ public class StepsGlue {
     }
   }
 
-  @Then("The JWT {string} is vaild for more than {int} but less than {int} seconds")
-  public void checkValidiyOfJwt(
+  @Then("The JWT {string} is valid for more than {int} but less than {int} seconds")
+  public void checkValidityOfJwt(
       final String jwtAsString, final int minSeconds, final int maxSeconds) {
     final JsonWebToken jwt =
         new JsonWebToken(TigerGlobalConfiguration.readString(jwtAsString, jwtAsString));

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2024 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.services;
@@ -22,9 +26,13 @@ import static de.gematik.idp.data.Oauth2ErrorCode.UNAUTHORIZED_CLIENT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_HIGH;
 import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_SUBSTANTIAL;
 import static de.gematik.idp.gsi.server.data.GsiConstants.ACR_VALUES;
-import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES;
-import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_HIGH;
-import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_SUBSTANTIAL;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_HIGH_V1;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_HIGH_V2;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_SUBSTANTIAL_V1;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_SUBSTANTIAL_V2;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_V1;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_V2;
+import static de.gematik.idp.gsi.server.data.GsiConstants.SUPPORTED_ID_TOKEN_VERSIONS;
 
 import de.gematik.idp.crypto.CryptoLoader;
 import de.gematik.idp.crypto.exceptions.IdpCryptoException;
@@ -39,6 +47,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -130,7 +139,13 @@ public abstract class RequestValidator {
    * @param acr set contains values if they were set as essential in claims param
    * @param amr set contains values if they were set as essential in claims param
    */
-  public static void validateAmrAcrCombination(final Set<String> acr, final Set<String> amr) {
+  public static void validateAmrAcrCombination(
+      final Set<String> acr, final Set<String> amr, final String version) {
+    final Set<String> amrValues = (version.equals("1.0.0")) ? AMR_VALUES_V1 : AMR_VALUES_V2;
+    final Set<String> amrValuesHigh =
+        (version.equals("1.0.0")) ? AMR_VALUES_HIGH_V1 : AMR_VALUES_HIGH_V2;
+    final Set<String> amrValuesSubstantial =
+        (version.equals("1.0.0")) ? AMR_VALUES_SUBSTANTIAL_V1 : AMR_VALUES_SUBSTANTIAL_V2;
     acr.forEach(
         acrValue -> {
           if (!ACR_VALUES.contains(acrValue)) {
@@ -140,7 +155,7 @@ public abstract class RequestValidator {
         });
     amr.forEach(
         amrValue -> {
-          if (!AMR_VALUES.contains(amrValue)) {
+          if (!amrValues.contains(amrValue)) {
             throw new GsiException(
                 INVALID_REQUEST, "invalid amr value: " + amrValue, HttpStatus.BAD_REQUEST);
           }
@@ -149,7 +164,7 @@ public abstract class RequestValidator {
     if (acr.contains(ACR_HIGH) && !acr.contains(ACR_SUBSTANTIAL)) {
       amr.forEach(
           value -> {
-            if (!AMR_VALUES_HIGH.contains(value)) {
+            if (!amrValuesHigh.contains(value)) {
               throw new GsiException(
                   INVALID_REQUEST,
                   "invalid combination of essential values acr and amr",
@@ -159,7 +174,7 @@ public abstract class RequestValidator {
     } else if (acr.contains(ACR_SUBSTANTIAL) && !acr.contains(ACR_HIGH)) {
       amr.forEach(
           value -> {
-            if (!AMR_VALUES_SUBSTANTIAL.contains(value)) {
+            if (!amrValuesSubstantial.contains(value)) {
               throw new GsiException(
                   INVALID_REQUEST,
                   "invalid combination of essential values acr and amr",
@@ -176,5 +191,18 @@ public abstract class RequestValidator {
       throw new GsiException(
           INVALID_REQUEST, "Invalid redirect uri: " + e.getMessage(), HttpStatus.BAD_REQUEST);
     }
+  }
+
+  public static String validateAndSelectCompatibleIdTokenVersion(
+      final Set<String> idTokenVersionSupportedByRp) {
+    return idTokenVersionSupportedByRp.stream()
+        .filter(SUPPORTED_ID_TOKEN_VERSIONS::contains)
+        .max(Comparator.naturalOrder())
+        .orElseThrow(
+            () ->
+                new GsiException(
+                    INVALID_REQUEST,
+                    "Invalid metadata: incompatible versions for id_token_version_supported",
+                    HttpStatus.BAD_REQUEST));
   }
 }

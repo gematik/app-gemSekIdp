@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.controller;
@@ -21,6 +25,12 @@ import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_TYP;
 import static de.gematik.idp.IdpConstants.FED_AUTH_ENDPOINT;
 import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_HIGH_V1;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_HIGH_V2;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_SUBSTANTIAL_V1;
+import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_SUBSTANTIAL_V2;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOINT;
 import static de.gematik.idp.gsi.server.data.GsiConstants.TLS_CLIENT_CERT_HEADER_NAME;
@@ -200,6 +210,12 @@ public class FedIdpController {
     final RpToken entityStmntOfRp = rpTokenRepository.getEntityStatementRp(fachdienstClientId);
     log.info("Autoregistration done");
 
+    final String compatibleIdTokenVersion =
+        RequestValidator.validateAndSelectCompatibleIdTokenVersion(
+            entityStmntOfRp.getIdTokenVersionSupported());
+    RequestValidator.validateAmrAcrCombination(
+        claimsInfo.getAcrValues(), claimsInfo.getAmrValues(), compatibleIdTokenVersion);
+
     RequestValidator.validateCertificate(
         clientCert, entityStmntOfRp, gsiConfiguration.isClientCertRequired());
 
@@ -226,6 +242,7 @@ public class FedIdpController {
             .essentialRequestedAmr(claimsInfo.getAmrValues())
             .fachdienstRedirectUri(fachdienstRedirectUri)
             .authorizationCode(Nonce.getNonceAsHex(AUTH_CODE_LENGTH))
+            .idTokenVersion(compatibleIdTokenVersion)
             .expiresAt(
                 ZonedDateTime.now().plusSeconds(gsiConfiguration.getRequestUriTTL()).toString())
             .build());
@@ -268,6 +285,14 @@ public class FedIdpController {
     model.addAttribute("dynamicImageDataUri", dataUri);
     model.addAttribute("acr", session.getEssentialRequestedAcr());
     model.addAttribute("amr", session.getEssentialRequestedAmr());
+    model.addAttribute(
+        "amrValuesHigh",
+        session.getIdTokenVersion().equals("1.0.0") ? AMR_VALUES_HIGH_V1 : AMR_VALUES_HIGH_V2);
+    model.addAttribute(
+        "amrValuesSubstantial",
+        session.getIdTokenVersion().equals("1.0.0")
+            ? AMR_VALUES_SUBSTANTIAL_V1
+            : AMR_VALUES_SUBSTANTIAL_V2);
     model.addAttribute("essentialClaims", session.getRequestedEssentialClaims());
     model.addAttribute("optionalClaims", session.getRequestedOptionalClaims());
     return "landingTemplate";
@@ -306,9 +331,10 @@ public class FedIdpController {
   public void getAuthorizationCode(
       @RequestParam(name = "request_uri") @NotEmpty final String requestUri,
       // user_id as KVNR or fallback
-      @RequestParam(name = "user_id") @Pattern(regexp = "^[A-Z]\\d{9}$|^12345678$")
-          final String userId,
+      @RequestParam(name = "user_id") @Pattern(regexp = "^[A-Z]\\d{9}$") final String userId,
       @RequestParam(name = "selected_claims", required = false) final String selectedClaims,
+      @RequestParam(name = "amr_value", required = false) final String amr,
+      @RequestParam(name = "acr_value", required = false) final String acr,
       final HttpServletResponse respMsgNr7) {
     log.info(
         "App2App-Flow: RX message nr 6b/6d (user consent) at {}",
@@ -323,6 +349,8 @@ public class FedIdpController {
 
     // bind user to session (fill user data of session)
     authenticationService.doAuthentication(session.getUserData(), userId, selectedClaimsSet);
+
+    overwriteAcrAndAmrIfSelected(acr, amr, session.getUserData());
 
     setNoCacheHeader(respMsgNr7);
     respMsgNr7.setStatus(HttpStatus.FOUND.value());
@@ -384,6 +412,7 @@ public class FedIdpController {
                   serverUrlService.determineServerUrl(),
                   session.getFachdienstNonce(),
                   clientId,
+                  session.getIdTokenVersion(),
                   session.getUserData())
               .buildIdToken();
       log.info("id-token: {}", idTokenPlain.getRawString());
@@ -460,5 +489,15 @@ public class FedIdpController {
     }
     selectedClaimsSet.addAll(optionalClaims);
     return selectedClaimsSet;
+  }
+
+  private void overwriteAcrAndAmrIfSelected(
+      final String selectedAcr, final String selectedAmr, final Map<String, Object> userData) {
+    if (selectedAcr != null) {
+      userData.put(AUTHENTICATION_CLASS_REFERENCE.getJoseName(), selectedAcr);
+    }
+    if (selectedAmr != null) {
+      userData.put(AUTHENTICATION_METHODS_REFERENCE.getJoseName(), new String[] {selectedAmr});
+    }
   }
 }

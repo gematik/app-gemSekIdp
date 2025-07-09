@@ -1,5 +1,5 @@
 /*
- *  Copyright 2023 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.data;
@@ -20,6 +24,7 @@ import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.gematik.idp.data.Oauth2ErrorCode;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -37,11 +43,11 @@ public class InsuredPersonsService {
   private Map<String, Map<String, Object>> persons;
 
   public Map<String, Object> getPerson(final String kvnr) {
-    return Optional.ofNullable(getPersons().get(kvnr)).orElse(getPersonFallback());
-  }
-
-  private Map<String, Object> getPersonFallback() {
-    return getPersons().get("X110411675");
+    return Optional.ofNullable(getPersons().get(kvnr))
+        .orElseThrow(
+            () ->
+                new GsiException(
+                    Oauth2ErrorCode.INVALID_REQUEST, "Unknown KVNR", HttpStatus.NOT_FOUND));
   }
 
   public Map<String, Map<String, Object>> getPersons() {

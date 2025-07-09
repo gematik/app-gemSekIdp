@@ -1,5 +1,5 @@
 /*
- *  Copyright 2024 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.data;
@@ -21,6 +25,7 @@ import de.gematik.idp.gsi.server.services.EntityStatementRpVerifier;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import java.util.Set;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jose4j.jwk.JsonWebKeySet;
@@ -49,11 +54,7 @@ public class RpToken {
     return EntityStatementRpReader.getRpEncKey(token);
   }
 
-  public void verifyRedirectUriExistsInEntityStmnt(final String redirectUri) {
-    EntityStatementRpVerifier.verifyRedirectUriExistsInEntityStmnt(token, redirectUri);
-  }
-
-  public void verifyRequestedScopesListedInEntityStmnt(final String scopeParameter) {
-    EntityStatementRpVerifier.verifyRequestedScopesListedInEntityStmnt(token, scopeParameter);
+  public Set<String> getIdTokenVersionSupported() {
+    return EntityStatementRpReader.getIdTokenVersionSupported(token);
   }
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2024 gematik GmbH
+ * Copyright (Change Date see Readme), gematik GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * *******
+ *
+ * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
 package de.gematik.idp.gsi.server.services;
@@ -25,11 +29,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 
+import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -175,5 +181,21 @@ class EntityStatementRpReaderTest {
           .isInstanceOf(GsiException.class)
           .hasMessageContaining("Encryption key for relying party not found");
     }
+  }
+
+  @Test
+  void test_getIdTokenVersionSupported_VALID() {
+    assertThat(new RpToken(VALID_ENTITY_STMNT).getIdTokenVersionSupported())
+        .isEqualTo(Set.of("1.0.0"));
+  }
+
+  @Test
+  void test_getIdTokenVersionSupported_hasClaimTiFeaturesSupported_VALID() {
+    final RpToken validRpTokenWithClaimTiFeaturesSupported =
+        new RpToken(
+            new JsonWebToken(
+                "eyJhbGciOiJFUzI1NiIsInR5cCI6ImVudGl0eS1zdGF0ZW1lbnQrand0Iiwia2lkIjoicHVrX2ZkX3NpZyJ9.ewogICJpc3MiOiAiaHR0cDovL2xvY2FsaG9zdDo4MDg0IiwKICAic3ViIjogImh0dHA6Ly9sb2NhbGhvc3Q6ODA4NCIsCiAgImlhdCI6IDE3MDIwNTA0NTEsCiAgImV4cCI6IDIzMzMyMDI0NTEsCiAgImp3a3MiOiB7CiAgICAia2V5cyI6IFsKICAgICAgewogICAgICAgICJ1c2UiOiAic2lnIiwKICAgICAgICAia2lkIjogInB1a19mZF9zaWciLAogICAgICAgICJrdHkiOiAiRUMiLAogICAgICAgICJjcnYiOiAiUC0yNTYiLAogICAgICAgICJ4IjogIjliSnMyN1lBZmxNVVdLNW54dWlGNlhBRzBKYXp1dndSaTFFcEZLMFhLaWsiLAogICAgICAgICJ5IjogIlA4bHpOVlJPZ1R1d2JEcXNkOHJUMUFJM3plejk0SEJzVERwT3ZhalAwclkiLAogICAgICAgICJhbGciOiAiRVMyNTYiCiAgICAgIH0KICAgIF0KICB9LAogICJhdXRob3JpdHlfaGludHMiOiBbCiAgICAiaHR0cHM6Ly9hcHAtdGVzdC5mZWRlcmF0aW9ubWFzdGVyLmRlIgogIF0sCiAgIm1ldGFkYXRhIjogewogICAgIm9wZW5pZF9yZWx5aW5nX3BhcnR5IjogewogICAgICAic2lnbmVkX2p3a3NfdXJpIjogImh0dHA6Ly9sb2NhbGhvc3Q6ODA4NC9qd3MuanNvbiIsCiAgICAgICJvcmdhbml6YXRpb25fbmFtZSI6ICJGYWNoZGllbnN0MDA3IGRlcyBGZWRJZHAgUE9DcyIsCiAgICAgICJjbGllbnRfbmFtZSI6ICJGYWNoZGllbnN0MDA3IiwKICAgICAgImxvZ29fdXJpIjogImh0dHA6Ly9sb2NhbGhvc3Q6ODA4NC9ub0xvZ29ZZXQiLAogICAgICAicmVkaXJlY3RfdXJpcyI6IFsKICAgICAgICAiaHR0cHM6Ly9GYWNoZGllbnN0MDA3LmRlL2NsaWVudCIsCiAgICAgICAgImh0dHBzOi8vcmVkaXJlY3QudGVzdHN1aXRlLmdzaSIsCiAgICAgICAgImh0dHBzOi8vaWRwZmFkaS5kZXYuZ2VtYXRpay5zb2x1dGlvbnMvYXV0aCIKICAgICAgXSwKICAgICAgInJlc3BvbnNlX3R5cGVzIjogWwogICAgICAgICJjb2RlIgogICAgICBdLAogICAgICAiY2xpZW50X3JlZ2lzdHJhdGlvbl90eXBlcyI6IFsKICAgICAgICAiYXV0b21hdGljIgogICAgICBdLAogICAgICAiZ3JhbnRfdHlwZXMiOiBbCiAgICAgICAgImF1dGhvcml6YXRpb25fY29kZSIKICAgICAgXSwKICAgICAgInJlcXVpcmVfcHVzaGVkX2F1dGhvcml6YXRpb25fcmVxdWVzdHMiOiB0cnVlLAogICAgICAidG9rZW5fZW5kcG9pbnRfYXV0aF9tZXRob2QiOiAic2VsZl9zaWduZWRfdGxzX2NsaWVudF9hdXRoIiwKICAgICAgImRlZmF1bHRfYWNyX3ZhbHVlcyI6IFsKICAgICAgICAiZ2VtYXRpay1laGVhbHRoLWxvYS1oaWdoIgogICAgICBdLAogICAgICAiaWRfdG9rZW5fc2lnbmVkX3Jlc3BvbnNlX2FsZyI6ICJFUzI1NiIsCiAgICAgICJpZF90b2tlbl9lbmNyeXB0ZWRfcmVzcG9uc2VfYWxnIjogIkVDREgtRVMiLAogICAgICAiaWRfdG9rZW5fZW5jcnlwdGVkX3Jlc3BvbnNlX2VuYyI6ICJBMjU2R0NNIiwKICAgICAgInNjb3BlIjogInVybjp0ZWxlbWF0aWs6ZGlzcGxheV9uYW1lIHVybjp0ZWxlbWF0aWs6dmVyc2ljaGVydGVyIG9wZW5pZCIsCiAgICAgICJ0aV9mZWF0dXJlc19zdXBwb3J0ZWQiOnsKICAgICAgICAiaWRfdG9rZW5fdmVyc2lvbl9zdXBwb3J0ZWQiOiBbCiAgICAgICAgICAiMS4wLjAiLAogICAgICAgICAgIjIuMC4wIgogICAgICAgIF0KICAgICB9IAogICAgfSwKICAgICJmZWRlcmF0aW9uX2VudGl0eSI6IHsKICAgICAgIm5hbWUiOiAiRmFjaGRpZW5zdDAwNyIsCiAgICAgICJjb250YWN0cyI6IFsKICAgICAgICAiU3VwcG9ydEBGYWNoZGllbnN0MDA3LmRlIgogICAgICBdLAogICAgICAiaG9tZXBhZ2VfdXJpIjogImh0dHBzOi8vRmFjaGRpZW5zdDAwNy5kZSIKICAgIH0KICB9Cn0.XomqqjzmGfu3LFySjaKrfHcFStBK8lWW8uxH9HmNhdYoslBVd4z5t6I_DQQ2gbe5WWvKoGl0pVpGlGf5oIGR7Q"));
+    assertThat(validRpTokenWithClaimTiFeaturesSupported.getIdTokenVersionSupported())
+        .isEqualTo(Set.of("1.0.0", "2.0.0"));
   }
 }

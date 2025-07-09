@@ -1,5 +1,5 @@
 #
-# Copyright 2023 gematik GmbH
+# Copyright (Change Date see Readme), gematik GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# *******
+#
+# For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
 #
 
 @TokenEndpoint
@@ -187,8 +191,8 @@ Feature: Test IdpSektoral's Token Endpoint
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     Given TGR clear recorded messages
@@ -228,8 +232,8 @@ Feature: Test IdpSektoral's Token Endpoint
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     Given TGR clear recorded messages
@@ -282,8 +286,8 @@ Feature: Test IdpSektoral's Token Endpoint
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  |
-      | ${requestUri} | 12345678 |
+      | request_uri   | user_id    |
+      | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     Given TGR clear recorded messages
@@ -349,11 +353,51 @@ Feature: Test IdpSektoral's Token Endpoint
     """
     Examples:
       | userId     | id         | organization | displayName                                 |
-      | 12345678   | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld |
-      | D162565246 | D162565246 | 101592612    | Imagina Handt                               |
-
+      | X110411675 | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld |
+      | D162565242 | D162565242 | 101592612    | Imagina Handt                               |
 
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_009
+    @Approval
+    @GematikSekIdpOnly
+  Scenario: IdpSektoral Token Endpoint - Gutfall ohne userConsent - validiere ID_TOKEN Header Claims
+
+  ```
+  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint, um anschließend den Flow über mit der
+  Abkürzung ohne UserConsent abzuschließen. Den resultierenden authorization_code lösen wir ein
+
+  Der ID_TOKEN muss die richtigen Bodyclaims besitzen:
+
+    Given TGR clear recorded messages
+    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               |
+      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | Ca3Ve8jSsBQOBFVqQvLs1E-dGV1BXg2FTvrd-Tg19Vg | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high |
+    And TGR find first request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "201"
+    And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri   | user_id  |
+      | ${requestUri} | X110411675 |
+    And TGR find first request to path ".*"
+    And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
+    Given TGR clear recorded messages
+    When Send Post Request to "${token_endpoint}" with
+      | client_id          | redirect_uri    | code_verifier                                                                      | grant_type         | code        |
+      | gsi.clientid.valid | gsi.redirectUri | drfxigjvseyirdjfg03q489rtjoiesrdjgfv3ws4e8rujgf0q3gjwe4809rdjt89fq3j48r9jw3894efrj | authorization_code | ${authCode} |
+    And TGR find first request to path ".*"
+    Then TGR current response at "$.body.id_token.content.body.header" matches as JSON:
+    """
+      {
+      "alg": "ES256",
+      "version": ".*",
+      "typ": "JWT",
+      "kid": "puk_fed_idp_token",
+      "x5c": "${json-unit.ignore}"
+      }
+    """
+
+
+  @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_0010
   @Approval
   @GematikSekIdpOnly
   Scenario: IdpSektoral Token Endpoint - Gutfall mit userConsent - validiere ID_TOKEN Body Claims
@@ -379,8 +423,8 @@ Feature: Test IdpSektoral's Token Endpoint
     Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  | selected_claims                 |
-      | ${requestUri} | 12345678 | urn:telematik:claims:profession |
+      | request_uri   | user_id    | selected_claims                 |
+      | ${requestUri} | X110411675 | urn:telematik:claims:profession |
     And TGR find first request to path ".*"
     And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
     Given TGR clear recorded messages
@@ -403,7 +447,7 @@ Feature: Test IdpSektoral's Token Endpoint
       }
     """
 
-  @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_010
+  @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_011
     @Approval
     @GematikSekIdpOnly
   Scenario Outline: IdpSektoral Token Endpoint - Gutfall ohne userConsent - validiere acr/amr in ID_TOKEN Body Claims
@@ -453,8 +497,8 @@ Feature: Test IdpSektoral's Token Endpoint
 
     Examples:
       | userId     | id         | organization | displayName                                 | acr_values                      | amr                    |
-      | 12345678   | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld | gematik-ehealth-loa-high        | urn:telematik:auth:eGK |
-      | D162565246 | D162565246 | 101592612    | Imagina Handt                               | gematik-ehealth-loa-high        | urn:telematik:auth:eID |
-      | O018753329 | O018753329 | 106589300    | Hildur Fürsich                              | gematik-ehealth-loa-substantial | urn:telematik:auth:mEW |
+      | X110411675 | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld | gematik-ehealth-loa-high        | urn:telematik:auth:eGK |
+      | D162565242 | D162565242 | 101592612    | Imagina Handt                               | gematik-ehealth-loa-high        | urn:telematik:auth:eID |
+      | O018753325 | O018753325 | 106589300    | Hildur Fürsich                              | gematik-ehealth-loa-substantial | urn:telematik:auth:mEW |
       | G839948921 | G839948921 | 104401207    | Jules Seeckt                                | gematik-ehealth-loa-high        | urn:telematik:auth:sso |
 
