@@ -2194,5 +2194,17 @@
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110576764",
     "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1990-01-01",
+    "urn:telematik:claims:alter": "35",
+    "urn:telematik:claims:family_name": "Äppler",
+    "urn:telematik:claims:display_name": "Dr. Eusebia Äppler",
+    "urn:telematik:claims:given_name": "Eusebia",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "eu.aeppler@examole.com",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110661675",
+    "urn:telematik:claims:organization": "109500969"
   }
 ]
