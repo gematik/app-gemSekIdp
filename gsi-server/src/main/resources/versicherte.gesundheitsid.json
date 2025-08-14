@@ -2202,7 +2202,7 @@
     "urn:telematik:claims:display_name": "Dr. Eusebia Äppler",
     "urn:telematik:claims:given_name": "Eusebia",
     "urn:telematik:claims:geschlecht": "W",
-    "urn:telematik:claims:email": "eu.aeppler@examole.com",
+    "urn:telematik:claims:email": "eu.aeppler@example.com",
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110661675",
     "urn:telematik:claims:organization": "109500969"
