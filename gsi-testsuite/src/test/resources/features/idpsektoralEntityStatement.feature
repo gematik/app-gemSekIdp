@@ -182,7 +182,7 @@ Feature: Test Entity Statement of IdpSektoral
     And TGR current response at "$.body.body.metadata.openid_provider.ti_features_supported" matches as JSON:
     """
           {
-            id_token_version_supported:      ["1.0.0", "2.0.0"]
+            id_token_version_supported:      ["1.0.0"]
           }
     """
 

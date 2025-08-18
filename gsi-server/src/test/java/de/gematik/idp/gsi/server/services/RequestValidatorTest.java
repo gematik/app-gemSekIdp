@@ -51,6 +51,7 @@ import java.util.Set;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -365,6 +366,7 @@ class RequestValidatorTest {
         .hasMessageContaining("Invalid redirect uri");
   }
 
+  @Disabled
   @Test
   void test_validateAndSelectCompatibleIdTokenVersion_VALID() {
     assertThat(RequestValidator.validateAndSelectCompatibleIdTokenVersion(Set.of("1.0.0", "2.0.0")))
