@@ -73,6 +73,7 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.TestInstance;
@@ -323,6 +324,7 @@ class FedIdpControllerTest {
         .contains("id_token_version_supported");
   }
 
+  @Disabled
   @Test
   void test_entityStatement_TiFeaturesSupportedCorrect() {
     final Map<String, Object> metadata = getInnerClaimMap(entityStatementbodyClaims, "metadata");

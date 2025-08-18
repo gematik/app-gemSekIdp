@@ -7,12 +7,12 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>gemSekIdp-global</artifactId>
-    <version>8.1.2</version>
+    <version>8.2.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>gsi-server</artifactId>
-  <version>8.1.2</version>
+  <version>8.2.0</version>
   <packaging>jar</packaging>
 
   <name>gsi-server</name>
@@ -22,7 +22,7 @@
     <commit_hash>undefined</commit_hash>
     <skip.dockerbuild>true</skip.dockerbuild>
   </properties>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -57,7 +57,7 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>5.18.0</version>
+      <version>5.19.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
