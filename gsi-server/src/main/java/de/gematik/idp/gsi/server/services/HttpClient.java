@@ -26,10 +26,16 @@ import de.gematik.idp.IdpConstants;
 import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
+import java.security.cert.CertPathBuilderException;
+import java.security.cert.CertificateException;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.Set;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.Unirest;
+import kong.unirest.core.UnirestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 
@@ -46,20 +52,40 @@ public abstract class HttpClient {
   }
 
   public static RpToken fetchEntityStatementRp(final String issuer) {
-    final HttpResponse<String> resp =
-        Unirest.get(issuer + IdpConstants.ENTITY_STATEMENT_ENDPOINT).asString();
-    if (resp.getStatus() == HttpStatus.OK.value()) {
-      return new RpToken(new JsonWebToken(resp.getBody()));
-    } else {
-      log.info(resp.getBody());
-      throw new GsiException(
-          INVALID_REQUEST,
-          "No entity statement of relying party ["
-              + issuer
-              + "] available. Reason: "
-              + resp.getBody()
-              + HttpStatus.valueOf(resp.getStatus()),
-          HttpStatus.BAD_REQUEST);
+    try {
+      final HttpResponse<String> resp =
+          Unirest.get(issuer + IdpConstants.ENTITY_STATEMENT_ENDPOINT).asString();
+      if (resp.getStatus() == HttpStatus.OK.value()) {
+        return new RpToken(new JsonWebToken(resp.getBody()));
+      } else {
+        log.info(resp.getBody());
+        throw new GsiException(
+            INVALID_REQUEST,
+            "No entity statement of  ["
+                + issuer
+                + "] available. Reason: "
+                + resp.getBody()
+                + HttpStatus.valueOf(resp.getStatus()),
+            HttpStatus.BAD_REQUEST);
+      }
+    } catch (final UnirestException e) {
+      if (isSSLException(e)) {
+        log.info("SSL exception for issuer: {}", issuer, e);
+        throw new GsiException(
+            "SSL certificate validation failed for relying party ["
+                + issuer
+                + "] available. Reason: "
+                + e.getMessage(),
+            e,
+            HttpStatus.BAD_REQUEST,
+            INVALID_REQUEST);
+      } else {
+        log.error("UnirestException when fetching entity statement for issuer: {}", issuer, e);
+        throw new GsiException(
+            INVALID_REQUEST,
+            "Error when fetching entity statement of [" + issuer + "]. Reason: " + e.getMessage(),
+            HttpStatus.BAD_REQUEST);
+      }
     }
   }
 
@@ -101,4 +127,24 @@ public abstract class HttpClient {
             .asString();
     log.info("BDE response; status: " + resp.getStatus() + "; body: " + resp.getBody());
   }
+
+  private static boolean isSSLException(final UnirestException e) {
+    Throwable cause = e.getCause();
+    while (cause != null) {
+      for (final Class<? extends Throwable> sslEx : SSL_EXCEPTIONS) {
+        if (sslEx.isInstance(cause)) {
+          return true;
+        }
+      }
+      cause = cause.getCause();
+    }
+    return false;
+  }
+
+  private static final Set<Class<? extends Throwable>> SSL_EXCEPTIONS =
+      Set.of(
+          SSLHandshakeException.class,
+          SSLException.class,
+          CertPathBuilderException.class,
+          CertificateException.class);
 }

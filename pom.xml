@@ -7,12 +7,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.3</version>
+    <version>3.5.4</version>
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gemSekIdp-global</artifactId>
-  <version>8.1.2</version>
+  <version>8.1.3</version>
   <packaging>pom</packaging>
 
   <description>gsi - gematik sektoraler IDP</description>
@@ -81,17 +81,17 @@
     <sonar.language>java</sonar.language>
 
     <version.bouncycastle.bcpkix>1.81</version.bouncycastle.bcpkix>
-    <version.commons-io>2.19.0</version.commons-io>
+    <version.commons-io>2.20.0</version.commons-io>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
     <version.json>20250517</version.json>
-    <version.log4j2>2.25.0</version.log4j2>
-    <version.unirest.java.core>4.4.7</version.unirest.java.core>
+    <version.log4j2>2.25.1</version.log4j2>
+    <version.unirest.java.core>4.5.0</version.unirest.java.core>
     <version.unirest.objectmapper.jackson>4.2.9</version.unirest.objectmapper.jackson>
     <version.httpcore5>5.3.4</version.httpcore5>
     <version.docker-maven-plugin>0.46.0</version.docker-maven-plugin>
-    <version.idp-commons>29.2.1</version.idp-commons>
-    <version.idp-crypto>29.2.7</version.idp-crypto>
-    <version.idp-test>29.2.7</version.idp-test>
+    <version.idp-commons>29.3.2</version.idp-commons>
+    <version.idp-crypto>29.3.2</version.idp-crypto>
+    <version.idp-test>29.3.2</version.idp-test>
 
     <version.jacoco-maven-plugin>0.8.13</version.jacoco-maven-plugin>
     <version.jakarta.ws.rs-api>4.0.0</version.jakarta.ws.rs-api>
@@ -99,7 +99,7 @@
     <version.maven>3.8.6</version.maven>
     <version.maven-clean-plugin>3.5.0</version.maven-clean-plugin>
     <version.maven-compiler-plugin>3.14.0</version.maven-compiler-plugin>
-    <version.maven-enforcer-plugin>3.6.0</version.maven-enforcer-plugin>
+    <version.maven-enforcer-plugin>3.6.1</version.maven-enforcer-plugin>
     <version.maven-failsafe-plugin>3.2.5</version.maven-failsafe-plugin>
     <version.maven-project-info-reports-plugin>3.9.0</version.maven-project-info-reports-plugin>
     <!-- only needed for mvn site to avoid stack traces flooding the console -->
@@ -108,7 +108,7 @@
     <!-- settings for upload to sonar server -->
     <version.maven-surefire-plugin>3.5.3</version.maven-surefire-plugin>
     <version.sonar-maven-plugin>5.1.0.4751</version.sonar-maven-plugin>
-    <version.spotless-maven-plugin>2.45.0</version.spotless-maven-plugin>
+    <version.spotless-maven-plugin>2.46.1</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.27.0</version.spotless.google-java-format>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
@@ -433,19 +433,27 @@
             </excludes>
           </markdown>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>apply</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+        </executions>
       </plugin>
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>license-maven-plugin</artifactId>
-            <version>2.6.0</version>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>aggregate-third-party-report</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>2.6.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>aggregate-third-party-report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 

@@ -97,5 +97,5 @@ public final class GsiConstants {
 
   public static final String FALLBACK_KVNR = "X110411675";
 
-  public static final Set<String> SUPPORTED_ID_TOKEN_VERSIONS = Set.of("1.0.0", "2.0.0");
+  public static final Set<String> SUPPORTED_ID_TOKEN_VERSIONS = Set.of("1.0.0");
 }

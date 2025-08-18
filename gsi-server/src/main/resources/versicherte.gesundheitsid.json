@@ -2206,5 +2206,21 @@
     "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
     "urn:telematik:claims:id": "X110661675",
     "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1969-08-17",
+    "urn:telematik:claims:alter": "54",
+    "urn:telematik:claims:family_name": "Nöther",
+    "urn:telematik:claims:display_name": "Dr. Veronika Nöther",
+    "urn:telematik:claims:given_name": "Veronika",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "X110594049@epa-test.edu",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110594049",
+    "urn:telematik:claims:organization": "109500969",
+    "amr": [
+      "urn:telematik:auth:guest:eGK"
+    ],
+    "acr": "gematik-ehealth-loa-high"
   }
 ]
