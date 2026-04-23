@@ -2222,5 +2222,21 @@
       "urn:telematik:auth:guest:eGK"
     ],
     "acr": "gematik-ehealth-loa-high"
+  },
+  {
+    "birthdate": "1984-04-08",
+    "urn:telematik:claims:alter": "42",
+    "urn:telematik:claims:family_name": "Kollab",
+    "urn:telematik:claims:display_name": "Dr. Heidi Kollab",
+    "urn:telematik:claims:given_name": "Heidi",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "t+X110674241@example.com",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110674241",
+    "urn:telematik:claims:organization": "109500969",
+    "amr": [
+      "urn:telematik:auth:guest:eGK"
+    ],
+    "acr": "gematik-ehealth-loa-high"
   }
 ]
