@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
+
   private final InsuredPersonsService insuredPersonsService;
 
   /*
@@ -49,9 +50,8 @@ public class AuthenticationService {
     selectedClaimsSet.forEach(claim -> userData.put(claim, user.get(claim)));
     userData.put(
         AUTHENTICATION_CLASS_REFERENCE.getJoseName(),
-        user.containsKey(AUTHENTICATION_CLASS_REFERENCE.getJoseName())
-            ? user.get(AUTHENTICATION_CLASS_REFERENCE.getJoseName())
-            : "gematik-ehealth-loa-high");
+        user.getOrDefault(
+            AUTHENTICATION_CLASS_REFERENCE.getJoseName(), "gematik-ehealth-loa-high"));
     userData.put(
         AUTHENTICATION_METHODS_REFERENCE.getJoseName(),
         user.containsKey(AUTHENTICATION_METHODS_REFERENCE.getJoseName())

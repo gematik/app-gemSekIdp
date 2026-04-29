@@ -151,7 +151,6 @@ Feature: Test Entity Statement of IdpSektoral
             response_modes_supported:                     ["query"],
             grant_types_supported:                        ["authorization_code"],
             require_pushed_authorization_requests:        true,
-            request_authentication_methods_supported:     "${json-unit.ignore}",
             id_token_signing_alg_values_supported:        ["ES256"],
             id_token_encryption_alg_values_supported:     ["ECDH-ES"],
             id_token_encryption_enc_values_supported:     ["A256GCM"],
@@ -159,15 +158,6 @@ Feature: Test Entity Statement of IdpSektoral
             user_type_supported:                          ["IP"],
             ____federation_registration_endpoint:         '.*',
             ti_features_supported:                        "${json-unit.ignore}"
-          }
-    """
-    And TGR current response at "$.body.body.metadata.openid_provider.request_authentication_methods_supported" matches as JSON:
-    """
-          {
-            ____ar:                                       ["none"],
-            ____authorization_endpoint:                   ["none"],
-            ____par:                                      ["self_signed_tls_client_auth"],
-            ____pushed_authorization_request_endpoint:    ["self_signed_tls_client_auth"]
           }
     """
     And TGR current response at "$.body.body.metadata.federation_entity" matches as JSON:
@@ -182,7 +172,7 @@ Feature: Test Entity Statement of IdpSektoral
     And TGR current response at "$.body.body.metadata.openid_provider.ti_features_supported" matches as JSON:
     """
           {
-            id_token_version_supported:      ["1.0.0"]
+            id_token_version_supported:      ["1.0.0","2.0.0"]
           }
     """
 

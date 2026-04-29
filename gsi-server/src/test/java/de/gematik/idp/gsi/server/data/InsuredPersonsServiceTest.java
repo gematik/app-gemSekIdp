@@ -25,10 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import java.io.IOException;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +42,7 @@ import org.springframework.test.annotation.DirtiesContext.ClassMode;
 class InsuredPersonsServiceTest {
 
   @Autowired InsuredPersonsService insuredPersonsService;
+  final String PATH_TO_VERSICHERTEJSON = "versicherte.gesundheitsid.json";
 
   @Test
   void test_getPersonFromService_VALID() {
@@ -50,25 +51,25 @@ class InsuredPersonsServiceTest {
 
   @Test
   void test_getPersons_VALID() {
-    assertDoesNotThrow(() -> new InsuredPersonsService("versicherte.gesundheitsid.json"));
+    assertDoesNotThrow(() -> new InsuredPersonsService(PATH_TO_VERSICHERTEJSON));
   }
 
   @Test
   void test_getPersonFallback_VALID() {
-    final InsuredPersonsService iPr = new InsuredPersonsService("versicherte.gesundheitsid.json");
+    final InsuredPersonsService iPr = new InsuredPersonsService(PATH_TO_VERSICHERTEJSON);
     assertThat(iPr.getPersons().get(FALLBACK_KVNR)).isNotNull();
   }
 
   @Test
   void test_getFamilyNameOfPersonFallback_VALID() {
-    final InsuredPersonsService iPr = new InsuredPersonsService("versicherte.gesundheitsid.json");
+    final InsuredPersonsService iPr = new InsuredPersonsService(PATH_TO_VERSICHERTEJSON);
     assertThat(iPr.getPersons().get(FALLBACK_KVNR))
         .containsEntry(ClaimName.TELEMATIK_FAMILY_NAME.getJoseName(), "Bödefeld");
   }
 
   @Test
   void test_checkInsuredPersonsList_VALID() {
-    final InsuredPersonsService iPr = new InsuredPersonsService("versicherte.gesundheitsid.json");
+    final InsuredPersonsService iPr = new InsuredPersonsService(PATH_TO_VERSICHERTEJSON);
     iPr.getPersons()
         .values()
         .forEach(
@@ -94,9 +95,41 @@ class InsuredPersonsServiceTest {
   @Test
   void test_getPersonFileNotJson_INVALID() {
     final String invalidFilePath = "application.yml";
-    final InsuredPersonsService iPr = new InsuredPersonsService(invalidFilePath);
-    assertThatThrownBy(iPr::getPersons)
+    final InsuredPersonsService iPs = new InsuredPersonsService(invalidFilePath);
+    assertThatThrownBy(iPs::getPersons)
         .isInstanceOf(GsiException.class)
-        .hasRootCauseExactlyInstanceOf(JsonParseException.class);
+        .hasRootCauseExactlyInstanceOf(tools.jackson.core.exc.StreamReadException.class);
+  }
+
+  @Test
+  void test_getPersonByUnknownKvnr() {
+    final InsuredPersonsService iPr = new InsuredPersonsService(PATH_TO_VERSICHERTEJSON);
+    final Map<String, Object> unknownPerson = iPr.getPerson("A123456789");
+    assertThat(unknownPerson.isEmpty()).isFalse();
+
+    assertThat(unknownPerson.get(ClaimName.TELEMATIK_FAMILY_NAME.getJoseName()))
+        .isEqualTo("unknown");
+    assertThat(unknownPerson.get(ClaimName.TELEMATIK_PROFESSION.getJoseName()))
+        .isEqualTo(GsiConstants.CLAIM_VALUE_PROFESSION_VERSICHERTER);
+    assertThat(unknownPerson.get(ClaimName.TELEMATIK_ORGANIZATION.getJoseName()))
+        .isEqualTo(GsiConstants.CLAIM_VALUE_ORGANIZATION_GEMATIK);
+    assertThat(unknownPerson.get(ClaimName.TELEMATIK_ID.getJoseName())).isEqualTo("A123456789");
+  }
+
+  @Test
+  void test_unknownKvnrMustNotOverwriteDefaultEntry() {
+    final InsuredPersonsService iPr = new InsuredPersonsService(PATH_TO_VERSICHERTEJSON);
+    final String kvnrUnknownPerson = "A111111111";
+    // get the fallback person and check kvnr
+    final Map<String, Object> fallbackPerson = iPr.getPersons().get(FALLBACK_KVNR);
+    assertThat(fallbackPerson.get(ClaimName.TELEMATIK_ID.getJoseName())).isEqualTo(FALLBACK_KVNR);
+
+    // get unknown person and check kvnr
+    final Map<String, Object> unknownPerson = iPr.getPerson(kvnrUnknownPerson);
+    assertThat(unknownPerson.get(ClaimName.TELEMATIK_ID.getJoseName()))
+        .isEqualTo(kvnrUnknownPerson);
+
+    // get the fallback person again and check kvnr was not overwritten by unknown person
+    assertThat(fallbackPerson.get(ClaimName.TELEMATIK_ID.getJoseName())).isEqualTo(FALLBACK_KVNR);
   }
 }

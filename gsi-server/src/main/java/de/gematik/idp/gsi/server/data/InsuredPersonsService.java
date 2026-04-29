@@ -21,10 +21,11 @@
 package de.gematik.idp.gsi.server.data;
 
 import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
+import static de.gematik.idp.gsi.server.data.GsiConstants.CLAIM_VALUE_ORGANIZATION_GEMATIK;
+import static de.gematik.idp.gsi.server.data.GsiConstants.CLAIM_VALUE_PROFESSION_VERSICHERTER;
+import static de.gematik.idp.gsi.server.data.GsiConstants.VALID_CLAIMS;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.gematik.idp.data.Oauth2ErrorCode;
+import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,21 +34,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @Service
 @RequiredArgsConstructor
 public class InsuredPersonsService {
+
   private final String insuredPersonsJsonFilePath;
   private Map<String, Map<String, Object>> persons;
 
   public Map<String, Object> getPerson(final String kvnr) {
-    return Optional.ofNullable(getPersons().get(kvnr))
-        .orElseThrow(
-            () ->
-                new GsiException(
-                    Oauth2ErrorCode.INVALID_REQUEST, "Unknown KVNR", HttpStatus.NOT_FOUND));
+    final Optional<Map<String, Object>> thisPerson = Optional.ofNullable(getPersons().get(kvnr));
+    return thisPerson.orElseGet(() -> returnEntryWithKvnrAndUnknown(kvnr));
   }
 
   public Map<String, Map<String, Object>> getPersons() {
@@ -65,14 +66,27 @@ public class InsuredPersonsService {
     try {
       final List<Map<String, Object>> dataList = readJsonFileToList(filePath);
       return convertListToKvnrMap(dataList);
-    } catch (final IOException e) {
+    } catch (final IOException | tools.jackson.core.exc.StreamReadException e) {
       throw new GsiException("Could not read insured persons from file.", e);
     }
   }
 
+  private Map<String, Object> returnEntryWithKvnrAndUnknown(final String kvnr) {
+    final Map<String, Object> unknownEntry = new HashMap<>();
+
+    VALID_CLAIMS.forEach(key -> unknownEntry.put(key, "unknown"));
+    unknownEntry.put(ClaimName.BIRTHDATE.getJoseName(), "1990-01-01");
+    unknownEntry.put(
+        ClaimName.TELEMATIK_PROFESSION.getJoseName(), CLAIM_VALUE_PROFESSION_VERSICHERTER);
+    unknownEntry.put(
+        ClaimName.TELEMATIK_ORGANIZATION.getJoseName(), CLAIM_VALUE_ORGANIZATION_GEMATIK);
+    unknownEntry.put(ClaimName.TELEMATIK_ID.getJoseName(), kvnr);
+    return unknownEntry;
+  }
+
   private static List<Map<String, Object>> readJsonFileToList(final String filePath)
       throws IOException {
-    final ObjectMapper objectMapper = new ObjectMapper();
+    final ObjectMapper objectMapper = JsonMapper.builder().build();
 
     // Use ClassLoader to get the input stream for the resource
     final InputStream inputStream =
@@ -83,7 +97,7 @@ public class InsuredPersonsService {
     }
 
     // Read the JSON file into a List of Map<String, String>
-    return objectMapper.readValue(inputStream, new TypeReference<List<Map<String, Object>>>() {});
+    return objectMapper.readValue(inputStream, new TypeReference<>() {});
   }
 
   private static Map<String, Map<String, Object>> convertListToKvnrMap(

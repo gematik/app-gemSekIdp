@@ -20,25 +20,29 @@
 
 package de.gematik.idp.gsi.server.data;
 
-import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRED;
-import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
+import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_TYP;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import de.gematik.idp.token.JsonWebToken;
+import de.gematik.idp.authentication.IdpJwtProcessor;
+import de.gematik.idp.gsi.server.services.EntityStatementBuilder;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
-class RpTokenTest {
+@SpringBootTest
+class JwtHelperTest {
+
+  @Autowired private IdpJwtProcessor jwtProcessorEsSigPrivKey;
+  @Autowired EntityStatementBuilder entityStatementBuilder;
 
   @Test
-  void test_isExpired_INVALID() {
-    final RpToken invalidToken = new RpToken(new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRED));
-    assertThat(invalidToken.isExpired()).isTrue();
-  }
-
-  @Test
-  void test_isExpired_VALID() {
-    final RpToken validToken =
-        new RpToken(new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043));
-    assertThat(validToken.isExpired()).isFalse();
+  void signJson() {
+    final String str =
+        JwtHelper.signJson(
+            jwtProcessorEsSigPrivKey,
+            entityStatementBuilder.buildEntityStatement(
+                "server URL", "server URL MTLS", "fedmaster URL"),
+            ENTITY_STATEMENT_TYP);
+    assertThat(str).isNotBlank();
   }
 }

@@ -20,11 +20,15 @@
 
 package de.gematik.idp.gsi.fedmaster.services;
 
-import de.gematik.idp.data.FederationPrivKey;
 import de.gematik.idp.data.FederationPubKey;
 import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.gsi.fedmaster.KeyConfiguration;
-import de.gematik.idp.gsi.fedmaster.data.*;
+import de.gematik.idp.gsi.fedmaster.data.EntityStatementFederationMember;
+import de.gematik.idp.gsi.fedmaster.data.IdentityProviderConfig;
+import de.gematik.idp.gsi.fedmaster.data.Metadata;
+import de.gematik.idp.gsi.fedmaster.data.OpenidProvider;
+import de.gematik.idp.gsi.fedmaster.data.OpenidRelyingParty;
+import de.gematik.idp.gsi.fedmaster.data.RelyingPartyConfig;
 import de.gematik.idp.gsi.fedmaster.exceptions.FedmasterException;
 import jakarta.annotation.Resource;
 import java.time.ZonedDateTime;
@@ -37,7 +41,6 @@ import org.springframework.http.HttpStatus;
 public class EntityStatementFederationMemberBuilder {
 
   private static final int ENTITY_STATEMENT_FD_TTL_DAYS = 7;
-  @Resource FederationPrivKey entityStatementSigKey;
   @Resource List<RelyingPartyConfig> relyingPartyConfigs;
   @Resource List<IdentityProviderConfig> identityProviderConfigs;
 

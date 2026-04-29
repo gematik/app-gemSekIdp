@@ -41,7 +41,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 @Slf4j
 @SpringBootTest(classes = GsiServer.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class FedIdpControllerTestNoMocks {
+class FedIdpControllerNoMocksTest {
 
   private String testHostUrl;
   @LocalServerPort private int serverPort;

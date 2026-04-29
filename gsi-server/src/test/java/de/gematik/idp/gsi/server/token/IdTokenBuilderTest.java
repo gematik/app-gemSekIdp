@@ -20,7 +20,22 @@
 
 package de.gematik.idp.gsi.server.token;
 
-import static de.gematik.idp.field.ClaimName.*;
+import static de.gematik.idp.field.ClaimName.ALGORITHM;
+import static de.gematik.idp.field.ClaimName.AUDIENCE;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
+import static de.gematik.idp.field.ClaimName.ISSUED_AT;
+import static de.gematik.idp.field.ClaimName.ISSUER;
+import static de.gematik.idp.field.ClaimName.KEY_ID;
+import static de.gematik.idp.field.ClaimName.NONCE;
+import static de.gematik.idp.field.ClaimName.SUBJECT;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_GIVEN_NAME;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_ORGANIZATION;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_PROFESSION;
+import static de.gematik.idp.field.ClaimName.TYPE;
+import static de.gematik.idp.field.ClaimName.X509_CERTIFICATE_CHAIN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -46,6 +61,7 @@ import org.springframework.util.StreamUtils;
 
 @ExtendWith(PkiKeyResolver.class)
 class IdTokenBuilderTest {
+
   static {
     Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
     Security.insertProviderAt(new BouncyCastleProvider(), 1);
@@ -112,10 +128,7 @@ class IdTokenBuilderTest {
             ALGORITHM.getJoseName(),
             KEY_ID.getJoseName(),
             TYPE.getJoseName(),
-            X509_CERTIFICATE_CHAIN.getJoseName(),
-            "version");
-
-    assertThat(idToken.getHeaderClaims()).containsEntry("version", idTokenVersion);
+            X509_CERTIFICATE_CHAIN.getJoseName());
   }
 
   @ValueSource(strings = {"2.0.0", "1.0.0"})
@@ -172,9 +185,7 @@ class IdTokenBuilderTest {
             ALGORITHM.getJoseName(),
             KEY_ID.getJoseName(),
             TYPE.getJoseName(),
-            X509_CERTIFICATE_CHAIN.getJoseName(),
-            "version");
-    assertThat(idToken.getHeaderClaims()).containsEntry("version", idTokenVersion);
+            X509_CERTIFICATE_CHAIN.getJoseName());
   }
 
   @ValueSource(strings = {"2.0.0", "1.0.0"})
@@ -232,8 +243,6 @@ class IdTokenBuilderTest {
             ALGORITHM.getJoseName(),
             KEY_ID.getJoseName(),
             TYPE.getJoseName(),
-            X509_CERTIFICATE_CHAIN.getJoseName(),
-            "version");
-    assertThat(idToken.getHeaderClaims()).containsEntry("version", idTokenVersion);
+            X509_CERTIFICATE_CHAIN.getJoseName());
   }
 }

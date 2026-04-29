@@ -42,6 +42,9 @@ public final class GsiConstants {
           ClaimName.TELEMATIK_ORGANIZATION.getJoseName(),
           ClaimName.TELEMATIK_FAMILY_NAME.getJoseName());
 
+  public static final String CLAIM_VALUE_PROFESSION_VERSICHERTER = "1.2.276.0.76.4.49";
+  public static final String CLAIM_VALUE_ORGANIZATION_GEMATIK = "109500969";
+
   public static final Set<String> SCOPES_SUPPORTED =
       Set.of(
           "urn:telematik:geburtsdatum",
@@ -93,9 +96,9 @@ public final class GsiConstants {
   public static final String ASSET_LINKS_ENDPOINT_IOS = "/.well-known/apple-app-site-association";
   public static final String TLS_CLIENT_CERT_HEADER_NAME = "X-SSL-CERT";
   public static final String LOGO_URI =
-      "https://raw.githubusercontent.com/gematik/zero-lab/main/static/images/GID_App_light_mode.svg";
+      "https://raw.githubusercontent.com/gematik/zero-lab/main/static/images/GID_App_light_mode.png";
 
   public static final String FALLBACK_KVNR = "X110411675";
 
-  public static final Set<String> SUPPORTED_ID_TOKEN_VERSIONS = Set.of("1.0.0");
+  public static final Set<String> SUPPORTED_ID_TOKEN_VERSIONS = Set.of("1.0.0", "2.0.0");
 }

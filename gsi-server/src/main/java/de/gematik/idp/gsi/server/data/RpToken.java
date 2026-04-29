@@ -26,17 +26,10 @@ import de.gematik.idp.token.JsonWebToken;
 import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Set;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jwk.PublicJsonWebKey;
-import org.jose4j.lang.JoseException;
 
-@Getter
-@RequiredArgsConstructor
-public class RpToken {
-
-  private final JsonWebToken token;
+public record RpToken(JsonWebToken token) {
 
   public boolean isExpired() {
     return token.isExpired();
@@ -50,7 +43,7 @@ public class RpToken {
     return EntityStatementRpReader.getRpTlsClientCerts(token);
   }
 
-  public PublicJsonWebKey getRpEncKey() throws JoseException {
+  public PublicJsonWebKey getRpEncKey() {
     return EntityStatementRpReader.getRpEncKey(token);
   }
 

@@ -20,39 +20,50 @@
 
 package de.gematik.idp.gsi.server;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STATEMENT_FED_MASTER;
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.services.ServerUrlService;
 import de.gematik.idp.token.JsonWebToken;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockserver.client.MockServerClient;
-import org.mockserver.model.MediaType;
-import org.mockserver.springtest.MockServerTest;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.annotation.DirtiesContext.MethodMode;
 
 @SpringBootTest(classes = GsiServer.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 @DirtiesContext(classMode = ClassMode.AFTER_CLASS)
-@MockServerTest("server.url=http://localhost:${mockServerPort}")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServerUrlServiceTest {
 
-  @Value("${server.url}")
-  private String mockServerUrl;
+  public static final int MOCK_SERVER_PORT = 8086;
+  private WireMockServer wireMockServer;
 
   @Autowired ServerUrlService serverUrlService;
   @Autowired GsiConfiguration gsiConfiguration;
-  private MockServerClient mockServerClient;
+
+  @BeforeAll
+  void setup() {
+    wireMockServer = new WireMockServer(MOCK_SERVER_PORT);
+    wireMockServer.start();
+    configureFor("localhost", MOCK_SERVER_PORT);
+  }
+
+  @AfterAll
+  void teardown() {
+    wireMockServer.stop();
+  }
 
   @Test
   void testDetermineServerUrl() {
@@ -68,14 +79,14 @@ class ServerUrlServiceTest {
   @DirtiesContext(methodMode = MethodMode.BEFORE_METHOD)
   @Test
   void testDetermineFetchEntityStatementEndpoint() {
-    mockServerClient
-        .when(request().withMethod("GET").withPath(IdpConstants.ENTITY_STATEMENT_ENDPOINT))
-        .respond(
-            response()
-                .withStatusCode(200)
-                .withContentType(MediaType.APPLICATION_JSON)
-                .withBody(ENTITY_STATEMENT_FED_MASTER));
-    gsiConfiguration.setFedmasterUrl(mockServerUrl);
+    stubFor(
+        get(urlEqualTo(IdpConstants.ENTITY_STATEMENT_ENDPOINT))
+            .willReturn(
+                aResponse()
+                    .withStatus(HttpStatus.OK.value())
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(ENTITY_STATEMENT_FED_MASTER)));
+    gsiConfiguration.setFedmasterUrl("http://localhost:" + MOCK_SERVER_PORT);
     assertThat(serverUrlService.determineFetchEntityStatementEndpoint())
         .isEqualTo("https://app-ref.federationmaster.de/federation/fetch");
   }
@@ -83,7 +94,7 @@ class ServerUrlServiceTest {
   @Test
   void testDetermineSignedJwksUri() {
     assertThat(
-            serverUrlService.determineSignedJwksUri(
+            ServerUrlService.determineSignedJwksUri(
                 new JsonWebToken(ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043)))
         .contains("http://localhost:8084/jws.json");
   }

@@ -25,9 +25,8 @@ import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_TYP;
 import static de.gematik.idp.IdpConstants.IDP_LIST_ENDPOINT;
 import static de.gematik.idp.gsi.fedmaster.Constants.FED_LIST_ENDPOINT;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.data.JwtHelper;
+import de.gematik.idp.gsi.fedmaster.data.JwtHelper;
 import de.gematik.idp.gsi.fedmaster.services.EntityStatementBuilder;
 import de.gematik.idp.gsi.fedmaster.services.FedListBuilder;
 import de.gematik.idp.gsi.fedmaster.services.IdpListBuilder;
@@ -47,7 +46,6 @@ public class FedmasterController {
   private final FedListBuilder fedListBuilder;
   private final ServerUrlService serverUrlService;
   private final IdpJwtProcessor jwtProcessor;
-  private final ObjectMapper objectMapper;
 
   @GetMapping(
       value = ENTITY_STATEMENT_ENDPOINT,
@@ -55,7 +53,6 @@ public class FedmasterController {
   public String getEntityStatement() {
     return JwtHelper.signJson(
         jwtProcessor,
-        objectMapper,
         entityStatementBuilder.buildEntityStatement(serverUrlService.determineServerUrl()),
         ENTITY_STATEMENT_TYP);
   }
@@ -64,7 +61,6 @@ public class FedmasterController {
   public String getEntityListing() {
     return JwtHelper.signJson(
         jwtProcessor,
-        objectMapper,
         idpListBuilder.buildIdpList(serverUrlService.determineServerUrl()),
         "idp-list+jwt");
   }

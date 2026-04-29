@@ -93,11 +93,12 @@ See also [GSI application.yml](gsi-server/src/main/resources/application.yml) fo
 
 ## License
 
-Copyright 2023-2025 gematik GmbH
+Copyright 2023-2026 gematik GmbH
 
 Apache License, Version 2.0
 
-See the [LICENSE](./LICENSE) for the specific language governing permissions and limitations under the License
+See the [LICENSE](./LICENSE) for the specific language governing permissions and limitations under
+the License
 
 ## Additional Notes and Disclaimer from gematik GmbH
 

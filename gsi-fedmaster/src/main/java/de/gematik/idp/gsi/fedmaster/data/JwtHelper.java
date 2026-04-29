@@ -20,30 +20,23 @@
 
 package de.gematik.idp.gsi.fedmaster.data;
 
-import de.gematik.idp.data.IdpJwksDocument;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import de.gematik.idp.authentication.IdpJwtProcessor;
+import java.util.Map;
+import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import tools.jackson.databind.PropertyNamingStrategies;
-import tools.jackson.databind.annotation.JsonNaming;
+import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Entity statement related to other federation members (relying parties and identity providers)
- * issued by Federation Master
- */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class EntityStatementFederationMember {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class JwtHelper {
 
-  private String iss;
-  private String sub;
-  private String aud;
-  private long iat;
-  private long exp;
-  private IdpJwksDocument jwks;
-  private Metadata metadata;
+  public static String signJson(
+      final IdpJwtProcessor jwtProcessor, final Object object, final String typ) {
+
+    return jwtProcessor
+        .buildJws(
+            JsonMapper.builder().build().writeValueAsString(object),
+            Map.ofEntries(Map.entry("typ", typ)),
+            false)
+        .getRawString();
+  }
 }

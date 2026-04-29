@@ -27,10 +27,8 @@ import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
 import static de.gematik.idp.field.ClaimName.TELEMATIK_PROFESSION;
 import static de.gematik.idp.gsi.server.data.GsiConstants.FALLBACK_KVNR;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import de.gematik.idp.gsi.server.data.InsuredPersonsService;
-import de.gematik.idp.gsi.server.exceptions.GsiException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +38,7 @@ import org.junit.jupiter.api.Test;
 
 @Slf4j
 class AuthenticationServiceTest {
+
   private final AuthenticationService authenticationService =
       new AuthenticationService(new InsuredPersonsService("versicherte.gesundheitsid.json"));
 
@@ -50,9 +49,9 @@ class AuthenticationServiceTest {
   void test_authentication_unknownUser() {
     final Map<String, Object> userData = new HashMap<>();
     final Set<String> selectedClaimsSet = getSelectedClaimSet();
-    assertThatThrownBy(
-            () -> authenticationService.doAuthentication(userData, "12345678", selectedClaimsSet))
-        .isInstanceOf(GsiException.class);
+    authenticationService.doAuthentication(userData, "12345678", selectedClaimsSet);
+    assertThat(userData).containsEntry(TELEMATIK_ID.getJoseName(), "12345678");
+    assertThat(userData).containsEntry(TELEMATIK_GIVEN_NAME.getJoseName(), "unknown");
   }
 
   @Test

@@ -1,0 +1,38 @@
+[
+  {
+    "birthdate": "1990-01-01",
+    "urn:telematik:claims:alter": "35",
+    "urn:telematik:claims:family_name": "Gåndersheim",
+    "urn:telematik:claims:display_name": "Dr. Gabriele Marie-Ella C. Gåndersheim",
+    "urn:telematik:claims:given_name": "Gabriele Marie-Ella Claudette",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "gabriele-marie-ella.gandersheim@mymail.net",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110642547",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1990-01-01",
+    "urn:telematik:claims:alter": "35",
+    "urn:telematik:claims:family_name": "MaiÞer",
+    "urn:telematik:claims:display_name": "Vera Edith Annamaria Lisa N. Gräfin MaiÞer",
+    "urn:telematik:claims:given_name": "Vera Edith Annamaria Lisa Nicole Gräfin",
+    "urn:telematik:claims:geschlecht": "W",
+    "urn:telematik:claims:email": "vera-edith-lisa@maimail.net",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110600929",
+    "urn:telematik:claims:organization": "109500969"
+  },
+  {
+    "birthdate": "1990-01-01",
+    "urn:telematik:claims:alter": "35",
+    "urn:telematik:claims:family_name": "Samsón",
+    "urn:telematik:claims:display_name": "Prof. Dr. Michael S. F. S. Graf Samsón",
+    "urn:telematik:claims:given_name": "Michael Siegfried Fridolin Sigurd Graf",
+    "urn:telematik:claims:geschlecht": "M",
+    "urn:telematik:claims:email": "michael-siggi.samson@mymail.net",
+    "urn:telematik:claims:profession": "1.2.276.0.76.4.49",
+    "urn:telematik:claims:id": "X110608080",
+    "urn:telematik:claims:organization": "109500969"
+  }
+]

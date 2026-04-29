@@ -59,9 +59,9 @@ Feature: Test IdpSektoral's Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_002
-    @Approval
-    @PRIO:1
-    @TESTSTUFE:4
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlerhaft befüllte Parameter
 
   ```
@@ -99,9 +99,9 @@ Feature: Test IdpSektoral's Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_AUTH_ENDPOINT_003
-    @Approval
-    @PRIO:1
-    @TESTSTUFE:4
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: IdpSektoral Auth Endpoint - Negativfall - fehlende verpflichtende Parameter
 
   ```

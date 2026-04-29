@@ -20,7 +20,16 @@
 
 package de.gematik.idp.gsi.server.token;
 
-import static de.gematik.idp.field.ClaimName.*;
+import static de.gematik.idp.field.ClaimName.AUDIENCE;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
+import static de.gematik.idp.field.ClaimName.ISSUED_AT;
+import static de.gematik.idp.field.ClaimName.ISSUER;
+import static de.gematik.idp.field.ClaimName.NONCE;
+import static de.gematik.idp.field.ClaimName.SUBJECT;
+import static de.gematik.idp.field.ClaimName.TELEMATIK_ID;
+import static de.gematik.idp.field.ClaimName.TYPE;
 import static de.gematik.idp.gsi.server.data.GsiConstants.IDTOKEN_TTL_MINUTES;
 
 import de.gematik.idp.authentication.IdpJwtProcessor;
@@ -62,7 +71,6 @@ public class IdTokenBuilder {
 
     final Map<String, Object> headerClaims = new HashMap<>();
     headerClaims.put(TYPE.getJoseName(), "JWT");
-    headerClaims.put("version", idTokenVersion);
 
     return jwtProcessor.buildJwt(
         new JwtBuilder()

@@ -20,20 +20,11 @@
 
 package de.gematik.idp.gsi.fedmaster.data;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 
-@Data
 @Builder
-@RequiredArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class IdpListEntry {
-
-  private final String organizationName;
-  private final String iss;
-  private final String logoUri;
-  private final String userTypeSupported;
-}
+public record IdpListEntry(
+    String organizationName, String iss, String logoUri, String userTypeSupported) {}

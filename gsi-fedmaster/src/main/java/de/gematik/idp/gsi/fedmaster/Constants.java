@@ -29,5 +29,5 @@ public final class Constants {
   public static final String FEDMASTER_FEDERATION_FETCH_ENDPOINT = "/federation_fetch_endpoint";
   public static final String FED_LIST_ENDPOINT = "/federation_list";
   public static final String LOGO_URI =
-      "https://raw.githubusercontent.com/gematik/zero-lab/main/static/images/GID_App_light_mode.svg";
+      "https://raw.githubusercontent.com/gematik/zero-lab/main/static/images/GID_App_light_mode.png";
 }

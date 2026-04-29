@@ -52,7 +52,7 @@ public class TokenRepositoryRp {
     log.debug(
         "Entitystatement of RP [{}] stored. JWT: {}",
         issuerRp,
-        entityStmtsOfRp.get(issuerRp).getToken().getRawString());
+        entityStmtsOfRp.get(issuerRp).token().getRawString());
     return entityStmtsOfRp.get(issuerRp);
   }
 
@@ -100,7 +100,7 @@ public class TokenRepositoryRp {
     log.debug(
         "Entitystatement of RP [{}] stored. JWT: {}",
         issuer,
-        entityStmtsOfRp.get(issuer).getToken().getRawString());
+        entityStmtsOfRp.get(issuer).token().getRawString());
   }
 
   private void fetchAndStoreEntityStmntAboutRp(final String sub) {

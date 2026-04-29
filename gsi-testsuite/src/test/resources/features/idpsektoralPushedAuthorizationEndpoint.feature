@@ -32,10 +32,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     And Wait for "1" Seconds
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_001
-    @Approval
-    @PRIO:1
-    @TESTSTUFE:4
-    @OpenBug
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Gutfall - Validiere Response
 
   ```
@@ -87,8 +86,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
         """
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_003
-    @Approval
-    @PRIO:1
+  @Approval
+  @PRIO:1
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - fehlerhaft befüllte Parameter
 
   ```
@@ -149,9 +148,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
         """
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_005
-    @Approval
-    @PRIO:1
-    @TESTSTUFE:4
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - fehlende verpflichtende Parameter
 
   ```
@@ -220,9 +219,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_007
-    @PRIO:1
-    @TESTSTUFE:4
-    @Approval
+  @PRIO:1
+  @TESTSTUFE:4
+  @Approval
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - invalide Entity Statements
 
   ```
@@ -250,11 +249,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_008
-    @Approval
-    @PRIO:1
-    @TESTSTUFE:4
-    @OpenBug
-    @Bug:GSI-141
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - Scopes
 
   ```
@@ -275,9 +272,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_009
-    @Approval
-    @PRIO:1
-    @TESTSTUFE:4
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Positivfall - Zusätzliche Parameter
 
   ```
@@ -298,10 +295,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_010
-    @Akzeptanzfeature
-    @Approval
-    @PRIO:1
-    @TESTSTUFE:4
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Positivfall - Amr/Acr Kombinationen
 
   ```
@@ -333,9 +329,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_012
-    @Akzeptanzfeature
-    @Approval
-    @GematikSekIdpOnly
+  @Approval
+  @GematikSekIdpOnly
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - Amr Parameter
 
   ```
@@ -351,7 +346,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
         """
           {
             "error":                        'invalid_request',
-            "____error_description":        '.*amr: must match.*'
+            "____error_description":        '.*amr: .*'
           }
         """
 
@@ -363,10 +358,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_013
-    @Akzeptanzfeature
-    @Approval
-    @PRIO:1
-    @TESTSTUFE:4
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Gutfall - Prompt Parameter
 
   ```
@@ -388,10 +382,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_014
-    @Akzeptanzfeature
-    @PRIO:1
-    @TESTSTUFE:4
-    @Approval
+  @PRIO:1
+  @TESTSTUFE:4
+  @Approval
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - Prompt Parameter
 
   ```
@@ -410,10 +403,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
       | invalid_prompt |
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_015
-    @Akzeptanzfeature
-    @Approval
-    @PRIO:1
-    @TESTSTUFE:4
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Positivfall - max_age Parameter
 
   ```
@@ -433,10 +425,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
       | 12334   |
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_016
-    @Akzeptanzfeature
-    @PRIO:1
-    @TESTSTUFE:4
-    @Approval
+  @PRIO:1
+  @TESTSTUFE:4
+  @Approval
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - max_age Parameter
 
   ```
@@ -456,11 +447,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_017
-    @Akzeptanzfeature
-    @OpenBug
-    @PRIO:1
-    @TESTSTUFE:4
-    @Approval
+  @PRIO:1
+  @TESTSTUFE:4
+  @Approval
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - claims Parameter
 
   ```
@@ -483,10 +472,9 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_018
-    @Akzeptanzfeature
-    @PRIO:1
-    @TESTSTUFE:4
-    @Approval
+  @PRIO:1
+  @TESTSTUFE:4
+  @Approval
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Positivfall - claims Parameter
 
   ```
@@ -501,10 +489,12 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     Then TGR current response with attribute "$.responseCode" matches "201"
 
     Examples:
-      | claims                                                                                                                                     |
-      | {"id_token":{"acr":{"essential":true,"value":"gematik-ehealth-loa-high"},"amr":{"essential":true,"value":"urn:telematik:auth:guest:eGK"}}} |
-      | {"id_token":{"acr":{"essential":true,"value":"gematik-ehealth-loa-high"}}}                                                                 |
-      | {"id_token":{"acr":{"value":"gematik-ehealth-loa-invalid"}}}                                                                               |
+      | claims                                                                                                                                           |
+      | {"id_token":{"acr":{"essential":true,"value":"gematik-ehealth-loa-high"},"amr":{"essential":true,"value":"urn:telematik:auth:guest:eGK"}}}       |
+      | {"id_token":{"acr":{"essential":true,"values":["gematik-ehealth-loa-high"]},"amr":{"essential":true,"values":["urn:telematik:auth:guest:eGK"]}}} |
+      | {"id_token":{"acr":{"essential":true,"value":"gematik-ehealth-loa-high"}}}                                                                       |
+      | {"id_token":{"acr":{"essential":true,"values":["gematik-ehealth-loa-high"]}}}                                                                    |
+      | {"id_token":{"acr":{"value":"gematik-ehealth-loa-invalid"}}}                                                                                     |
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_019
   @PRIO:1

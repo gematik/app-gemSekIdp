@@ -23,9 +23,8 @@ package de.gematik.idp.gsi.fedmaster.controller;
 import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_TYP;
 import static de.gematik.idp.gsi.fedmaster.Constants.FEDMASTER_FEDERATION_FETCH_ENDPOINT;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.data.JwtHelper;
+import de.gematik.idp.gsi.fedmaster.data.JwtHelper;
 import de.gematik.idp.gsi.fedmaster.exceptions.FedmasterException;
 import de.gematik.idp.gsi.fedmaster.services.EntityStatementFederationMemberBuilder;
 import de.gematik.idp.gsi.fedmaster.services.ServerUrlService;
@@ -46,7 +45,6 @@ public class FederationApiController {
   private final EntityStatementFederationMemberBuilder entityStatementFederationMemberBuilder;
   private final ServerUrlService serverUrlService;
   private final IdpJwtProcessor jwtProcessor;
-  private final ObjectMapper objectMapper;
 
   @GetMapping(
       value = FEDMASTER_FEDERATION_FETCH_ENDPOINT,
@@ -68,7 +66,6 @@ public class FederationApiController {
     }
     return JwtHelper.signJson(
         jwtProcessor,
-        objectMapper,
         entityStatementFederationMemberBuilder.buildEntityStatementFederationMember(
             serverUrlService.determineServerUrl(), sub, aud),
         ENTITY_STATEMENT_TYP);

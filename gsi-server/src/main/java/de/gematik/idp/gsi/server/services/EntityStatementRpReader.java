@@ -133,23 +133,23 @@ public abstract class EntityStatementRpReader {
 
   private static Optional<PublicJsonWebKey> getRpEncKeyFromSignedJwks(
       final JsonWebToken signedJwks) {
-    final String sub = (String) signedJwks.getBodyClaims().get("sub");
-    log.debug("Search encryption key in signed JWKS of RP [{}]).", sub);
+    final String iss = (String) signedJwks.getBodyClaims().get("iss");
+    log.debug("Search encryption key in signed JWKS of RP [{}]).", iss);
     final Optional<List<Map<String, Object>>> keyList = getKeyListFromSignedJwks(signedJwks);
     final Optional<PublicJsonWebKey> encKeyFromKeyList = getEncKeyFromKeyList(keyList);
     if (encKeyFromKeyList.isPresent())
-      log.debug("Found encryption key in signed JWKS of RP [{}]).", sub);
+      log.debug("Found encryption key in signed JWKS of RP [{}]).", iss);
     return encKeyFromKeyList;
   }
 
   private static Optional<List<X509Certificate>> getRpTlsClientCertsFromSignedJwks(
       final JsonWebToken signedJwks) {
-    final String sub = (String) signedJwks.getBodyClaims().get("sub");
-    log.debug("Search TLS client certificate in signed JWKS of RP [{}]).", sub);
+    final String iss = (String) signedJwks.getBodyClaims().get("iss");
+    log.debug("Search TLS client certificate in signed JWKS of RP [{}]).", iss);
     final Optional<List<Map<String, Object>>> keyList = getKeyListFromSignedJwks(signedJwks);
     final Optional<List<X509Certificate>> certsFromKeyList = getCertsFromKeyList(keyList);
     if (certsFromKeyList.isPresent())
-      log.debug("Found client certificates in signed JWKS of RP [{}]).", sub);
+      log.debug("Found client certificates in signed JWKS of RP [{}]).", iss);
     return certsFromKeyList;
   }
 
