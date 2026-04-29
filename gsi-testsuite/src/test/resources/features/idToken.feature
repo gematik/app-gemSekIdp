@@ -26,12 +26,10 @@ Feature: Test IdpSektoral's ID Token
   @Approval
   @PRIO:1
   @TESTSTUFE:4
-  @OpenBug
-  @Ticket:GSI-202
-  Scenario: IdpSektoral ID Token - Gutfall - validiere Header Claims
+  Scenario: IdpSektoral ID Token - Gutfall - validiere Signatur Header Claims
 
   ```
-  Wir validieren die Header Claims eines ID Token
+  Wir validieren die Signatur Header Claims eines ID Token
 
     Then Json String "gsi.idToken" at "$.header" matches:
         """
@@ -48,10 +46,10 @@ Feature: Test IdpSektoral's ID Token
   @Approval
   @PRIO:1
   @TESTSTUFE:4
-  Scenario: IdpSektoral ID Token - Gutfall - validiere Body Claims
+  Scenario: IdpSektoral ID Token - Gutfall - validiere Body Claims eines Token der Version 1.0.0
 
   ```
-  Wir validieren die Body Claims eines ID Token
+  Wir validieren die Body Claims eines ID Token der Version 1.0.0
 
     Then Json String "gsi.idToken" at "$.body" matches:
         """
@@ -81,7 +79,7 @@ Feature: Test IdpSektoral's ID Token
             "____urn:telematik:claims:display_name":  "${json-unit.ignore}"
           }
         """
-    And Json String "gsi.idToken" at "$.body.amr.0" matches '(urn:telematik:auth:eGK)|(urn:telematik:auth:eID)|(urn:telematik:auth:other)'
+    And Json String "gsi.idToken" at "$.body.amr.0" matches '(urn:telematik:auth:eGK)|(urn:telematik:auth:eID)|(urn:telematik:auth:other)|(urn:telematik:auth:mEW)'
 
 
   @TCID:IDPSEKTORAL_ID_TOKEN_003
@@ -94,3 +92,71 @@ Feature: Test IdpSektoral's ID Token
   Wir validieren, dass der ID Token für 300 Sekunden gültig ist
 
     Then The JWT "gsi.idToken" is valid for more than 299 but less than 301 seconds
+
+
+  @TCID:IDPSEKTORAL_ID_TOKEN_004
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
+  Scenario: IdpSektoral ID Token - Gutfall - validiere JWE proteted Header Claims
+
+  ```
+  Wir validieren die JWE protected Header Claims eines verschlüsselten ID Token
+
+    Then Json String "gsi.encryptedIdToken" at "$.header" matches:
+        """
+          {
+            "alg" : "ECDH-ES",
+            "enc" : "A256GCM",
+            "cty" : "JWT",
+            "kid" : ".*",
+            "version" : "2.0.0",
+            "epk" : {
+              "kty" : "EC",
+              "x" : "${json-unit.ignore}",
+              "y" : "${json-unit.ignore}",
+              "crv" : "P-256"
+              }
+          }
+        """
+
+
+  @TCID:IDPSEKTORAL_ID_TOKEN_005
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
+  Scenario: IdpSektoral ID Token - Gutfall - validiere Body Claims eines substantial Token der Version 2.0.0
+
+  ```
+  Wir validieren die Body Claims eines ID Token der Version 2.0.0
+
+    Then Json String "gsi.idTokenVersion2" at "$.body" matches:
+        """
+          {
+            "iss":                                    'http.*',
+            "sub":                                    '.*',
+            "iat":                                    "${json-unit.ignore}",
+            "exp":                                    "${json-unit.ignore}",
+            "aud":                                    '.*',
+            "nonce":                                  '.*',
+            "acr":                                    'gematik-ehealth-loa-substantial',
+            "amr":                                    "${json-unit.ignore}",
+            "urn:telematik:auth:consent":             ["loa-substantial"],
+            "____urn:telematik:claims:profession":        '.*',
+            "____urn:telematik:claims:given_name":        '.*',
+            "____urn:telematik:claims:organization":      '.*',
+            "____urn:telematik:claims:id":                '.*',
+            "____at_hash":                            "${json-unit.ignore}",
+            "____rat":                                "${json-unit.ignore}",
+            "____sid":                                "${json-unit.ignore}",
+            "____auth_time":                          "${json-unit.ignore}",
+            "____jti":                                "${json-unit.ignore}",
+            "____birthdate":                          "${json-unit.ignore}",
+            "____urn:barmer:benutzer_id":             "${json-unit.ignore}",
+            "____urn:telematik:claims:email":         "${json-unit.ignore}",
+            "____urn:telematik:claims:alter":         "${json-unit.ignore}",
+            "____urn:telematik:claims:geschlecht":    "${json-unit.ignore}",
+            "____urn:telematik:claims:display_name":  "${json-unit.ignore}"
+          }
+        """
+    And Json String "gsi.idTokenVersion2" at "$.body.amr.0" matches 'urn:telematik:auth:other'

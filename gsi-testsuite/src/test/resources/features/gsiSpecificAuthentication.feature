@@ -95,8 +95,9 @@ Feature: Test GSI specific authentication
     Then TGR current response with attribute "$.header.Location" matches ".*code=.*"
 
   @TCID:GSI_AUTH_003
-    @Approval
-    @OpenBug
+  @Approval
+  @OpenBug
+  @GSI-21
   Scenario Outline: GSI Authentication - Negativfall - invalide Werte für die Parameter
 
   ```
@@ -117,7 +118,7 @@ Feature: Test GSI specific authentication
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
     And TGR find first request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "302"
+    Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | request_uri       | user_id       |
@@ -126,15 +127,16 @@ Feature: Test GSI specific authentication
     Then TGR current response with attribute "$.header.Location" matches "<errorExmpl>"
 
     Examples:
-      | requestUriExmpl | userIdExmpl     | errorExmpl                |
-      | invalidReqUri   | X110411675      | .*error=invalid_request.* |
-      | ${requestUri}   | X110411675      | .*error=invalid_request.* |
-      | ${requestUri}   | invalidUserId   | .*error=invalid_request.* |
+      | requestUriExmpl | userIdExmpl   | errorExmpl                |
+      | invalidReqUri   | X110411675    | .*error=invalid_request.* |
+      | ${requestUri}   | X110411675    | .*error=invalid_request.* |
+      | ${requestUri}   | invalidUserId | .*error=invalid_request.* |
 
 
   @TCID:GSI_AUTH_004
   @Approval
   @OpenBug
+  @GSI-21
   Scenario: GSI Authentication - Negativfall - fehlende Parameter
 
   ```
@@ -155,7 +157,7 @@ Feature: Test GSI specific authentication
       | request_uri   | client_id          |
       | ${requestUri} | gsi.clientid.valid |
     And TGR find first request to path ".*"
-    Then TGR current response with attribute "$.responseCode" matches "302"
+    Then TGR current response with attribute "$.responseCode" matches "200"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
       | user_id    |
@@ -203,6 +205,45 @@ Feature: Test GSI specific authentication
 
 
   @TCID:GSI_AUTH_006
+  @Approval
+  Scenario: GSI Authentication - Gutfall - Fordere Liste der essential and optional Claims an
+
+  ```
+  Wir senden einen PAR an den sektoralen IDP. Die resultierende request_uri senden wir dann an den Authorization Endpoint. Dann setzen wir den Flow über den UserConsent-Pfad
+  fort. Wir verwenden den Parameter app_version um in der ClaimsResponse die angeforderten Claims als essential/optional zu bekommen
+
+  Die HTTP Response muss:
+
+  - die angeforderten Claims enthalten
+
+    Given TGR clear recorded messages
+    When Send Post Request to "${pushed_authorization_request_endpoint}" with
+      | client_id          | state       | redirect_uri    | code_challenge                              | code_challenge_method | response_type | nonce                | scope     | acr_values               | claims                                                      |
+      | gsi.clientid.valid | yyystateyyy | gsi.redirectUri | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | gsi.scope | gematik-ehealth-loa-high | {"id_token":{"urn:telematik:claims:id":{"essential":true}}} |
+    And TGR find first request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "201"
+    And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
+    And TGR clear recorded messages
+    When Send Get Request to "${authorization_endpoint}" with
+      | request_uri   | app_version     |
+      | ${requestUri} | testsuite 1.0.0 |
+    And TGR find first request to path ".*"
+    Then TGR current response with attribute "$.responseCode" matches "200"
+    And TGR current response with attribute "$.header.Content-Type" matches "application/json.*"
+    Then TGR current response at "$.body" matches as JSON:
+        """
+          {
+            "requested_essential_claims":       "${json-unit.ignore}",
+            "requested_optional_claims":        "${json-unit.ignore}"
+          }
+        """
+    And TGR current response with attribute "$.body.requested_optional_claims.0" matches "urn:telematik:claims:profession"
+    And TGR current response with attribute "$.body.requested_optional_claims.1" matches "urn:telematik:claims:organization"
+    And TGR current response with attribute "$.body.requested_optional_claims.2" matches "urn:telematik:claims:display_name"
+    And TGR current response with attribute "$.body.requested_essential_claims.0" matches "urn:telematik:claims:id"
+
+
+  @TCID:GSI_AUTH_007
   @Approval
   Scenario: GSI Authentication - Gutfall - Bestätige Claims
 

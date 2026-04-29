@@ -20,17 +20,18 @@
 
 package de.gematik.idp.gsi.fedmaster.data;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 
 @Getter
 @Builder
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class OpenidRelyingParty {
+
   private String[] clientRegistrationTypes;
   private String[] claims;
   private String[] redirectUris;

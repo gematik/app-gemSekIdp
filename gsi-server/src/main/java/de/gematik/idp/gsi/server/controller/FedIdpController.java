@@ -27,6 +27,7 @@ import static de.gematik.idp.IdpConstants.TOKEN_ENDPOINT;
 import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.DEVICE_OS_VERSION;
 import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_HIGH_V1;
 import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_HIGH_V2;
 import static de.gematik.idp.gsi.server.data.GsiConstants.AMR_VALUES_SUBSTANTIAL_V1;
@@ -36,17 +37,15 @@ import static de.gematik.idp.gsi.server.data.GsiConstants.FED_SIGNED_JWKS_ENDPOI
 import static de.gematik.idp.gsi.server.data.GsiConstants.TLS_CLIENT_CERT_HEADER_NAME;
 import static de.gematik.idp.gsi.server.util.ClaimHelper.getClaimsForScopeSet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
 import de.gematik.idp.crypto.Nonce;
-import de.gematik.idp.data.FederationPrivKey;
-import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.data.ParResponse;
 import de.gematik.idp.data.TokenResponse;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.data.ClaimsInfo;
 import de.gematik.idp.gsi.server.data.ClaimsResponse;
 import de.gematik.idp.gsi.server.data.FedIdpAuthSession;
+import de.gematik.idp.gsi.server.data.JwtHelper;
 import de.gematik.idp.gsi.server.data.QRCodeGenerator;
 import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
@@ -79,8 +78,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jose4j.lang.JoseException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -111,12 +108,8 @@ public class FedIdpController {
   private final ServerUrlService serverUrlService;
   private final IdpJwtProcessor jwtProcessorEsSigPrivKey;
   private final IdpJwtProcessor jwtProcessorTokenSigKey;
-  private final ObjectMapper objectMapper;
   private final GsiConfiguration gsiConfiguration;
   private final JwksBuilder jwksBuilder;
-
-  @Autowired FederationPrivKey esSigPrivKey;
-  @Autowired FederationPrivKey tokenSigPrivKey;
 
   private final Map<String, FedIdpAuthSession> fedIdpAuthSessions =
       Collections.synchronizedMap(
@@ -141,7 +134,6 @@ public class FedIdpController {
   public String getEntityStatement() {
     return JwtHelper.signJson(
         jwtProcessorEsSigPrivKey,
-        objectMapper,
         entityStatementBuilder.buildEntityStatement(
             gsiConfiguration.getServerUrl(),
             gsiConfiguration.getServerUrlMtls(),
@@ -154,7 +146,6 @@ public class FedIdpController {
   public String getSignedJwks() {
     return JwtHelper.signJson(
         jwtProcessorEsSigPrivKey,
-        objectMapper,
         jwksBuilder.build(serverUrlService.determineServerUrl()),
         "jwk-set+json");
   }
@@ -298,6 +289,7 @@ public class FedIdpController {
     return "landingTemplate";
   }
 
+  @Deprecated(forRemoval = true)
   @ResponseBody
   @GetMapping(
       value = FED_AUTH_ENDPOINT,
@@ -321,6 +313,28 @@ public class FedIdpController {
                     session.getRequestedEssentialClaims().stream())
                 .distinct()
                 .toArray(String[]::new))
+        .build();
+  }
+
+  @ResponseBody
+  @GetMapping(
+      value = FED_AUTH_ENDPOINT,
+      params = {"app_version"})
+  public ClaimsResponse getRequestedEssentialAndOptionalClaims(
+      @RequestParam(name = "request_uri") @NotEmpty final String requestUri,
+      @RequestParam(name = "app_version") @NotEmpty final String appVersion,
+      final HttpServletResponse respMsgNr6a) {
+    final String thisEndpointUrl = serverUrlService.determineServerUrl() + FED_AUTH_ENDPOINT;
+    log.info(
+        "App2App-Flow: RX message nr 6 (Authorization Request, getRequestedClaims) at {}",
+        thisEndpointUrl);
+
+    final FedIdpAuthSession session = getSessionByRequestUri(requestUri);
+
+    respMsgNr6a.setStatus(HttpStatus.OK.value());
+    return ClaimsResponse.builder()
+        .requestedEssentialClaims(session.getRequestedEssentialClaims().toArray(String[]::new))
+        .requestedOptionalClaims(session.getRequestedOptionalClaims().toArray(String[]::new))
         .build();
   }
 
@@ -386,8 +400,6 @@ public class FedIdpController {
         "App2App-Flow: RX message nr 10 (Authorization Code) at {}",
         serverUrlService.determineServerUrl());
 
-    RequestValidator.validateRedirectUri(redirectUri);
-
     final String sessionKey =
         getSessionKeyByAuthCode(URLDecoder.decode(code, StandardCharsets.UTF_8));
     final FedIdpAuthSession session = fedIdpAuthSessions.get(sessionKey);
@@ -405,22 +417,23 @@ public class FedIdpController {
     respMsgNr11.setStatus(HttpStatus.OK.value());
 
     final String idToken;
-    try {
-      final JsonWebToken idTokenPlain =
-          new IdTokenBuilder(
-                  jwtProcessorTokenSigKey,
-                  serverUrlService.determineServerUrl(),
-                  session.getFachdienstNonce(),
-                  clientId,
-                  session.getIdTokenVersion(),
-                  session.getUserData())
-              .buildIdToken();
-      log.info("id-token: {}", idTokenPlain.getRawString());
 
-      idToken = idTokenPlain.encryptAsJwt(token.getRpEncKey()).getRawString();
-    } catch (final JoseException e) {
-      throw new GsiException(e);
-    }
+    final JsonWebToken idTokenPlain =
+        new IdTokenBuilder(
+                jwtProcessorTokenSigKey,
+                serverUrlService.determineServerUrl(),
+                session.getFachdienstNonce(),
+                clientId,
+                session.getIdTokenVersion(),
+                session.getUserData())
+            .buildIdToken();
+    log.info("id-token: {}", idTokenPlain.getRawString());
+
+    idToken =
+        idTokenPlain
+            .encryptAsJwt(token.getRpEncKey(), Map.of(DEVICE_OS_VERSION, "2.0.0"))
+            .getRawString();
+
     // delete session
     fedIdpAuthSessions.remove(sessionKey);
 

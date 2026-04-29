@@ -27,31 +27,26 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
 import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockserver.client.MockServerClient;
-import org.mockserver.springtest.MockServerTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@MockServerTest("server.url=http://localhost:${mockServerPort}")
+@Slf4j
 @SpringBootTest
 class TokenRepositoryRpTest {
 
-  private MockServerClient mockServerClient;
   @Autowired private TokenRepositoryRp tokenRepositoryRp;
-  @Autowired GsiConfiguration gsiConfiguration;
-  @MockBean private ServerUrlService serverUrlService;
+  @MockitoBean private ServerUrlService serverUrlService;
   private static MockedStatic<HttpClient> httpClientMockedStatic;
 
   private static final RpToken VALID_RPTOKEN =
@@ -66,12 +61,12 @@ class TokenRepositoryRpTest {
       new JsonWebToken(
           "eyJhbGciOiJFUzI1NiIsInR5cCI6ImVudGl0eS1zdGF0ZW1lbnQrand0Iiwia2lkIjoicHVrX2ZlZF9zaWcifQ.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwODMiLCJzdWIiOiJodHRwOi8vMTI3LjAuMC4xOjgwODQiLCJhdWQiOm51bGwsImlhdCI6MTczNTMwMjA4NiwiZXhwIjoyMzY2NDU0MDg2LCJqd2tzIjp7ImtleXMiOlt7InVzZSI6InNpZyIsImtpZCI6InB1a19mZF9zaWciLCJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI6IjliSnMyN1lBZmxNVVdLNW54dWlGNlhBRzBKYXp1dndSaTFFcEZLMFhLaWsiLCJ5IjoiUDhsek5WUk9nVHV3YkRxc2Q4clQxQUkzemV6OTRIQnNURHBPdmFqUDByWSIsImFsZyI6IkVTMjU2In1dfSwibWV0YWRhdGEiOnsib3BlbmlkX3JlbHlpbmdfcGFydHkiOnsiY2xpZW50X3JlZ2lzdHJhdGlvbl90eXBlcyI6WyJhdXRvbWF0aWMiXSwiY2xhaW1zIjpbXSwicmVkaXJlY3RfdXJpcyI6WyJodHRwOi8vMTI3LjAuMC4xOjgwODMvYXV0aCIsImh0dHBzOi8vRmFjaGRpZW5zdDAwNy5kZS9jbGllbnQiLCJodHRwczovL3JlZGlyZWN0LnRlc3RzdWl0ZS5nc2kiLCJodHRwczovL2lkcGZhZGkuZGV2LmdlbWF0aWsuc29sdXRpb25zL2F1dGgiXSwic2NvcGUiOiJ1cm46dGVsZW1hdGlrOmRpc3BsYXlfbmFtZSB1cm46dGVsZW1hdGlrOnZlcnNpY2hlcnRlciBvcGVuaWQifX19.fRJMg6ylrTIO3pPUItaxQD913Yj17cKQX1Eti91j9rFhKmwZvrNHFeYf-2iHdWASIxt2j1k5JUWrJ4LhckKLPQ");
 
-  @Value("${server.url}")
-  private String mockServerUrl;
+  private static final String MOCK_SERVER_URL = "http://localhost:8086";
 
   @BeforeEach
   void init(final TestInfo testInfo) {
-    Mockito.doReturn(mockServerUrl + "/federation/fetch")
+    log.info("START UNIT TEST: {}", testInfo.getDisplayName());
+    Mockito.doReturn(MOCK_SERVER_URL + "/federation/fetch")
         .when(serverUrlService)
         .determineFetchEntityStatementEndpoint();
     httpClientMockedStatic = Mockito.mockStatic(HttpClient.class);

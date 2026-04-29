@@ -30,19 +30,23 @@ import com.google.gson.JsonSyntaxException;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import java.util.HashSet;
 import java.util.Set;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @Getter
 @NoArgsConstructor
 public class ClaimsInfo {
+
   private final Set<String> amrValues = new HashSet<>();
   private final Set<String> acrValues = new HashSet<>();
   private final Set<String> essentialClaims = new HashSet<>();
   private final Set<String> optionalClaims = new HashSet<>();
 
   public ClaimsInfo(final String claims) {
-    if (claims == null || claims.isEmpty()) return;
+    if (claims == null || claims.isEmpty()) {
+      return;
+    }
     try {
       final JsonObject claimsForIdToken =
           JsonParser.parseString(claims).getAsJsonObject().getAsJsonObject("id_token");
@@ -52,7 +56,7 @@ public class ClaimsInfo {
       }
       setAmrAcrSets(claimsForIdToken);
       setClaimSets(claimsForIdToken);
-    } catch (JsonSyntaxException | IllegalStateException | NullPointerException e) {
+    } catch (final JsonSyntaxException | IllegalStateException | NullPointerException e) {
       throw new GsiException(
           INVALID_REQUEST, "parameter claims is not a JSON object", HttpStatus.BAD_REQUEST);
     }
@@ -104,7 +108,9 @@ public class ClaimsInfo {
   }
 
   private void setValueIfEssential(final JsonElement claim, final Set<String> claimSet) {
-    if (claim == null) return;
+    if (claim == null) {
+      return;
+    }
     final JsonObject claimObject = claim.getAsJsonObject();
     final JsonElement isEssential = claimObject.get("essential");
     if (isEssential != null && isEssential.getAsBoolean()) {

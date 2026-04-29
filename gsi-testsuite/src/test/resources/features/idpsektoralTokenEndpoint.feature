@@ -32,9 +32,9 @@ Feature: Test IdpSektoral's Token Endpoint
 
 
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_001
-    @Approval
-    @PRIO:1
-    @TESTSTUFE:4
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: IdpSektoral Token Endpoint - Negativfall - fehlerhaft befüllte Parameter
 
   ```
@@ -93,9 +93,9 @@ Feature: Test IdpSektoral's Token Endpoint
         """
 
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_003
-    @Approval
-    @PRIO:1
-    @TESTSTUFE:4
+  @Approval
+  @PRIO:1
+  @TESTSTUFE:4
   Scenario Outline: IdpSektoral Token Endpoint - Negativfall - fehlende verpflichtende Parameter
 
   ```
@@ -306,8 +306,8 @@ Feature: Test IdpSektoral's Token Endpoint
 
 
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_008
-    @Approval
-    @GematikSekIdpOnly
+  @Approval
+  @GematikSekIdpOnly
   Scenario Outline: IdpSektoral Token Endpoint - Gutfall ohne userConsent - validiere ID_TOKEN Body Claims
 
   ```
@@ -357,8 +357,8 @@ Feature: Test IdpSektoral's Token Endpoint
       | D162565242 | D162565242 | 101592612    | Imagina Handt                               |
 
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_009
-    @Approval
-    @GematikSekIdpOnly
+  @Approval
+  @GematikSekIdpOnly
   Scenario: IdpSektoral Token Endpoint - Gutfall ohne userConsent - validiere ID_TOKEN Header Claims
 
   ```
@@ -376,7 +376,7 @@ Feature: Test IdpSektoral's Token Endpoint
     And TGR set local variable "requestUri" to "!{rbel:currentResponseAsString('$..request_uri')}"
     And TGR clear recorded messages
     When Send Get Request to "${authorization_endpoint}" with
-      | request_uri   | user_id  |
+      | request_uri   | user_id    |
       | ${requestUri} | X110411675 |
     And TGR find first request to path ".*"
     And TGR set local variable "authCode" to "!{rbel:currentResponseAsString('$.header.Location.code.value')}"
@@ -389,7 +389,6 @@ Feature: Test IdpSektoral's Token Endpoint
     """
       {
       "alg": "ES256",
-      "version": ".*",
       "typ": "JWT",
       "kid": "puk_fed_idp_token",
       "x5c": "${json-unit.ignore}"
@@ -448,8 +447,8 @@ Feature: Test IdpSektoral's Token Endpoint
     """
 
   @TCID:IDPSEKTORAL_TOKEN_ENDPOINT_011
-    @Approval
-    @GematikSekIdpOnly
+  @Approval
+  @GematikSekIdpOnly
   Scenario Outline: IdpSektoral Token Endpoint - Gutfall ohne userConsent - validiere acr/amr in ID_TOKEN Body Claims
 
   ```
@@ -496,9 +495,9 @@ Feature: Test IdpSektoral's Token Endpoint
     And TGR current response with attribute "$.body.id_token.content.body.body.amr.0" matches "<amr>"
 
     Examples:
-      | userId     | id         | organization | displayName                                 | acr_values                      | amr                    |
-      | X110411675 | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld | gematik-ehealth-loa-high        | urn:telematik:auth:eGK |
-      | D162565242 | D162565242 | 101592612    | Imagina Handt                               | gematik-ehealth-loa-high        | urn:telematik:auth:eID |
-      | O018753325 | O018753325 | 106589300    | Hildur Fürsich                              | gematik-ehealth-loa-substantial | urn:telematik:auth:mEW |
-      | G839948921 | G839948921 | 104401207    | Jules Seeckt                                | gematik-ehealth-loa-high        | urn:telematik:auth:sso |
+      | userId     | id         | organization | displayName                                 | acr_values                      | amr                      |
+      | X110411675 | X110411675 | 109500969    | Darius Michael Brian Ubbo Graf von Bödefeld | gematik-ehealth-loa-high        | urn:telematik:auth:eGK   |
+      | D162565242 | D162565242 | 101592612    | Imagina Handt                               | gematik-ehealth-loa-high        | urn:telematik:auth:eID   |
+      | O018753325 | O018753325 | 106589300    | Hildur Fürsich                              | gematik-ehealth-loa-substantial | urn:telematik:auth:other |
+      | G839948921 | G839948921 | 104401207    | Jules Seeckt                                | gematik-ehealth-loa-high        | urn:telematik:auth:other |
 

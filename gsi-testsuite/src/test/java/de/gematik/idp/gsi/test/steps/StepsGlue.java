@@ -40,7 +40,6 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -188,8 +187,8 @@ public class StepsGlue {
   }
 
   private static RbelElement getLastMessage() {
-    final Deque<RbelElement> rbelMessages =
-        TigerDirector.getTigerTestEnvMgr().getLocalTigerProxyOrFail().getRbelMessages();
+    final List<RbelElement> rbelMessages =
+        TigerDirector.getTigerTestEnvMgr().getLocalTigerProxyOrFail().getRbelMessagesList();
     return rbelMessages.getLast();
   }
 }

@@ -23,10 +23,9 @@ package de.gematik.idp.gsi.server.services;
 import static de.gematik.idp.IdpConstants.ENTITY_STATEMENT_TYP;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.idp.authentication.IdpJwtProcessor;
-import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
+import de.gematik.idp.gsi.server.data.JwtHelper;
 import java.time.ZonedDateTime;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -38,7 +37,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 class EntityStatementBuilderTest {
 
   @Autowired private IdpJwtProcessor jwtProcessorEsSigPrivKey;
-  @Autowired private ObjectMapper objectMapper;
   @Autowired private EntityStatementBuilder entityStatementBuilder;
   @Autowired private ServerUrlService serverUrlService;
   @Autowired private GsiConfiguration gsiConfiguration;
@@ -51,7 +49,6 @@ class EntityStatementBuilderTest {
     final String es =
         JwtHelper.signJson(
             jwtProcessorEsSigPrivKey,
-            objectMapper,
             entityStatementBuilder.buildEntityStatement(
                 "http://localhost:8085",
                 "http://localhost:8085",

@@ -20,7 +20,23 @@
 
 package de.gematik.idp.gsi.server.data;
 
-import lombok.Builder;
+import de.gematik.idp.authentication.IdpJwtProcessor;
+import java.util.Map;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import tools.jackson.databind.json.JsonMapper;
 
-@Builder
-public record TiUser(String kvnr, String givenName) {}
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class JwtHelper {
+
+  public static String signJson(
+      final IdpJwtProcessor jwtProcessor, final Object object, final String typ) {
+
+    return jwtProcessor
+        .buildJws(
+            JsonMapper.builder().build().writeValueAsString(object),
+            Map.ofEntries(Map.entry("typ", typ)),
+            false)
+        .getRawString();
+  }
+}

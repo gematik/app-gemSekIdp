@@ -21,8 +21,6 @@
 package de.gematik.idp.gsi.server.util;
 
 import de.gematik.idp.field.ClaimName;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,25 +30,33 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ClaimHelper {
+
   private static final Map<String, List<ClaimName>> scopesToClaimMap;
 
   static {
-    final Map<String, List<ClaimName>> tmpMap = new HashMap<>();
-    tmpMap.put("openid", List.of());
-    tmpMap.put("urn:telematik:geburtsdatum", List.of(ClaimName.BIRTHDATE));
-    tmpMap.put("urn:telematik:alter", List.of(ClaimName.TELEMATIK_ALTER));
-    tmpMap.put("urn:telematik:display_name", List.of(ClaimName.TELEMATIK_DISPLAY_NAME));
-    tmpMap.put("urn:telematik:given_name", List.of(ClaimName.TELEMATIK_GIVEN_NAME));
-    tmpMap.put("urn:telematik:geschlecht", List.of(ClaimName.TELEMATIK_GESCHLECHT));
-    tmpMap.put("urn:telematik:email", List.of(ClaimName.TELEMATIK_EMAIL));
-    tmpMap.put(
-        "urn:telematik:versicherter",
-        List.of(
-            ClaimName.TELEMATIK_PROFESSION,
-            ClaimName.TELEMATIK_ID,
-            ClaimName.TELEMATIK_ORGANIZATION));
-    tmpMap.put("urn:telematik:family_name", List.of(ClaimName.TELEMATIK_FAMILY_NAME));
-    scopesToClaimMap = Collections.unmodifiableMap(tmpMap);
+    scopesToClaimMap =
+        Map.of(
+            "openid",
+            List.of(),
+            "urn:telematik:geburtsdatum",
+            List.of(ClaimName.BIRTHDATE),
+            "urn:telematik:alter",
+            List.of(ClaimName.TELEMATIK_ALTER),
+            "urn:telematik:display_name",
+            List.of(ClaimName.TELEMATIK_DISPLAY_NAME),
+            "urn:telematik:given_name",
+            List.of(ClaimName.TELEMATIK_GIVEN_NAME),
+            "urn:telematik:geschlecht",
+            List.of(ClaimName.TELEMATIK_GESCHLECHT),
+            "urn:telematik:email",
+            List.of(ClaimName.TELEMATIK_EMAIL),
+            "urn:telematik:versicherter",
+            List.of(
+                ClaimName.TELEMATIK_PROFESSION,
+                ClaimName.TELEMATIK_ID,
+                ClaimName.TELEMATIK_ORGANIZATION),
+            "urn:telematik:family_name",
+            List.of(ClaimName.TELEMATIK_FAMILY_NAME));
   }
 
   public static Set<String> getClaimsForScopeSet(final Set<String> requestedScopes) {

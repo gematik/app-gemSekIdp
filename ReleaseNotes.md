@@ -1,3 +1,13 @@
+# Release 8.3.1
+
+- migrate to spring boot 4.0.x
+- migrate to jackson 3.x
+- enable id_token version 2.0.0
+- distinguish between essential and optional claims in claimsResponse
+- ID-Token for unknown KVNR contains default values for profession and organization
+- add test identities
+- update dependencies
+
 # Release 8.2.0
 
 - support for idToken version 2.0.0 disabled

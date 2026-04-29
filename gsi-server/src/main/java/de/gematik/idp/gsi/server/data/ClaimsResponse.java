@@ -20,18 +20,24 @@
 
 package de.gematik.idp.gsi.server.data;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@JsonInclude(Include.NON_NULL)
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClaimsResponse {
+
   private String[] requestedClaims;
+  private String[] requestedEssentialClaims;
+  private String[] requestedOptionalClaims;
 }
