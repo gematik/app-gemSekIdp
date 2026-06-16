@@ -5,7 +5,7 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>gemSekIdp-global</artifactId>
-    <version>8.3.1</version>
+    <version>8.4.0</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -183,6 +183,12 @@
                   <directory>${basedir}/src/main/docker</directory>
                   <includes>
                     <include>**/*</include>
+                  </includes>
+                </resource>
+                <resource>
+                  <directory>${basedir}/src/main/resources</directory>
+                  <includes>
+                    <include>certs_trusted/**</include>
                   </includes>
                 </resource>
                 <resource>

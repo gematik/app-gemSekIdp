@@ -6,24 +6,24 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gsi-testsuite</artifactId>
-  <version>8.3.1</version>
+  <version>8.4.0</version>
   <packaging>jar</packaging>
   <!--kal: hier könnt ihr eurer Testsuite einen Namen geben der später im Grafana angezeigt werden soll -->
   <!--<name>TODO</name>-->
   <description>Testsuite fuer sektorale IDPs</description>
 
   <properties>
-    <version.idp-commons>30.0.9</version.idp-commons>
+    <version.idp-commons>30.0.11</version.idp-commons>
     <java.version>21</java.version>
     <version.lombok>1.18.46</version.lombok>
     <version.maven-compiler-plugin>3.15.0</version.maven-compiler-plugin>
-    <version.maven-enforcer-plugin>3.6.2</version.maven-enforcer-plugin>
-    <version.maven-failsafe-plugin>3.5.5</version.maven-failsafe-plugin>
+    <version.maven-enforcer-plugin>3.6.3</version.maven-enforcer-plugin>
+    <version.maven-failsafe-plugin>3.5.6</version.maven-failsafe-plugin>
     <version.maven-resources-plugin>3.5.0</version.maven-resources-plugin>
-    <version.maven-surefire-plugin>3.5.5</version.maven-surefire-plugin>
-    <version.spotless-maven-plugin>3.4.0</version.spotless-maven-plugin>
+    <version.maven-surefire-plugin>3.5.6</version.maven-surefire-plugin>
+    <version.spotless-maven-plugin>3.7.0</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.17.0</version.spotless.google-java-format>
-    <version.tiger>4.2.6</version.tiger>
+    <version.tiger>4.2.7</version.tiger>
   </properties>
 
   <dependencyManagement>

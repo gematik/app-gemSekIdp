@@ -41,11 +41,14 @@ import de.gematik.idp.gsi.server.data.FedIdpAuthSession;
 import de.gematik.idp.gsi.server.data.GsiConstants;
 import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
+import de.gematik.idp.gsi.server.util.TrustedCertificateLoader;
 import de.gematik.idp.token.JsonWebToken;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -68,32 +71,45 @@ public abstract class RequestValidator {
 
   public static void validateCertificate(
       final String clientCert, final RpToken entityStmntRp, final boolean isRequiredClientCert) {
+    if (!isRequiredClientCert) {
+      return;
+    }
     if (clientCert == null) {
-      if (isRequiredClientCert) {
-        throw new GsiException(
-            INVALID_REQUEST, "client certificate is missing", HttpStatus.BAD_REQUEST);
-      }
-    } else {
-      try {
-        final X509Certificate certFromRequest =
-            CryptoLoader.getCertificateFromPem(
-                java.net.URLDecoder.decode(clientCert, StandardCharsets.UTF_8).getBytes());
-        final List<X509Certificate> certsFromEntityStatement =
-            entityStmntRp.getRpTlsClientCertificates();
-        if (certsFromEntityStatement.stream()
-            .noneMatch(certFromEs -> certFromEs.equals(certFromRequest))) {
-          throw new GsiException(
-              UNAUTHORIZED_CLIENT,
-              "client certificate in tls handshake does not match any certificate in entity"
-                  + " statement/signed_jwks",
-              HttpStatus.UNAUTHORIZED);
-        }
-      } catch (final IdpCryptoException e) {
+      throw new GsiException(
+          INVALID_REQUEST, "client certificate is missing", HttpStatus.BAD_REQUEST);
+    }
+    try {
+      final X509Certificate certFromRequest =
+          CryptoLoader.getCertificateFromPem(
+              java.net.URLDecoder.decode(clientCert, StandardCharsets.UTF_8).getBytes());
+      final List<X509Certificate> certsFromEntityStatement =
+          entityStmntRp.getRpTlsClientCertificates();
+
+      final List<X509Certificate> trustedCerts = TrustedCertificateLoader.loadTrustedCertificates();
+      final List<X509Certificate> allCerts = new ArrayList<>(certsFromEntityStatement);
+      allCerts.addAll(trustedCerts);
+      if (allCerts.stream().noneMatch(certFromEs -> certFromEs.equals(certFromRequest))) {
+        log.info(
+            "No match found for client certificate {} in entity statement or trusted certificates",
+            certFromRequest.getSerialNumber());
+        log.info(
+            "certificates FromEntityStatement: {}",
+            certsFromEntityStatement.stream().map(X509Certificate::getSerialNumber).toList());
+        log.info(
+            "Trusted certificates: {}",
+            trustedCerts.stream().map(X509Certificate::getSerialNumber).toList());
         throw new GsiException(
             UNAUTHORIZED_CLIENT,
-            "client certificate in tls handshake is not a valid x509 certificate",
+            "client certificate in tls handshake does not match any certificate in entity"
+                + " statement/signed_jwks or trusted directory",
             HttpStatus.UNAUTHORIZED);
       }
+    } catch (final IdpCryptoException | CertificateException e) {
+      throw new GsiException(
+          UNAUTHORIZED_CLIENT,
+          "client certificate in tls handshake is not a valid x509 certificate or could not be"
+              + " checked",
+          HttpStatus.UNAUTHORIZED);
     }
   }
 
@@ -160,7 +176,9 @@ public abstract class RequestValidator {
                 INVALID_REQUEST, "invalid amr value: " + amrValue, HttpStatus.BAD_REQUEST);
           }
         });
-    if (acr.isEmpty() || amr.isEmpty()) return;
+    if (acr.isEmpty() || amr.isEmpty()) {
+      return;
+    }
     if (acr.contains(ACR_HIGH) && !acr.contains(ACR_SUBSTANTIAL)) {
       amr.forEach(
           value -> {

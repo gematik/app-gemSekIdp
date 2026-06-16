@@ -1,3 +1,11 @@
+# Release 8.4.0
+
+- Trusted certificates can now be loaded from the certs_trusted directory (resources) and are
+  included in client certificate validation.
+- change docker base image
+- add body claim auth_time to ID-Token for tests
+- update dependencies
+
 # Release 8.3.1
 
 - migrate to spring boot 4.0.x
@@ -213,4 +221,3 @@
 ### gsi-testsuite
 
 - test cases to fetch and inspect an entity statement of a sectoral IDP
-
