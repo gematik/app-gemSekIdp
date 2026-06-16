@@ -47,6 +47,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
@@ -133,9 +134,7 @@ class RequestValidatorTest {
           .thenReturn(List.of(cert2FromEntityStmtRpService, cert1FromEntityStmtRpService));
 
       assertDoesNotThrow(
-          () ->
-              RequestValidator.validateCertificate(
-                  CERT1_FROM_REQUEST, VALID_RPTOKEN, gsiConfiguration.isClientCertRequired()));
+          () -> RequestValidator.validateCertificate(CERT1_FROM_REQUEST, VALID_RPTOKEN, true));
     }
   }
 
@@ -149,9 +148,7 @@ class RequestValidatorTest {
           .thenReturn(List.of(cert2FromEntityStmtRpService));
 
       assertThatThrownBy(
-              () ->
-                  RequestValidator.validateCertificate(
-                      CERT1_FROM_REQUEST, VALID_RPTOKEN, gsiConfiguration.isClientCertRequired()))
+              () -> RequestValidator.validateCertificate(CERT1_FROM_REQUEST, VALID_RPTOKEN, true))
           .isInstanceOf(GsiException.class)
           .hasMessageContaining(
               "client certificate in tls handshake does not match any certificate in entity"
@@ -160,12 +157,35 @@ class RequestValidatorTest {
   }
 
   @Test
+  @SneakyThrows
+  void test_validateCertificate_matchWithTrustedCert_VALID() {
+    final java.nio.file.Path certPath =
+        java.nio.file.Paths.get(
+            Objects.requireNonNull(
+                    Thread.currentThread()
+                        .getContextClassLoader()
+                        .getResource("certs_trusted/unittest_cert.pem"))
+                .toURI());
+    final byte[] certBytes = java.nio.file.Files.readAllBytes(certPath);
+    final String certPem = new String(certBytes, java.nio.charset.StandardCharsets.UTF_8);
+    final String encodedCert =
+        java.net.URLEncoder.encode(certPem, java.nio.charset.StandardCharsets.UTF_8);
+
+    try (final MockedStatic<EntityStatementRpReader> mockedStatic =
+        Mockito.mockStatic(EntityStatementRpReader.class)) {
+      mockedStatic
+          .when(() -> EntityStatementRpReader.getRpTlsClientCerts(any()))
+          .thenReturn(List.of(cert2FromEntityStmtRpService));
+
+      assertDoesNotThrow(
+          () -> RequestValidator.validateCertificate(encodedCert, VALID_RPTOKEN, true));
+    }
+  }
+
+  @Test
   void test_validateCertificate_noTlsCert_INVALID() {
 
-    assertThatThrownBy(
-            () ->
-                RequestValidator.validateCertificate(
-                    "noTlsCert", VALID_RPTOKEN, gsiConfiguration.isClientCertRequired()))
+    assertThatThrownBy(() -> RequestValidator.validateCertificate("noTlsCert", VALID_RPTOKEN, true))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining(
             "client certificate in tls handshake is not a valid x509 certificate");

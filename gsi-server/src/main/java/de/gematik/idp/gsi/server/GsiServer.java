@@ -21,8 +21,10 @@
 package de.gematik.idp.gsi.server;
 
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
+import de.gematik.idp.gsi.server.util.TrustedCertificateLoader;
 import jakarta.annotation.PostConstruct;
 import java.security.Security;
+import java.security.cert.CertificateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.LogManager;
@@ -59,6 +61,19 @@ public class GsiServer {
     log.info("GSI_CLIENT_CERT_REQUIRED in env: " + System.getenv("GSI_CLIENT_CERT_REQUIRED"));
     log.info("isClientCertRequired in config: " + gsiConfiguration.isClientCertRequired());
     log.info("gsiConfiguration: {}", gsiConfiguration);
+    try {
+      log.info(
+          "Trusted certificates: {}",
+          TrustedCertificateLoader.loadTrustedCertificates().stream()
+              .map(
+                  cert ->
+                      cert.getSerialNumber().toString()
+                          + " / "
+                          + cert.getSerialNumber().toString(16).toUpperCase())
+              .toList());
+    } catch (final CertificateException e) {
+      throw new RuntimeException(e);
+    }
 
     final Logger loggerGematik = (Logger) LogManager.getLogger("de.gematik");
     StatusLogger.getLogger()

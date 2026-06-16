@@ -23,6 +23,7 @@ package de.gematik.idp.gsi.server.token;
 import static de.gematik.idp.field.ClaimName.AUDIENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_CLASS_REFERENCE;
 import static de.gematik.idp.field.ClaimName.AUTHENTICATION_METHODS_REFERENCE;
+import static de.gematik.idp.field.ClaimName.AUTH_TIME;
 import static de.gematik.idp.field.ClaimName.EXPIRES_AT;
 import static de.gematik.idp.field.ClaimName.ISSUED_AT;
 import static de.gematik.idp.field.ClaimName.ISSUER;
@@ -55,11 +56,13 @@ public class IdTokenBuilder {
   public JsonWebToken buildIdToken() {
     final Map<String, Object> claimsMap = new HashMap<>();
     final ZonedDateTime now = ZonedDateTime.now();
+    final long issuedAt = now.toEpochSecond();
     claimsMap.put(ISSUER.getJoseName(), issuerUrl);
     claimsMap.put(
         SUBJECT.getJoseName(),
         userDataClaims.get(TELEMATIK_ID.getJoseName()) + "-" + fachdienstClientId);
-    claimsMap.put(ISSUED_AT.getJoseName(), now.toEpochSecond());
+    claimsMap.put(ISSUED_AT.getJoseName(), issuedAt);
+    claimsMap.put(AUTH_TIME.getJoseName(), issuedAt);
     claimsMap.put(
         EXPIRES_AT.getJoseName(),
         NumericDate.fromSeconds(now.plusMinutes(IDTOKEN_TTL_MINUTES).toEpochSecond()).getValue());
