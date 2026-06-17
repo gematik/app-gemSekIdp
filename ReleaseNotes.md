@@ -1,3 +1,7 @@
+# Release 8.4.1
+
+- FIX unit tests
+
 # Release 8.4.0
 
 - Trusted certificates can now be loaded from the certs_trusted directory (resources) and are
