@@ -1,4 +1,10 @@
-## Overview
+<img align="right" width="250" height="47" src="https://raw.githubusercontent.com/gematik/gematik.github.io/master/Gematik_Logo_Flag_With_Background.png"/> <br/> 
+
+# Gematik Sectoral Identity Provider
+
+![GitHub Latest Release)](https://img.shields.io/github/v/release/gematik/app-gemSekIdp?label=release&logo=github) [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
+## About The Project
 
 Project **gemSekIdp-global** consists of 3 subprojects. These are:
 
@@ -10,6 +16,12 @@ Project **gemSekIdp-global** consists of 3 subprojects. These are:
 
   <br>
 
+## Getting Started
+
+### Release Notes
+
+See [ReleaseNotes.md](./ReleaseNotes.md) for all information regarding the (newest) releases.
+
 ### just build project
 
 To quickly check your build environment without running any tests (just build idp sektoral server
@@ -20,6 +32,32 @@ project root:
 ### build project and run unit tests (skip integration tests == skip testsuite execution)
 
 `mvn clean test -Dskip.inttests`
+
+### build project, run unit tests and run a smoke integration test
+
+To quickly check your build environment and run a smoke integration test do in
+project root:
+`export TIGER_TESTENV_CFGFILE=tiger-local-minimal.yaml`
+`mvn clean verify -Dcucumber.filter.tags="@TCID:IDPSEKTORAL_ENTITY_STATEMENT_002"`
+In case of success, you should see something like this:
+
+```
+...
+[INFO]   - Full Report: file:///Users/.../gsi-testsuite/target/site/serenity/index.html
+...
+[INFO] Reactor Summary for gemSekIdp-global 8.4.1:
+[INFO]
+[INFO] gemSekIdp-global ................................... SUCCESS [  1.966 s]
+[INFO] gsi-server ......................................... SUCCESS [ 46.185 s]
+[INFO] gsi-fedmaster ...................................... SUCCESS [ 10.601 s]
+[INFO] gsi-testsuite ...................................... SUCCESS [ 34.438 s]
+[INFO] Code Coverage Reports .............................. SUCCESS [  4.522 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+```
+
+The file .../gsi-testsuite/target/site/serenity/index.html contains a detailed report of the test
+results.
 
 ### build project and run integration tests (unit tests will be executed as well as long as they are not skipped)
 
@@ -85,6 +123,7 @@ You can receive the OpenAPI Specification under the following paths
 | SWAGGER | http://127.0.0.1:port/swagger-ui.html  |
 
 ### gsi-server logging
+
 Logs are written via log4j2 to console.
 
 Export LOG_LEVEL_GEMATIK=\<YOUR LOG LEVEL> to set the log level.
@@ -102,10 +141,39 @@ the License
 
 ## Additional Notes and Disclaimer from gematik GmbH
 
-1. Copyright notice: Each published work result is accompanied by an explicit statement of the license conditions for use. These are regularly typical conditions in connection with open source or free software. Programs described/provided/linked here are free software, unless otherwise stated.
-2. Permission notice: Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-    1. The copyright notice (Item 1) and the permission notice (Item 2) shall be included in all copies or substantial portions of the Software.
-    2. The software is provided "as is" without warranty of any kind, either express or implied, including, but not limited to, the warranties of fitness for a particular purpose, merchantability, and/or non-infringement. The authors or copyright holders shall not be liable in any manner whatsoever for any damages or other claims arising from, out of or in connection with the software or the use or other dealings with the software, whether in an action of contract, tort, or otherwise.
-    3. The software is the result of research and development activities, therefore not necessarily quality assured and without the character of a liable product. For this reason, gematik does not provide any support or other user assistance (unless otherwise stated in individual cases and without justification of a legal obligation). Furthermore, there is no claim to further development and adaptation of the results to a more current state of the art.
-3. Gematik may remove published results temporarily or permanently from the place of publication at any time without prior notice or justification.
-4. Please note: Parts of this code may have been generated using AI-supported technology. Please take this into account, especially when troubleshooting, for security analyses and possible adjustments.
+1. Copyright notice: Each published work result is accompanied by an explicit statement of the
+   license conditions for use. These are regularly typical conditions in connection with open source
+   or free software. Programs described/provided/linked here are free software, unless otherwise
+   stated.
+2. Permission notice: Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal in the Software
+   without restriction, including without limitation the rights to use, copy, modify, merge,
+   publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to
+   whom the Software is furnished to do so, subject to the following conditions:
+    1. The copyright notice (Item 1) and the permission notice (Item 2) shall be included in all
+       copies or substantial portions of the Software.
+    2. The software is provided "as is" without warranty of any kind, either express or implied,
+       including, but not limited to, the warranties of fitness for a particular purpose,
+       merchantability, and/or non-infringement. The authors or copyright holders shall not be
+       liable in any manner whatsoever for any damages or other claims arising from, out of or in
+       connection with the software or the use or other dealings with the software, whether in an
+       action of contract, tort, or otherwise.
+    3. The software is the result of research and development activities, therefore not necessarily
+       quality assured and without the character of a liable product. For this reason, gematik does
+       not provide any support or other user assistance (unless otherwise stated in individual cases
+       and without justification of a legal obligation). Furthermore, there is no claim to further
+       development and adaptation of the results to a more current state of the art.
+3. Gematik may remove published results temporarily or permanently from the place of publication at
+   any time without prior notice or justification.
+4. Please note: Parts of this code may have been generated using AI-supported technology. Please
+   take this into account, especially when troubleshooting, for security analyses and possible
+   adjustments.
+
+## Contact
+
+We take open source license compliance very seriously. We are always striving to achieve compliance
+at all times and to improve our processes.
+This software is currently being tested to ensure its technical quality and legal compliance. Your
+feedback is highly valued.
+If you find any issues or have any suggestions or comments, or if you see any other ways in which we
+can improve, please open an issue or pull request.

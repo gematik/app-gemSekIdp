@@ -1,0 +1,35 @@
+# minimum viable test environment specification
+gsi:
+  version: "x.x.x-SNAPSHOT"
+
+ports:
+  gsiserver: ${free.port.100}
+
+tigerProxy:
+  adminPort: ${free.port.201}
+  proxyPort: ${free.port.200}
+  keyFolders:
+    - .
+
+lib:
+  activateWorkflowUI: false
+  rbelPathDebugging: false
+
+additionalConfigurationFiles:
+  - filename: tc_properties-local-minimal.yaml
+    baseKey: gsi
+
+servers:
+  gsiserver:
+    type: externalJar
+    environment:
+      - GSI_SERVER_URL=http://127.0.0.1:${tiger.ports.gsiserver}
+    healthcheckUrl: http://127.0.0.1:${tiger.ports.gsiserver}
+    externalJarOptions:
+      arguments:
+        - --server.port=${tiger.ports.gsiserver}
+      workingDir: ../gsi-server/target
+    source:
+      - local:gsi-server-${tiger.gsi.version}.jar
+    startupTimeoutSec: 60
+    active: true
