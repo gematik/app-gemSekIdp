@@ -1,0 +1,6 @@
+../.idea/
+../.env
+../.envrc
+*.log
+**/target
+logs/

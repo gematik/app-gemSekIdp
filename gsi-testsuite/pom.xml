@@ -6,7 +6,7 @@
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gsi-testsuite</artifactId>
-  <version>8.4.2</version>
+  <version>8.4.3</version>
   <packaging>jar</packaging>
   <!--kal: hier könnt ihr eurer Testsuite einen Namen geben der später im Grafana angezeigt werden soll -->
   <!--<name>TODO</name>-->

@@ -1,3 +1,7 @@
+# Release 8.4.3
+
+- add .gitignore files
+
 # Release 8.4.2
 
 - add files and description for execute a smoke integration test ootb
