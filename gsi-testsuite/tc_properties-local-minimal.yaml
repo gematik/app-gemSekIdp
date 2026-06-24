@@ -1,0 +1,3 @@
+redirectUri: https://redirect.testsuite.gsi
+
+fachdienstEntityStatementEndpoint: http://gsiserver/.well-known/openid-federation

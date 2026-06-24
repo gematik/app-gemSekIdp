@@ -1,3 +1,18 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json"
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "maven": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "matchPackagePatterns": [
+        "^de\\.gematik\\.test:tiger"
+      ],
+      "extractVersion": "^v?(?<version>\\d+\\.\\d+\\.\\d+)$",
+      "ignoreUnstable": true
+    }
+  ]
 }

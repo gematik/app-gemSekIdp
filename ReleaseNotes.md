@@ -1,3 +1,8 @@
+# Release 8.4.2
+
+- add files and description for execute a smoke integration test ootb
+- update dependencies
+
 # Release 8.4.1
 
 - FIX unit tests
