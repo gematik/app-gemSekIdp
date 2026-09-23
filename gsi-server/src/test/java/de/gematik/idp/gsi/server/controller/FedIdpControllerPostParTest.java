@@ -21,6 +21,7 @@
 package de.gematik.idp.gsi.server.controller;
 
 import static de.gematik.idp.data.Oauth2ErrorCode.UNAUTHORIZED_CLIENT;
+import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2044;
 import static de.gematik.idp.gsi.server.common.Constants.ENTITY_STMNT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2043;
 import static de.gematik.idp.gsi.server.data.GsiConstants.*;
 import static de.gematik.idp.gsi.server.services.ValidClaimsParamObject.getValidClaimsParameterObject;
@@ -42,6 +43,7 @@ import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.gsi.server.services.EntityStatementRpReader;
 import de.gematik.idp.gsi.server.services.RequestValidator;
+import de.gematik.idp.gsi.server.services.TokenRepositoryFedmaster;
 import de.gematik.idp.gsi.server.services.TokenRepositoryRp;
 import de.gematik.idp.token.JsonWebToken;
 import kong.unirest.core.HttpResponse;
@@ -75,6 +77,7 @@ public class FedIdpControllerPostParTest {
   @Autowired private WebApplicationContext context;
   @Autowired private GsiConfiguration gsiConfiguration;
   @MockitoBean private TokenRepositoryRp rpTokenRepository;
+  @MockitoBean private TokenRepositoryFedmaster fedmasterTokenRepository;
   private static MockedStatic<RequestValidator> requestValidatorMockedStatic;
   private static MockedStatic<EntityStatementRpReader> esReaderMockedStatic;
   private String testHostUrl;
@@ -105,6 +108,9 @@ public class FedIdpControllerPostParTest {
     log.info("START UNIT TEST: {}", testInfo.getDisplayName());
 
     Mockito.doReturn(VALID_RPTOKEN).when(rpTokenRepository).getEntityStatementRp(any());
+    Mockito.doReturn(new JsonWebToken(ENTITY_STMNT_ABOUT_IDP_FACHDIENST_EXPIRES_IN_YEAR_2044))
+        .when(fedmasterTokenRepository)
+        .getEntityStatementAboutRp(any());
 
     requestValidatorMockedStatic = Mockito.mockStatic(RequestValidator.class);
     esReaderMockedStatic = Mockito.mockStatic(EntityStatementRpReader.class);

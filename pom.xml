@@ -5,12 +5,12 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.1.0</version>
+    <version>4.1.1</version>
   </parent>
 
   <groupId>de.gematik.idp</groupId>
   <artifactId>gemSekIdp-global</artifactId>
-  <version>8.4.2</version>
+  <version>8.5.1</version>
   <packaging>pom</packaging>
 
   <description>gsi - gematik sektoraler IDP</description>
@@ -72,25 +72,25 @@
     <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
     <sonar.language>java</sonar.language>
 
-    <version.bouncycastle.bcpkix>1.84</version.bouncycastle.bcpkix>
+    <version.bouncycastle.bcpkix>1.86</version.bouncycastle.bcpkix>
     <version.commons-io>2.22.0</version.commons-io>
     <version.copy-rename-maven-plugin>1.0.1</version.copy-rename-maven-plugin>
-    <version.json>20251224</version.json>
-    <version.unirest.java.core>4.10.0</version.unirest.java.core>
+    <version.json>20260814</version.json>
+    <version.unirest.java.core>4.10.1</version.unirest.java.core>
     <version.unirest.objectmapper.jackson>4.2.9</version.unirest.objectmapper.jackson>
-    <version.httpcore5>5.4.2</version.httpcore5>
-    <version.docker-maven-plugin>0.48.1</version.docker-maven-plugin>
-    <version.idp-commons>30.0.11</version.idp-commons>
-    <version.idp-crypto>30.0.9</version.idp-crypto>
-    <version.idp-test>30.0.11</version.idp-test>
+    <version.httpcore5>5.4.3</version.httpcore5>
+    <version.docker-maven-plugin>0.49.0</version.docker-maven-plugin>
+    <version.idp-commons>30.1.0</version.idp-commons>
+    <version.idp-crypto>30.1.0</version.idp-crypto>
+    <version.idp-test>30.1.0</version.idp-test>
 
     <version.jacoco-maven-plugin>0.8.15</version.jacoco-maven-plugin>
-    <version.lombok>1.18.46</version.lombok>
+    <version.lombok>1.18.48</version.lombok>
     <version.maven>3.8.6</version.maven>
     <version.maven-enforcer-plugin>3.6.3</version.maven-enforcer-plugin>
     <version.maven-failsafe-plugin>3.2.5</version.maven-failsafe-plugin>
-    <version.sonar-maven-plugin>5.7.0.6970</version.sonar-maven-plugin>
-    <version.spotless-maven-plugin>3.7.0</version.spotless-maven-plugin>
+    <version.sonar-maven-plugin>5.8.0.7211</version.sonar-maven-plugin>
+    <version.spotless-maven-plugin>3.10.2</version.spotless-maven-plugin>
     <version.spotless.google-java-format>1.27.0</version.spotless.google-java-format>
     <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
   </properties>
@@ -135,12 +135,12 @@
       <dependency>
         <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.2</version>
       </dependency>
       <dependency>
         <groupId>tools.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>3.2.0</version>
+        <version>3.2.2</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>

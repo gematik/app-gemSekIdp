@@ -18,22 +18,11 @@
  * For additional notes and disclaimer from gematik and in case of changes by gematik find details in the "Readme" file.
  */
 
-package de.gematik.idp.gsi.server.data;
+package de.gematik.idp.gsi.server.services;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import tools.jackson.databind.PropertyNamingStrategies;
-import tools.jackson.databind.annotation.JsonNaming;
+import de.gematik.idp.token.JsonWebToken;
 
-@Getter
-@Builder
-@AllArgsConstructor
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class FederationEntity {
+public interface TokenRepositoryFedmaster {
 
-  private String name;
-  private String organizationName;
-  private String[] contacts;
-  private String homepageUri;
+  JsonWebToken getEntityStatementAboutRp(String sub);
 }

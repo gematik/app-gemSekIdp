@@ -64,6 +64,8 @@ public class FedIdpControllerEntityStatementTest {
           "signed_jwks_uri",
           "organization_name",
           "logo_uri",
+          "keywords",
+          "contacts",
           "authorization_endpoint",
           "token_endpoint",
           "pushed_authorization_request_endpoint",
@@ -75,7 +77,6 @@ public class FedIdpControllerEntityStatementTest {
           "grant_types_supported",
           "require_pushed_authorization_requests",
           "token_endpoint_auth_methods_supported",
-          "request_authentication_methods_supported",
           "id_token_signing_alg_values_supported",
           "id_token_encryption_alg_values_supported",
           "id_token_encryption_enc_values_supported",
@@ -136,7 +137,7 @@ public class FedIdpControllerEntityStatementTest {
   @Test
   void test_entityStatement_MetadataClaims() {
     final Map<String, Object> metadata = metadataClaims;
-    assertThat(metadata).containsOnlyKeys("openid_provider", "federation_entity");
+    assertThat(metadata).containsOnlyKeys("openid_provider");
   }
 
   @Test
@@ -155,14 +156,17 @@ public class FedIdpControllerEntityStatementTest {
     assertThat(openidProvider)
         .containsEntry("issuer", gsiServerUrl)
         .containsEntry("signed_jwks_uri", gsiServerUrl + "/jws.json");
-    assertThat(openidProvider.get("organization_name")).asString().isNotEmpty();
-    assertThat(openidProvider.get("logo_uri")).asString().isNotEmpty();
     assertThat(openidProvider)
         .containsEntry("authorization_endpoint", gsiServerUrl + "/auth")
         .containsEntry("token_endpoint", gsiConfiguration.getServerUrlMtls() + "/token")
         .containsEntry(
             "pushed_authorization_request_endpoint",
             gsiConfiguration.getServerUrlMtls() + "/PAR_Auth");
+    assertThat(openidProvider.get("organization_name")).asString().isNotEmpty();
+    assertThat((List<String>) openidProvider.get("keywords"))
+        .containsExactlyInAnyOrder("product_type_version:3.3.0", "product_type:sek_idp");
+    assertThat((List<String>) openidProvider.get("contacts")).isNotEmpty();
+    assertThat(openidProvider.get("logo_uri")).asString().isNotEmpty();
     assertThat((List<String>) openidProvider.get("client_registration_types_supported"))
         .containsExactlyInAnyOrder("automatic");
     assertThat((List<String>) openidProvider.get("subject_types_supported"))
@@ -188,9 +192,6 @@ public class FedIdpControllerEntityStatementTest {
     assertThat((Boolean) openidProvider.get("require_pushed_authorization_requests")).isTrue();
     assertThat((List<String>) openidProvider.get("token_endpoint_auth_methods_supported"))
         .containsExactlyInAnyOrder("self_signed_tls_client_auth");
-    assertThat(openidProvider.get("request_authentication_methods_supported"))
-        .asString()
-        .contains("ar", "par", "none", "self_signed_tls_client_auth");
     assertThat((List<String>) openidProvider.get("id_token_signing_alg_values_supported"))
         .containsExactlyInAnyOrder("ES256");
     assertThat((List<String>) openidProvider.get("id_token_encryption_alg_values_supported"))
@@ -213,17 +214,5 @@ public class FedIdpControllerEntityStatementTest {
         getInnerClaimMap(openidProvider, "ti_features_supported");
     assertThat((List<String>) tiFeaturesSupported.get("id_token_version_supported"))
         .containsExactlyInAnyOrder("1.0.0", "2.0.0");
-  }
-
-  @Test
-  void test_entityStatement_FederationEntityClaimsContentCorrect() {
-    final Map<String, Object> federationEntity =
-        getInnerClaimMap(metadataClaims, "federation_entity");
-    final List<String> contacts = List.of("support@idp4711.de", "idm@gematik.de");
-    assertThat(federationEntity)
-        .containsEntry("name", "deprecated gematik sektoraler IDP")
-        .containsEntry("organization_name", "gematik sektoraler IDP")
-        .containsEntry("contacts", contacts)
-        .containsEntry("homepage_uri", "https://idp4711.de");
   }
 }

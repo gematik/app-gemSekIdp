@@ -55,6 +55,7 @@ import de.gematik.idp.gsi.server.services.JwksBuilder;
 import de.gematik.idp.gsi.server.services.RequestValidator;
 import de.gematik.idp.gsi.server.services.SektoralIdpAuthenticator;
 import de.gematik.idp.gsi.server.services.ServerUrlService;
+import de.gematik.idp.gsi.server.services.TokenRepositoryFedmaster;
 import de.gematik.idp.gsi.server.services.TokenRepositoryRp;
 import de.gematik.idp.gsi.server.token.IdTokenBuilder;
 import de.gematik.idp.token.JsonWebToken;
@@ -101,7 +102,8 @@ public class FedIdpController {
   private static final int MAX_AUTH_SESSION_AMOUNT = 10000;
   public static final int ID_TOKEN_TTL_SECONDS = 300;
 
-  private final TokenRepositoryRp rpTokenRepository;
+  private final TokenRepositoryRp tokenRepositoryRp;
+  private final TokenRepositoryFedmaster tokenRepositoryFedmaster;
   private final EntityStatementBuilder entityStatementBuilder;
   private final SektoralIdpAuthenticator sektoralIdpAuthenticator;
   private final AuthenticationService authenticationService;
@@ -181,7 +183,7 @@ public class FedIdpController {
       @RequestParam(name = "amr", required = false)
           @Pattern(
               regexp =
-                  "urn:telematik:auth:eGK|urn:telematik:auth:eID|urn:telematik:auth:sso|urn:telematik:auth:mEW|urn:telematik:auth:guest:eGK|urn:telematik:auth:other")
+                  "urn:telematik:auth:eGK|urn:telematik:auth:eID|urn:telematik:eudiWallet|urn:telematik:auth:sso|urn:telematik:auth:mEW|urn:telematik:auth:guest:eGK|urn:telematik:auth:other")
           final String amr,
       @RequestParam(name = "claims", defaultValue = "") final ClaimsInfo claimsInfo,
       @RequestHeader(name = TLS_CLIENT_CERT_HEADER_NAME, required = false) final String clientCert,
@@ -197,8 +199,8 @@ public class FedIdpController {
         getClaimsForScopeSet(Arrays.stream(scope.split(" ")).collect(Collectors.toSet())));
 
     final JsonWebToken entityStmntABoutRp =
-        rpTokenRepository.getEntityStatementAboutRp(fachdienstClientId);
-    final RpToken entityStmntOfRp = rpTokenRepository.getEntityStatementRp(fachdienstClientId);
+        tokenRepositoryFedmaster.getEntityStatementAboutRp(fachdienstClientId);
+    final RpToken entityStmntOfRp = tokenRepositoryRp.getEntityStatementRp(fachdienstClientId);
     log.info("Autoregistration done");
 
     final String compatibleIdTokenVersion =
@@ -408,10 +410,10 @@ public class FedIdpController {
     RequestValidator.verifyCodeVerifier(codeVerifier, session.getFachdienstCodeChallenge());
     RequestValidator.verifyClientId(clientId, session.getFachdienstClientId());
 
-    final RpToken token = rpTokenRepository.getEntityStatementRp(clientId);
+    final RpToken entityStatementRp = tokenRepositoryRp.getEntityStatementRp(clientId);
 
     RequestValidator.validateCertificate(
-        clientCert, token, gsiConfiguration.isClientCertRequired());
+        clientCert, entityStatementRp, gsiConfiguration.isClientCertRequired());
 
     setNoCacheHeader(respMsgNr11);
     respMsgNr11.setStatus(HttpStatus.OK.value());
@@ -431,7 +433,7 @@ public class FedIdpController {
 
     idToken =
         idTokenPlain
-            .encryptAsJwt(token.getRpEncKey(), Map.of(DEVICE_OS_VERSION, "2.0.0"))
+            .encryptAsJwt(entityStatementRp.getRpEncKey(), Map.of(DEVICE_OS_VERSION, "2.0.0"))
             .getRawString();
 
     // delete session
