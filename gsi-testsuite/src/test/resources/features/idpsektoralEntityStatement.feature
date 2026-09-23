@@ -130,8 +130,7 @@ Feature: Test Entity Statement of IdpSektoral
     Then TGR current response at "$.body.body.metadata" matches as JSON:
     """
           {
-            openid_provider:                           "${json-unit.ignore}",
-            federation_entity:                         "${json-unit.ignore}"
+            openid_provider:                           "${json-unit.ignore}"
           }
     """
     And TGR current response at "$.body.body.metadata.openid_provider" matches as JSON:
@@ -140,6 +139,8 @@ Feature: Test Entity Statement of IdpSektoral
             issuer:                                       'http.*',
             signed_jwks_uri:                              'http.*',
             ____organization_name:                            '.*',
+            keywords:                                     ["product_type_version:3.3.0","product_type:sek_idp"],
+            contacts:                                     "${json-unit.ignore}",
             logo_uri:                                     'http.*',
             authorization_endpoint:                       'http.*',
             token_endpoint:                               'http.*',
@@ -160,24 +161,12 @@ Feature: Test Entity Statement of IdpSektoral
             ti_features_supported:                        "${json-unit.ignore}"
           }
     """
-    And TGR current response at "$.body.body.metadata.federation_entity" matches as JSON:
-    """
-          {
-            ____name:             '.*',
-            organization_name:             '.*',
-            ____contacts:         "${json-unit.ignore}",
-            ____homepage_uri:     'http.*'
-          }
-    """
     And TGR current response at "$.body.body.metadata.openid_provider.ti_features_supported" matches as JSON:
     """
           {
             id_token_version_supported:      ["1.0.0","2.0.0"]
           }
     """
-
-    And TGR current response with attribute "$.body.body.metadata.federation_entity.contacts.0" matches ".*"
-
 
   @TCID:IDPSEKTORAL_ENTITY_STATEMENT_006
   @Approval

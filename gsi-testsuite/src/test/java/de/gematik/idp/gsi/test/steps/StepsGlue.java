@@ -24,7 +24,6 @@ import static de.gematik.idp.gsi.test.steps.IdpSektoralSteps.ENTITY_STATEMENT_EN
 import static de.gematik.idp.gsi.test.steps.IdpSektoralSteps.FED_MASTER_URL;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import de.gematik.idp.field.ClaimName;
 import de.gematik.idp.token.JsonWebToken;
 import de.gematik.rbellogger.RbelLogger;
@@ -52,6 +51,7 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.lang.JoseException;
+import tools.jackson.databind.JsonNode;
 
 @Slf4j
 public class StepsGlue {

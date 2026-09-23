@@ -23,9 +23,6 @@ package de.gematik.idp.gsi.test.steps;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.gematik.test.tiger.common.config.TigerGlobalConfiguration;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +33,8 @@ import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.InvalidJwtSignatureException;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @Slf4j
 class StepsGlueTest {
@@ -45,14 +44,10 @@ class StepsGlueTest {
   private static final JsonNode FED_SIG_KEY_AS_JWK;
 
   static {
-    try {
-      FED_SIG_KEY_AS_JWK =
-          new ObjectMapper()
-              .readTree(
-                  "{\"use\":\"sig\",\"kid\":\"puk_fed_sig\",\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"xJixkQv9D5ZR1JuqobDKcFfAcv0bIJn8IQ4cLRwZuRo\",\"y\":\"imBOubrw7Wz_m2QxZpMKbMv7OSvCwaRzsubUxSt_ZA0\"}");
-    } catch (final JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    FED_SIG_KEY_AS_JWK =
+        new ObjectMapper()
+            .readTree(
+                "{\"use\":\"sig\",\"kid\":\"puk_fed_sig\",\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"xJixkQv9D5ZR1JuqobDKcFfAcv0bIJn8IQ4cLRwZuRo\",\"y\":\"imBOubrw7Wz_m2QxZpMKbMv7OSvCwaRzsubUxSt_ZA0\"}");
   }
 
   private static final List<JsonNode> TRUSTSTORE = new ArrayList<>();

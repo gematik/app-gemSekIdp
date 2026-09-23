@@ -43,6 +43,8 @@ public class GsiConfiguration {
   private String serverUrl;
   private String serverUrlMtls;
   private String fedmasterUrl;
+  private String fedmasterMode;
+  private String fedmasterLocalEntityStatementFile;
   private String fedmasterSigPubKeyFilePath;
   private KeyConfig esSigPrivKeyConfig;
   private KeyConfig esSigPubKeyConfig;

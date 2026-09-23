@@ -1,3 +1,11 @@
+# Release 8.5.0
+
+- add eudiWallet amr
+- adapt entity statement to gemSpec_IDP_Sek_V3.3.0 #A_22643-02
+- map unirest exceptions to GsiExceptions
+- introduce GSI_FEDMASTER_MODE local
+- update dependencies
+
 # Release 8.4.2
 
 - add files and description for execute a smoke integration test ootb

@@ -31,6 +31,7 @@ import de.gematik.idp.IdpConstants;
 import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
+import java.net.SocketTimeoutException;
 import javax.net.ssl.SSLException;
 import kong.unirest.core.GetRequest;
 import kong.unirest.core.HttpResponse;
@@ -74,14 +75,40 @@ class HttpClientTest {
     assertThatThrownBy(() -> HttpClient.fetchEntityStatementRp(ANY_URL))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining(
-            "SSL certificate validation failed for relying party ["
+            "SSL certificate validation failed for ["
                 + ANY_URL
-                + "] available. Reason: SSL error")
+                + IdpConstants.ENTITY_STATEMENT_ENDPOINT
+                + "]. Reason: SSL error")
         .hasCauseInstanceOf(UnirestException.class)
         .cause()
         .hasCauseInstanceOf(SSLException.class)
         .cause()
         .hasMessageContaining("TLS handshake failed");
+  }
+
+  @Test
+  void test_fetchEntityStatementRpConnectTimeoutException() {
+
+    final GetRequest mockedRequest = mock(GetRequest.class);
+
+    unirestMock
+        .when(() -> Unirest.get(ANY_URL + IdpConstants.ENTITY_STATEMENT_ENDPOINT))
+        .thenReturn(mockedRequest);
+
+    when(mockedRequest.asString())
+        .thenThrow(
+            new UnirestException("connect timeout", new SocketTimeoutException("Read timed out")));
+
+    assertThatThrownBy(() -> HttpClient.fetchEntityStatementRp(ANY_URL))
+        .isInstanceOf(GsiException.class)
+        .hasMessageContaining(
+            "Could not reach entity statement at ["
+                + ANY_URL
+                + IdpConstants.ENTITY_STATEMENT_ENDPOINT
+                + "]. Reason: connect timeout")
+        .hasCauseInstanceOf(UnirestException.class)
+        .cause()
+        .hasCauseInstanceOf(SocketTimeoutException.class);
   }
 
   @Test
@@ -98,8 +125,9 @@ class HttpClientTest {
     assertThatThrownBy(() -> HttpClient.fetchEntityStatementRp(ANY_URL))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining(
-            "400 BAD_REQUEST \"Error when fetching entity statement of ["
+            "400 BAD_REQUEST \"Error when fetching entity statement at ["
                 + ANY_URL
+                + IdpConstants.ENTITY_STATEMENT_ENDPOINT
                 + "]. Reason: REST error\"");
   }
 
@@ -176,5 +204,32 @@ class HttpClientTest {
                 HttpClient.fetchEntityStatementAboutRp(
                     testSub, ANY_URL, ANY_URL + IdpConstants.ENTITY_STATEMENT_ENDPOINT))
         .isInstanceOf(GsiException.class);
+  }
+
+  @Test
+  void test_fetchEntityStatementAboutRpConnectTimeoutException() {
+
+    final GetRequest mockedRequest = mock(GetRequest.class);
+    final String testSub = "sub42";
+
+    unirestMock
+        .when(() -> Unirest.get(ANY_URL + IdpConstants.ENTITY_STATEMENT_ENDPOINT))
+        .thenReturn(mockedRequest);
+    when(mockedRequest.queryString(eq("iss"), eq(ANY_URL))).thenReturn(mockedRequest);
+    when(mockedRequest.queryString(eq("sub"), eq(testSub))).thenReturn(mockedRequest);
+
+    when(mockedRequest.asString())
+        .thenThrow(new UnirestException("connect timeout", new SocketTimeoutException("timeout")));
+
+    assertThatThrownBy(
+            () ->
+                HttpClient.fetchEntityStatementAboutRp(
+                    testSub, ANY_URL, ANY_URL + IdpConstants.ENTITY_STATEMENT_ENDPOINT))
+        .isInstanceOf(GsiException.class)
+        .hasMessageContaining(
+            "Could not reach federation fetch endpoint at ["
+                + ANY_URL
+                + IdpConstants.ENTITY_STATEMENT_ENDPOINT
+                + "]. Reason: connect timeout");
   }
 }

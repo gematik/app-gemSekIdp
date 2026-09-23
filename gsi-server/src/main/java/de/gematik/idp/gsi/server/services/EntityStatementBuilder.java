@@ -32,10 +32,8 @@ import static de.gematik.idp.gsi.server.util.ClaimHelper.getClaimsForScopeSet;
 import de.gematik.idp.data.FederationPubKey;
 import de.gematik.idp.data.JwtHelper;
 import de.gematik.idp.gsi.server.data.EntityStatement;
-import de.gematik.idp.gsi.server.data.FederationEntity;
 import de.gematik.idp.gsi.server.data.Metadata;
 import de.gematik.idp.gsi.server.data.OpenidProvider;
-import de.gematik.idp.gsi.server.data.RequestAuthenticationMethodsSupported;
 import de.gematik.idp.gsi.server.data.TiFeaturesSupported;
 import java.time.ZonedDateTime;
 import lombok.RequiredArgsConstructor;
@@ -79,11 +77,13 @@ public class EntityStatementBuilder {
         OpenidProvider.builder()
             .issuer(serverUrl)
             .signedJwksUri(serverUrl + FED_SIGNED_JWKS_ENDPOINT)
-            .organizationName("deprecated gematik sektoraler IDP")
-            .logoUri(LOGO_URI)
             .authorizationEndpoint(serverUrl + FED_AUTH_ENDPOINT)
             .tokenEndpoint(serverUrlMtls + TOKEN_ENDPOINT)
             .pushedAuthorizationRequestEndpoint(serverUrlMtls + FEDIDP_PAR_AUTH_ENDPOINT)
+            .organizationName("gematik sektoraler IDP")
+            .keywords(new String[] {"product_type_version:3.3.0", "product_type:sek_idp"})
+            .contacts(new String[] {"support@idp4711.de", "idm@gematik.de"})
+            .logoUri(LOGO_URI)
             .clientRegistrationTypesSupported(new String[] {"automatic"})
             .subjectTypesSupported(new String[] {"pairwise"})
             .responseTypesSupported(new String[] {"code"})
@@ -92,11 +92,6 @@ public class EntityStatementBuilder {
             .grantTypesSupported(new String[] {"authorization_code"})
             .requirePushedAuthorizationRequests(true)
             .tokenEndpointAuthMethodsSupported(new String[] {"self_signed_tls_client_auth"})
-            .requestAuthenticationMethodsSupported(
-                RequestAuthenticationMethodsSupported.builder()
-                    .ar(new String[] {"none"})
-                    .par(new String[] {"self_signed_tls_client_auth"})
-                    .build())
             .idTokenSigningAlgValuesSupported(new String[] {"ES256"})
             .idTokenEncryptionAlgValuesSupported(new String[] {"ECDH-ES"})
             .idTokenEncryptionEncValuesSupported(new String[] {"A256GCM"})
@@ -106,16 +101,6 @@ public class EntityStatementBuilder {
             .tiFeaturesSupported(
                 new TiFeaturesSupported(SUPPORTED_ID_TOKEN_VERSIONS.toArray(String[]::new)))
             .build();
-    final FederationEntity federationEntity =
-        FederationEntity.builder()
-            .name("deprecated gematik sektoraler IDP")
-            .organizationName("gematik sektoraler IDP")
-            .contacts(new String[] {"support@idp4711.de", "idm@gematik.de"})
-            .homepageUri("https://idp4711.de")
-            .build();
-    return Metadata.builder()
-        .openidProvider(openidProvider)
-        .federationEntity(federationEntity)
-        .build();
+    return Metadata.builder().openidProvider(openidProvider).build();
   }
 }

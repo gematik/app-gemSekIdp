@@ -16,6 +16,8 @@ gsi:
   serverUrl: "${GSI_SERVER_URL:http://127.0.0.1:8085}"
   serverUrlMtls: "${GSI_SERVER_URL_MTLS:http://127.0.0.1:8085}"
   fedmasterUrl: "${FEDMASTER_SERVER_URL:http://127.0.0.1:8083}"
+  fedmasterMode: "${GSI_FEDMASTER_MODE:remote}"
+  fedmasterLocalEntityStatementFile: "${GSI_FEDMASTER_LOCAL_ENTITY_STATEMENT_FILE:classpath:local/entity-statement-about-rp.jwt}"
   fedmasterSigPubKeyFilePath: "keys/ref-fedmaster-sig-pubkey.pem"
   requestUriTTL: 90
 server:

@@ -46,6 +46,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 class TokenRepositoryRpTest {
 
   @Autowired private TokenRepositoryRp tokenRepositoryRp;
+  @Autowired private TokenRepositoryFedmaster tokenRepositoryFedmaster;
   @MockitoBean private ServerUrlService serverUrlService;
   private static MockedStatic<HttpClient> httpClientMockedStatic;
 
@@ -123,7 +124,7 @@ class TokenRepositoryRpTest {
   @Test
   void test_getEntityStatementAboutRp_Idpfachdienst_VALID() {
     final JsonWebToken entityStmntAboutFachdienst =
-        tokenRepositoryRp.getEntityStatementAboutRp("http://any-client-id:8080");
+        tokenRepositoryFedmaster.getEntityStatementAboutRp("http://any-client-id:8080");
     assertThat(entityStmntAboutFachdienst).isNotNull();
   }
 
@@ -132,7 +133,7 @@ class TokenRepositoryRpTest {
 
     assertThatThrownBy(
             () ->
-                tokenRepositoryRp.getEntityStatementAboutRp(
+                tokenRepositoryFedmaster.getEntityStatementAboutRp(
                     "http://any-client-id:8080/invalidEsAboutRP"))
         .isInstanceOf(GsiException.class)
         .hasMessageContaining(
