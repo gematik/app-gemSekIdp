@@ -56,7 +56,7 @@ Feature: Test IdpSektoral's Token Endpoint
             "____error_uri":                '.*'
           }
         """
-    And TGR current response with attribute "$.body.error" matches "(invalid_request)|(invalid_grant)|(invalid_client)|(unsupported_grant_type)"
+    And TGR current response with attribute "$.body.error" matches "(invalid_request)|(invalid_grant)|(invalid_client)|(unsupported_grant_type)|(unauthorized_client )"
 
     Examples:
       | client_id             | redirect_uri            | code_verifier       | grant_type         | code                     | responseCode |
@@ -117,7 +117,7 @@ Feature: Test IdpSektoral's Token Endpoint
             "____error_uri":                '.*'
           }
         """
-    And TGR current response with attribute "$.body.error" matches "(invalid_request)|(invalid_grant)"
+    And TGR current response with attribute "$.body.error" matches "(invalid_request)|(invalid_grant)|(invalid_client)"
 
     Examples:
       | client_id          | redirect_uri    | code_verifier    | grant_type         | code                  | responseCode |

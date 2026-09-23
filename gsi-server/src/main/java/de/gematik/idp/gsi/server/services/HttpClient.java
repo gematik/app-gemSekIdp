@@ -26,6 +26,11 @@ import de.gematik.idp.IdpConstants;
 import de.gematik.idp.gsi.server.data.RpToken;
 import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
+import java.net.ConnectException;
+import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.net.http.HttpConnectTimeoutException;
 import java.security.cert.CertPathBuilderException;
 import java.security.cert.CertificateException;
 import java.util.Optional;
@@ -43,18 +48,22 @@ import org.springframework.http.HttpStatus;
 public abstract class HttpClient {
 
   public static Optional<JsonWebToken> fetchSignedJwks(final String signedJwksUri) {
-    final HttpResponse<String> resp = Unirest.get(signedJwksUri).asString();
-    if (resp.isSuccess()) {
-      // TODO check signature
-      return Optional.of(new JsonWebToken(resp.getBody()));
+    try {
+      final HttpResponse<String> resp = Unirest.get(signedJwksUri).asString();
+      if (resp.isSuccess()) {
+        // TODO check signature
+        return Optional.of(new JsonWebToken(resp.getBody()));
+      }
+      return Optional.empty();
+    } catch (final UnirestException e) {
+      throw mapToGsiException("signed JWKS URI", signedJwksUri, e);
     }
-    return Optional.empty();
   }
 
   public static RpToken fetchEntityStatementRp(final String issuer) {
+    final String entityStatementUrl = issuer + IdpConstants.ENTITY_STATEMENT_ENDPOINT;
     try {
-      final HttpResponse<String> resp =
-          Unirest.get(issuer + IdpConstants.ENTITY_STATEMENT_ENDPOINT).asString();
+      final HttpResponse<String> resp = Unirest.get(entityStatementUrl).asString();
       if (resp.getStatus() == HttpStatus.OK.value()) {
         return new RpToken(new JsonWebToken(resp.getBody()));
       } else {
@@ -69,48 +78,36 @@ public abstract class HttpClient {
             HttpStatus.BAD_REQUEST);
       }
     } catch (final UnirestException e) {
-      if (isSSLException(e)) {
-        log.info("SSL exception for issuer: {}", issuer, e);
-        throw new GsiException(
-            "SSL certificate validation failed for relying party ["
-                + issuer
-                + "] available. Reason: "
-                + e.getMessage(),
-            e,
-            HttpStatus.BAD_REQUEST,
-            INVALID_REQUEST);
-      } else {
-        log.error("UnirestException when fetching entity statement for issuer: {}", issuer, e);
-        throw new GsiException(
-            INVALID_REQUEST,
-            "Error when fetching entity statement of [" + issuer + "]. Reason: " + e.getMessage(),
-            HttpStatus.BAD_REQUEST);
-      }
+      throw mapToGsiException("entity statement", entityStatementUrl, e);
     }
   }
 
   public static JsonWebToken fetchEntityStatementAboutRp(
       final String sub, final String fedmasterUrl, final String entityStmntEndpoint) {
     log.info("FedmasterUrl: " + fedmasterUrl);
-    final HttpResponse<String> resp =
-        Unirest.get(entityStmntEndpoint)
-            .queryString("iss", fedmasterUrl)
-            .queryString("sub", sub)
-            .asString();
-    if (resp.getStatus() == HttpStatus.OK.value()) {
-      return new JsonWebToken(resp.getBody());
-    } else {
-      log.info(resp.getBody());
-      throw new GsiException(
-          INVALID_REQUEST,
-          "No entity statement about relying party ["
-              + sub
-              + "] at Fedmaster iss: "
-              + fedmasterUrl
-              + " available. Reason: "
-              + resp.getBody()
-              + HttpStatus.valueOf(resp.getStatus()),
-          HttpStatus.BAD_REQUEST);
+    try {
+      final HttpResponse<String> resp =
+          Unirest.get(entityStmntEndpoint)
+              .queryString("iss", fedmasterUrl)
+              .queryString("sub", sub)
+              .asString();
+      if (resp.getStatus() == HttpStatus.OK.value()) {
+        return new JsonWebToken(resp.getBody());
+      } else {
+        log.info(resp.getBody());
+        throw new GsiException(
+            INVALID_REQUEST,
+            "No entity statement about relying party ["
+                + sub
+                + "] at Fedmaster iss: "
+                + fedmasterUrl
+                + " available. Reason: "
+                + resp.getBody()
+                + HttpStatus.valueOf(resp.getStatus()),
+            HttpStatus.BAD_REQUEST);
+      }
+    } catch (final UnirestException e) {
+      throw mapToGsiException("federation fetch endpoint", entityStmntEndpoint, e);
     }
   }
 
@@ -129,10 +126,19 @@ public abstract class HttpClient {
   }
 
   private static boolean isSSLException(final UnirestException e) {
+    return isAnyCauseOfExceptionInSet(e, SSL_EXCEPTIONS);
+  }
+
+  private static boolean isConnectionException(final UnirestException e) {
+    return isAnyCauseOfExceptionInSet(e, CONNECTION_EXCEPTIONS);
+  }
+
+  private static boolean isAnyCauseOfExceptionInSet(
+      final UnirestException e, final Set<Class<? extends Throwable>> exceptions) {
     Throwable cause = e.getCause();
     while (cause != null) {
-      for (final Class<? extends Throwable> sslEx : SSL_EXCEPTIONS) {
-        if (sslEx.isInstance(cause)) {
+      for (final Class<? extends Throwable> exceptionClass : exceptions) {
+        if (exceptionClass.isInstance(cause)) {
           return true;
         }
       }
@@ -141,10 +147,53 @@ public abstract class HttpClient {
     return false;
   }
 
+  private static GsiException mapToGsiException(
+      final String targetDescription, final String targetUrl, final UnirestException e) {
+    if (isSSLException(e)) {
+      log.info("SSL exception for {} at [{}]", targetDescription, targetUrl, e);
+      return new GsiException(
+          "SSL certificate validation failed for [" + targetUrl + "]. Reason: " + e.getMessage(),
+          e,
+          HttpStatus.BAD_REQUEST,
+          INVALID_REQUEST);
+    }
+    if (isConnectionException(e)) {
+      log.error("Could not reach {} at [{}]", targetDescription, targetUrl, e);
+      return new GsiException(
+          "Could not reach "
+              + targetDescription
+              + " at ["
+              + targetUrl
+              + "]. Reason: "
+              + e.getMessage(),
+          e,
+          HttpStatus.BAD_GATEWAY,
+          INVALID_REQUEST);
+    }
+    log.error("UnirestException while fetching {} at [{}]", targetDescription, targetUrl, e);
+    return new GsiException(
+        INVALID_REQUEST,
+        "Error when fetching "
+            + targetDescription
+            + " at ["
+            + targetUrl
+            + "]. Reason: "
+            + e.getMessage(),
+        HttpStatus.BAD_REQUEST);
+  }
+
   private static final Set<Class<? extends Throwable>> SSL_EXCEPTIONS =
       Set.of(
           SSLHandshakeException.class,
           SSLException.class,
           CertPathBuilderException.class,
           CertificateException.class);
+
+  private static final Set<Class<? extends Throwable>> CONNECTION_EXCEPTIONS =
+      Set.of(
+          HttpConnectTimeoutException.class,
+          SocketTimeoutException.class,
+          ConnectException.class,
+          UnknownHostException.class,
+          NoRouteToHostException.class);
 }

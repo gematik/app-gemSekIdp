@@ -35,6 +35,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
@@ -55,9 +56,11 @@ public class GsiServer {
   }
 
   private final GsiConfiguration gsiConfiguration;
+  private final Environment environment;
 
   @PostConstruct
   public void printConfiguration() {
+    log.info("Configured HTTP port: {}", environment.getProperty("server.port"));
     log.info("GSI_CLIENT_CERT_REQUIRED in env: " + System.getenv("GSI_CLIENT_CERT_REQUIRED"));
     log.info("isClientCertRequired in config: " + gsiConfiguration.isClientCertRequired());
     log.info("gsiConfiguration: {}", gsiConfiguration);

@@ -34,25 +34,26 @@ public class OpenidProvider {
 
   private String issuer;
   private String signedJwksUri;
-  private String organizationName;
-  private String logoUri;
   private String authorizationEndpoint;
   private String tokenEndpoint;
   private String pushedAuthorizationRequestEndpoint;
+  private String organizationName;
+  private String[] keywords;
+  private String[] contacts;
+  private String logoUri;
   private String[] clientRegistrationTypesSupported;
   private String[] subjectTypesSupported;
   private String[] responseTypesSupported;
   private String[] scopesSupported;
+  private String[] claimsSupported;
+  private boolean claimsParameterSupported;
   private String[] responseModesSupported;
   private String[] grantTypesSupported;
   private boolean requirePushedAuthorizationRequests;
   private String[] tokenEndpointAuthMethodsSupported;
-  private RequestAuthenticationMethodsSupported requestAuthenticationMethodsSupported;
   private String[] idTokenSigningAlgValuesSupported;
   private String[] idTokenEncryptionAlgValuesSupported;
   private String[] idTokenEncryptionEncValuesSupported;
   private String[] userTypeSupported;
-  private String[] claimsSupported;
-  private boolean claimsParameterSupported;
   private TiFeaturesSupported tiFeaturesSupported;
 }

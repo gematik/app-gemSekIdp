@@ -5,7 +5,7 @@
   <parent>
     <groupId>de.gematik.idp</groupId>
     <artifactId>gemSekIdp-global</artifactId>
-    <version>8.4.2</version>
+    <version>8.5.1</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -25,10 +25,6 @@
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>gsi-fedmaster</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>gsi-testsuite</artifactId>
     </dependency>
   </dependencies>
 

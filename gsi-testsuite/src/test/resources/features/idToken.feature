@@ -89,9 +89,10 @@ Feature: Test IdpSektoral's ID Token
   Scenario: IdpSektoral ID Token - Gutfall - validiere zeitliche Gültigkeit
 
   ```
-  Wir validieren, dass der ID Token für 300 Sekunden gültig ist
+  Wir validieren, dass der ID Token für maximal 300 Sekunden gültig ist.
+  Es gibt keine explizite untere Schranke für die zeitliche Gültigkeit, daher nehmen wir hier einfach 60 Sekunden.
 
-    Then The JWT "gsi.idToken" is valid for more than 299 but less than 301 seconds
+    Then The JWT "gsi.idToken" is valid for more than 60 but less than 301 seconds
 
 
   @TCID:IDPSEKTORAL_ID_TOKEN_004

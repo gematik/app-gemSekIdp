@@ -505,7 +505,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   Wir senden einen PAR an mit gültigem TLS-C-Zertifikat an den sektoralen IDP, um die Autoregistrierung zu erledigen. Dann senden wir einen weiteren PAR aber verwenden ein
   anderes TLS Client Zertifikat, das ebenfalls im Entity Statement zu der client_id hinterlegt ist.
 
-  Die Response auf den zweiten PAR muss als Body eine passende Fehlermeldung enthalten:
+  Der zweite PAR muss ebenfalls akzeptiert werden.
 
     Given TGR clear recorded messages
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:

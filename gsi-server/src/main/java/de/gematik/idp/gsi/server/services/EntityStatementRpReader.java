@@ -87,7 +87,9 @@ public abstract class EntityStatementRpReader {
                 INVALID_REQUEST,
                 "No TLS client certificate for relying party found",
                 HttpStatus.BAD_REQUEST);
+    log.debug("Fetching signedJwks to get TLS client certificate for relying party ...");
     final JsonWebToken signedJwks = getSignedJwks(entityStmntRp).orElseThrow(gsiExceptionSupplier);
+    log.debug("Fetching TLS client certificate for relying party from signedJwks ...");
     return getRpTlsClientCertsFromSignedJwks(signedJwks).orElseThrow(gsiExceptionSupplier);
   }
 
@@ -228,6 +230,7 @@ public abstract class EntityStatementRpReader {
   private static Optional<JsonWebToken> getSignedJwks(final JsonWebToken entityStmntRp) {
     final Optional<String> rpSignedJwksUri = ServerUrlService.determineSignedJwksUri(entityStmntRp);
     if (rpSignedJwksUri.isPresent()) {
+      log.debug("Fetching signedJwks ...");
       return HttpClient.fetchSignedJwks(rpSignedJwksUri.get());
     }
     return Optional.empty();

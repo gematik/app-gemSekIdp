@@ -57,23 +57,22 @@ public final class GsiConstants {
           "urn:telematik:family_name",
           "openid");
 
+  public static final String AMR_EGK = "urn:telematik:auth:eGK";
+  public static final String AMR_EID = "urn:telematik:auth:eID";
+  public static final String AMR_SSO = "urn:telematik:auth:sso";
+  public static final String AMR_GUEST_EGK = "urn:telematik:auth:guest:eGK";
+  public static final String AMR_OTHER = "urn:telematik:auth:other";
+  public static final String AMR_EUDIWALLET = "urn:telematik:auth:eudiWallet";
+  public static final String AMR_MEW = "urn:telematik:auth:mEW";
+
   public static final Set<String> AMR_VALUES_HIGH_V1 =
-      Set.of(
-          "urn:telematik:auth:eGK",
-          "urn:telematik:auth:eID",
-          "urn:telematik:auth:sso",
-          "urn:telematik:auth:guest:eGK",
-          "urn:telematik:auth:other");
+      Set.of(AMR_EGK, AMR_EID, AMR_SSO, AMR_GUEST_EGK, AMR_OTHER);
 
   public static final Set<String> AMR_VALUES_HIGH_V2 =
-      Set.of(
-          "urn:telematik:auth:eGK",
-          "urn:telematik:auth:eID",
-          "urn:telematik:auth:guest:eGK",
-          "urn:telematik:auth:other");
+      Set.of(AMR_EGK, AMR_EID, AMR_GUEST_EGK, AMR_OTHER, AMR_EUDIWALLET);
 
-  public static final Set<String> AMR_VALUES_SUBSTANTIAL_V1 = Set.of("urn:telematik:auth:mEW");
-  public static final Set<String> AMR_VALUES_SUBSTANTIAL_V2 = Set.of("urn:telematik:auth:other");
+  public static final Set<String> AMR_VALUES_SUBSTANTIAL_V1 = Set.of(AMR_MEW);
+  public static final Set<String> AMR_VALUES_SUBSTANTIAL_V2 = Set.of(AMR_OTHER);
 
   public static final Set<String> AMR_VALUES_V1 =
       Stream.concat(AMR_VALUES_HIGH_V1.stream(), AMR_VALUES_SUBSTANTIAL_V1.stream())

@@ -20,8 +20,11 @@
 
 package de.gematik.idp.gsi.server.services;
 
+import static de.gematik.idp.data.Oauth2ErrorCode.INVALID_REQUEST;
+
 import de.gematik.idp.IdpConstants;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
+import de.gematik.idp.gsi.server.exceptions.GsiException;
 import de.gematik.idp.token.JsonWebToken;
 import java.util.Map;
 import java.util.Objects;
@@ -82,27 +85,40 @@ public class ServerUrlService {
 
   private static String readFederationFetchEndpointFromEntityStatement(
       final JsonWebToken fedmasterEntityStatement) {
-
-    final Map<String, Object> metadata =
-        Objects.requireNonNull(
-            (Map<String, Object>) fedmasterEntityStatement.extractBodyClaims().get("metadata"),
-            "missing claim: metadata");
-    final Map<String, Object> federationEntity =
-        Objects.requireNonNull(
-            (Map<String, Object>) metadata.get("federation_entity"),
-            "missing claim: federation_entity");
-    return Objects.requireNonNull((String) federationEntity.get("federation_fetch_endpoint"));
+    try {
+      final Map<String, Object> metadata =
+          Objects.requireNonNull(
+              (Map<String, Object>) fedmasterEntityStatement.extractBodyClaims().get("metadata"),
+              "missing claim: metadata");
+      final Map<String, Object> federationEntity =
+          Objects.requireNonNull(
+              (Map<String, Object>) metadata.get("federation_entity"),
+              "missing claim: federation_entity");
+      return Objects.requireNonNull((String) federationEntity.get("federation_fetch_endpoint"));
+    } catch (final NullPointerException e) {
+      throw new GsiException(
+          INVALID_REQUEST,
+          "Error reading federation_fetch_endpoint from entity statement",
+          HttpStatus.BAD_REQUEST);
+    }
   }
 
   public static Optional<String> determineSignedJwksUri(final JsonWebToken entityStmntRp) {
-    final Map<String, Object> bodyClaims = entityStmntRp.getBodyClaims();
-    final Map<String, Object> metadata =
-        Objects.requireNonNull(
-            (Map<String, Object>) bodyClaims.get("metadata"), "missing claim: metadata");
-    final Map<String, Object> openidRelyingParty =
-        Objects.requireNonNull(
-            (Map<String, Object>) metadata.get("openid_relying_party"),
-            "missing claim: openid_relying_party");
-    return Optional.ofNullable((String) openidRelyingParty.getOrDefault("signed_jwks_uri", null));
+    try {
+      final Map<String, Object> bodyClaims = entityStmntRp.getBodyClaims();
+      final Map<String, Object> metadata =
+          Objects.requireNonNull(
+              (Map<String, Object>) bodyClaims.get("metadata"), "missing claim: metadata");
+      final Map<String, Object> openidRelyingParty =
+          Objects.requireNonNull(
+              (Map<String, Object>) metadata.get("openid_relying_party"),
+              "missing claim: openid_relying_party");
+      return Optional.ofNullable((String) openidRelyingParty.getOrDefault("signed_jwks_uri", null));
+    } catch (final NullPointerException e) {
+      throw new GsiException(
+          INVALID_REQUEST,
+          "Error reading signed_jwks_uri from entity statement",
+          HttpStatus.BAD_REQUEST);
+    }
   }
 }

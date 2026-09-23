@@ -26,4 +26,4 @@ import tools.jackson.databind.annotation.JsonNaming;
 
 @Builder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public record Metadata(OpenidProvider openidProvider, FederationEntity federationEntity) {}
+public record Metadata(OpenidProvider openidProvider) {}
