@@ -30,7 +30,6 @@ import de.gematik.rbellogger.RbelLogger;
 import de.gematik.rbellogger.data.RbelElement;
 import de.gematik.rbellogger.facets.jackson.RbelJsonFacet;
 import de.gematik.rbellogger.facets.jose.RbelJwtFacet;
-import de.gematik.test.tiger.common.config.TigerGlobalConfiguration;
 import de.gematik.test.tiger.lib.TigerDirector;
 import de.gematik.test.tiger.lib.json.JsonChecker;
 import io.cucumber.datatable.DataTable;
@@ -66,21 +65,19 @@ public class StepsGlue {
         "http://" + FED_MASTER_URL + ENTITY_STATEMENT_ENDPOINT, "GET", null);
   }
 
-  @When("Send Get Request to {string}")
+  @When("Send Get Request to {tigerResolvedString}")
   public void sendGetRequestTo(final String url) {
-    idpSektoralSteps.sendRequestTo(TigerGlobalConfiguration.resolvePlaceholders(url), "GET", null);
+    idpSektoralSteps.sendRequestTo(url, "GET", null);
   }
 
-  @When("Send Get Request to {string} with")
+  @When("Send Get Request to {tigerResolvedString} with")
   public void sendGetRequestTo(final String url, final DataTable params) {
-    idpSektoralSteps.sendRequestTo(
-        TigerGlobalConfiguration.resolvePlaceholders(url), "GET", params);
+    idpSektoralSteps.sendRequestTo(url, "GET", params);
   }
 
-  @When("Send Post Request to {string} with")
+  @When("Send Post Request to {tigerResolvedString} with")
   public void sendPostRequestTo(final String url, final DataTable params) {
-    idpSektoralSteps.sendRequestTo(
-        TigerGlobalConfiguration.resolvePlaceholders(url), "POST", params);
+    idpSektoralSteps.sendRequestTo(url, "POST", params);
   }
 
   @And("Expect JWKS in last message and add its keys to truststore")
@@ -111,19 +108,16 @@ public class StepsGlue {
             .getFacetOrFail(RbelJsonFacet.class)
             .getJsonElement()
             .get("kid")
-            .asText();
+            .asString();
     final JsonWebKey jwk = getJsonWebKey(truststore, kidInJws);
     validateJwsSignature(jwsAsString, jwk);
   }
 
-  @Then("Json String {string} at {string} matches:")
+  @Then("Json String {tigerResolvedString} at {string} matches:")
   public void jsonStringMatches(
       final String jsonString, final String rbelPath, final String oracleDocStr) {
     final RbelLogger rbelLogger = RbelLogger.build();
-    final RbelElement rbelElement =
-        rbelLogger
-            .getRbelConverter()
-            .convertElement(TigerGlobalConfiguration.readString(jsonString, jsonString), null);
+    final RbelElement rbelElement = rbelLogger.getRbelConverter().convertElement(jsonString, null);
     new JsonChecker()
         .compareJsonStrings(
             rbelElement.findElement(rbelPath).orElseThrow().getRawStringContent(),
@@ -131,14 +125,11 @@ public class StepsGlue {
             false);
   }
 
-  @Then("Json String {string} at {string} matches {string}")
+  @Then("Json String {tigerResolvedString} at {string} matches {string}")
   public void jsonStringMatchesStringValue(
       final String jsonString, final String rbelPath, final String value) {
     final RbelLogger rbelLogger = RbelLogger.build();
-    final RbelElement rbelElement =
-        rbelLogger
-            .getRbelConverter()
-            .convertElement(TigerGlobalConfiguration.readString(jsonString, jsonString), null);
+    final RbelElement rbelElement = rbelLogger.getRbelConverter().convertElement(jsonString, null);
     final String text = rbelElement.findElement(rbelPath).orElseThrow().getRawStringContent();
     assertThat(text).isNotNull();
     if (!text.equals(value)) {
@@ -148,11 +139,10 @@ public class StepsGlue {
     }
   }
 
-  @Then("The JWT {string} is valid for more than {int} but less than {int} seconds")
+  @Then("The JWT {tigerResolvedString} is valid for more than {int} but less than {int} seconds")
   public void checkValidityOfJwt(
       final String jwtAsString, final int minSeconds, final int maxSeconds) {
-    final JsonWebToken jwt =
-        new JsonWebToken(TigerGlobalConfiguration.readString(jwtAsString, jwtAsString));
+    final JsonWebToken jwt = new JsonWebToken(jwtAsString);
     final Long expiresAt = (Long) jwt.getBodyClaim(ClaimName.EXPIRES_AT).orElseThrow();
     final Long issuedAt = (Long) jwt.getBodyClaim(ClaimName.ISSUED_AT).orElseThrow();
     assertThat(expiresAt - issuedAt)
@@ -182,7 +172,10 @@ public class StepsGlue {
   static JsonWebKey getJsonWebKey(final List<JsonNode> keyList, final String kid)
       throws JoseException {
     final JsonNode keyAsJwk =
-        keyList.stream().filter(el -> el.get("kid").asText().equals(kid)).findFirst().orElseThrow();
+        keyList.stream()
+            .filter(el -> el.get("kid").asString().equals(kid))
+            .findFirst()
+            .orElseThrow();
     return JsonWebKey.Factory.newJwk(keyAsJwk.toString());
   }
 

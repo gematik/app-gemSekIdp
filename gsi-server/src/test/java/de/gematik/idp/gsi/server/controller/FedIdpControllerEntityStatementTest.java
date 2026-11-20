@@ -34,7 +34,11 @@ import kong.unirest.core.HttpStatus;
 import kong.unirest.core.Unirest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -164,7 +168,7 @@ public class FedIdpControllerEntityStatementTest {
             gsiConfiguration.getServerUrlMtls() + "/PAR_Auth");
     assertThat(openidProvider.get("organization_name")).asString().isNotEmpty();
     assertThat((List<String>) openidProvider.get("keywords"))
-        .containsExactlyInAnyOrder("product_type_version:3.3.0", "product_type:sek_idp");
+        .containsExactlyInAnyOrder("product_type_version: 4.0.0", "product_type: PDT73");
     assertThat((List<String>) openidProvider.get("contacts")).isNotEmpty();
     assertThat(openidProvider.get("logo_uri")).asString().isNotEmpty();
     assertThat((List<String>) openidProvider.get("client_registration_types_supported"))

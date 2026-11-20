@@ -26,7 +26,7 @@ import static de.gematik.idp.gsi.server.data.GsiConstants.FEDIDP_PAR_AUTH_ENDPOI
 
 import com.google.gson.JsonObject;
 import de.gematik.idp.gsi.server.configuration.GsiConfiguration;
-import de.gematik.idp.gsi.server.services.HttpClient;
+import de.gematik.idp.gsi.server.services.BdeHttpClient;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -56,6 +56,7 @@ public class BdeLogger implements Filter {
       new AtomicReference<>(new ConcurrentLinkedQueue<>());
   private long startTimeOfLogging = System.currentTimeMillis();
   private final GsiConfiguration gsiConfiguration;
+  private final BdeHttpClient bdeHttpClient;
 
   @Scheduled(cron = "0 */5 * * * *")
   public void sendLogsToServer() {
@@ -69,7 +70,7 @@ public class BdeLogger implements Filter {
             + endTimeOfLogging
             + "_perf.log";
     startTimeOfLogging = endTimeOfLogging;
-    HttpClient.sendLogsToBde(oldQueue, fileName, gsiConfiguration.getBdeEndpointUrl());
+    bdeHttpClient.sendLogsToBde(oldQueue, fileName, gsiConfiguration.getBdeEndpointUrl());
   }
 
   @Override

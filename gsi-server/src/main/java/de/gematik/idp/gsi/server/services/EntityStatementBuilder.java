@@ -81,7 +81,7 @@ public class EntityStatementBuilder {
             .tokenEndpoint(serverUrlMtls + TOKEN_ENDPOINT)
             .pushedAuthorizationRequestEndpoint(serverUrlMtls + FEDIDP_PAR_AUTH_ENDPOINT)
             .organizationName("gematik sektoraler IDP")
-            .keywords(new String[] {"product_type_version:3.3.0", "product_type:sek_idp"})
+            .keywords(new String[] {"product_type_version: 4.0.0", "product_type: PDT73"})
             .contacts(new String[] {"support@idp4711.de", "info@idp4711.de"})
             .logoUri(LOGO_URI)
             .clientRegistrationTypesSupported(new String[] {"automatic"})

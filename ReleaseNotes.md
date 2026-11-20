@@ -1,3 +1,11 @@
+# Release 8.5.2
+
+- ready for Java 25
+- isolate BDE HTTP traffic in a dedicated, Spring-managed Unirest instance to avoid runtime
+  configuration errors
+- update testsuite for release IDP-26-1
+- update dependencies
+
 # Release 8.5.1
 
 - add eudiWallet amr
