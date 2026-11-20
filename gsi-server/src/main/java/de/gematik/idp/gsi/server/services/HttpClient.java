@@ -34,7 +34,6 @@ import java.net.http.HttpConnectTimeoutException;
 import java.security.cert.CertPathBuilderException;
 import java.security.cert.CertificateException;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
@@ -109,20 +108,6 @@ public abstract class HttpClient {
     } catch (final UnirestException e) {
       throw mapToGsiException("federation fetch endpoint", entityStmntEndpoint, e);
     }
-  }
-
-  public static void sendLogsToBde(
-      final Queue<String> logs, final String filename, final String bdeEndpointUrl) {
-    Unirest.config().verifySsl(false);
-    final String logString = String.join("\n", logs);
-    final HttpResponse<String> resp =
-        Unirest.post(bdeEndpointUrl)
-            .header("Content-Type", "application/octet-stream")
-            .header("Accept-Encoding", "gzip, deflate")
-            .header("filename", filename)
-            .body(logString.isEmpty() ? "leer" : logString)
-            .asString();
-    log.info("BDE response; status: " + resp.getStatus() + "; body: " + resp.getBody());
   }
 
   private static boolean isSSLException(final UnirestException e) {

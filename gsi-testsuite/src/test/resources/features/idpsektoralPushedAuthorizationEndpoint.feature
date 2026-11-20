@@ -38,7 +38,7 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Gutfall - Validiere Response
 
   ```
-  Wir senden einen PAR an den sektoralen IDP
+  Wir senden einen PAR an den sektoralen IDP. Nonce und State enthalten ein paar Sonderzeichen, die akzeptiert werden müssen, weil das OGR diese aktuell verwendet.
 
   Die HTTP Response muss:
 
@@ -47,8 +47,8 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
 
     Given TGR clear recorded messages
     When TGR send POST request to "${pushed_authorization_request_endpoint}" with:
-      | client_id             | state       | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                | scope        | acr_values   |
-      | ${gsi.clientid.valid} | yyystateyyy | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ | ${gsi.scope} | <acr_values> |
+      | client_id             | state             | redirect_uri       | code_challenge                              | code_challenge_method | response_type | nonce                      | scope        | acr_values   |
+      | ${gsi.clientid.valid} | yyystateyyy%&43?) | ${gsi.redirectUri} | 9tI-0CQIkUYaGQOVR1emznlDFjlX0kVY1yd3oiMtGUI | S256                  | code          | vy7rM801AQw1or22GhrZ%&43?) | ${gsi.scope} | <acr_values> |
     And TGR find first request to path ".*"
     Then TGR current response with attribute "$.responseCode" matches "201"
     And TGR current response with attribute "$.header.Content-Type" matches "application/json.*"
@@ -91,7 +91,14 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
   Scenario Outline: IdpSektoral Pushed Auth Endpoint - Negativfall - fehlerhaft befüllte Parameter
 
   ```
-  Wir senden invalide PAR an den sektoralen IDP
+  Wir senden invalide PAR an den sektoralen IDP. Die Fehler sind:
+  - ungültige client_id
+  - ungültiger code_challenge_method
+  - ungültiger response_type
+  - ungültiger scope
+  - ungültige acr_values
+  - ungültige redirect_uri
+  - redirect_uri aus dem Entity Statement, die nicht beim Fedmaster hinterlegt ist
 
   Die Response muss als Body eine passende Fehlermeldung enthalten:
 
@@ -113,13 +120,14 @@ Feature: Test IdpSektoral's Pushed Auth Endpoint
     And TGR current response with attribute "$.body.error" matches "<error>"
 
     Examples:
-      | client_id             | redirect_uri            | code_challenge_method | response_type | scope        | acr_values               | error           | responseCode |
-      | notUrl                | ${gsi.redirectUri}      | S256                  | code          | ${gsi.scope} | gematik-ehealth-loa-high | invalid_.*      | 40.*         |
-      | ${gsi.clientid.valid} | ${gsi.redirectUri}      | plain                 | code          | ${gsi.scope} | gematik-ehealth-loa-high | invalid_request | 400          |
-      | ${gsi.clientid.valid} | ${gsi.redirectUri}      | S256                  | token         | ${gsi.scope} | gematik-ehealth-loa-high | .*              | 400          |
-      | ${gsi.clientid.valid} | ${gsi.redirectUri}      | S256                  | code          | invalidScope | gematik-ehealth-loa-high | invalid_scope   | 400          |
-      | ${gsi.clientid.valid} | ${gsi.redirectUri}      | S256                  | code          | ${gsi.scope} | invalidAcr               | invalid_request | 400          |
-      | ${gsi.clientid.valid} | https://invalidRedirect | S256                  | code          | ${gsi.scope} | gematik-ehealth-loa-high | invalid_request | 400          |
+      | client_id             | redirect_uri                                     | code_challenge_method | response_type | scope        | acr_values               | error           | responseCode |
+      | notUrl                | ${gsi.redirectUri}                               | S256                  | code          | ${gsi.scope} | gematik-ehealth-loa-high | invalid_.*      | 40.*         |
+      | ${gsi.clientid.valid} | ${gsi.redirectUri}                               | plain                 | code          | ${gsi.scope} | gematik-ehealth-loa-high | invalid_request | 400          |
+      | ${gsi.clientid.valid} | ${gsi.redirectUri}                               | S256                  | token         | ${gsi.scope} | gematik-ehealth-loa-high | .*              | 400          |
+      | ${gsi.clientid.valid} | ${gsi.redirectUri}                               | S256                  | code          | invalidScope | gematik-ehealth-loa-high | invalid_scope   | 400          |
+      | ${gsi.clientid.valid} | ${gsi.redirectUri}                               | S256                  | code          | ${gsi.scope} | invalidAcr               | invalid_request | 400          |
+      | ${gsi.clientid.valid} | https://invalidRedirect                          | S256                  | code          | ${gsi.scope} | gematik-ehealth-loa-high | invalid_request | 400          |
+      | ${gsi.clientid.valid} | https://redirecturi.isnt.registered/at/fedmaster | S256                  | code          | ${gsi.scope} | gematik-ehealth-loa-high | invalid_request | 400          |
 
 
   @TCID:IDPSEKTORAL_PUSHED_AUTH_ENDPOINT_004

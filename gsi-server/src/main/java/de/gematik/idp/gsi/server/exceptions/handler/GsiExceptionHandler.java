@@ -69,17 +69,17 @@ public class GsiExceptionHandler {
   })
   public ResponseEntity<Oauth2ErrorResponse> handleValidationException(final Exception exc) {
     return handleGsiException(
-        (GsiException)
-            ExceptionUtils.getThrowableList(exc).stream()
-                .filter(GsiException.class::isInstance)
-                .findAny()
-                .orElseGet(
-                    () ->
-                        new GsiException(
-                            exc.getMessage(),
-                            exc,
-                            HttpStatus.BAD_REQUEST,
-                            Oauth2ErrorCode.INVALID_REQUEST)));
+        ExceptionUtils.getThrowableList(exc).stream()
+            .filter(GsiException.class::isInstance)
+            .map(GsiException.class::cast)
+            .findAny()
+            .orElseGet(
+                () ->
+                    new GsiException(
+                        exc.getMessage(),
+                        exc,
+                        HttpStatus.BAD_REQUEST,
+                        Oauth2ErrorCode.INVALID_REQUEST)));
   }
 
   @ExceptionHandler(RuntimeException.class)

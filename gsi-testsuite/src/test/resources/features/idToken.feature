@@ -31,7 +31,7 @@ Feature: Test IdpSektoral's ID Token
   ```
   Wir validieren die Signatur Header Claims eines ID Token
 
-    Then Json String "gsi.idToken" at "$.header" matches:
+    Then Json String "${gsi.idToken}" at "$.header" matches:
         """
           {
             "alg":                        'ES256',
@@ -51,7 +51,7 @@ Feature: Test IdpSektoral's ID Token
   ```
   Wir validieren die Body Claims eines ID Token der Version 1.0.0
 
-    Then Json String "gsi.idToken" at "$.body" matches:
+    Then Json String "${gsi.idToken}" at "$.body" matches:
         """
           {
             "iss":                                    'http.*',
@@ -79,7 +79,7 @@ Feature: Test IdpSektoral's ID Token
             "____urn:telematik:claims:display_name":  "${json-unit.ignore}"
           }
         """
-    And Json String "gsi.idToken" at "$.body.amr.0" matches '(urn:telematik:auth:eGK)|(urn:telematik:auth:eID)|(urn:telematik:auth:other)|(urn:telematik:auth:mEW)'
+    And Json String "${gsi.idToken}" at "$.body.amr.0" matches '(urn:telematik:auth:eGK)|(urn:telematik:auth:eID)|(urn:telematik:auth:other)|(urn:telematik:auth:mEW)'
 
 
   @TCID:IDPSEKTORAL_ID_TOKEN_003
@@ -92,7 +92,7 @@ Feature: Test IdpSektoral's ID Token
   Wir validieren, dass der ID Token für maximal 300 Sekunden gültig ist.
   Es gibt keine explizite untere Schranke für die zeitliche Gültigkeit, daher nehmen wir hier einfach 60 Sekunden.
 
-    Then The JWT "gsi.idToken" is valid for more than 60 but less than 301 seconds
+    Then The JWT "${gsi.idToken}" is valid for more than 60 but less than 301 seconds
 
 
   @TCID:IDPSEKTORAL_ID_TOKEN_004
@@ -104,7 +104,7 @@ Feature: Test IdpSektoral's ID Token
   ```
   Wir validieren die JWE protected Header Claims eines verschlüsselten ID Token
 
-    Then Json String "gsi.encryptedIdToken" at "$.header" matches:
+    Then Json String "${gsi.encryptedIdToken}" at "$.header" matches:
         """
           {
             "alg" : "ECDH-ES",
@@ -131,7 +131,7 @@ Feature: Test IdpSektoral's ID Token
   ```
   Wir validieren die Body Claims eines ID Token der Version 2.0.0
 
-    Then Json String "gsi.idTokenVersion2" at "$.body" matches:
+    Then Json String "${gsi.idTokenVersion2}" at "$.body" matches:
         """
           {
             "iss":                                    'http.*',
@@ -160,4 +160,4 @@ Feature: Test IdpSektoral's ID Token
             "____urn:telematik:claims:display_name":  "${json-unit.ignore}"
           }
         """
-    And Json String "gsi.idTokenVersion2" at "$.body.amr.0" matches 'urn:telematik:auth:other'
+    And Json String "${gsi.idTokenVersion2}" at "$.body.amr.0" matches 'urn:telematik:auth:other'
